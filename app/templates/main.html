@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HomeServer</title>
+    <link href="{{ url_for('static', path='/main.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper" style="
+            {#background:url({{ url_for('static', path='/images/bg.png') }});#}
+            background: grey;
+            ">
+        <div class="clock">{% include 'clock.html' %}</div>
+        <div class="clock2">clock2</div>
+        <div class="weather">{% include 'weather.html' %}</div>
+        <div class="ambiance">ambiance</div>
+        <div class="calendar">{% include 'calendar.html' %}</div>
+        <div class="buses">buses</div>
+        <div class="todo">todo</div>
+    </div>
+</body>
+</html>

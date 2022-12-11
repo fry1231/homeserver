@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  homescreen:
+    build: app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+#    command: bash
+    expose:
+      - 8000
+#    volumes:
+#      - ./app:/app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN}`)"
+      - "traefik.http.routers.homescreen.entrypoints=web,websecure"
+      - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
+      - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN}"
+      - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
+
+  traefik:
+    image: traefik:v2.6
+    ports:
+      - 8008:80
+      - 8080:8080
+      - 443:443
+    command:
+      #- "--log.level=DEBUG"
+#      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    volumes:
+#      - "./traefik.toml:/etc/traefik/traefik.toml"
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.${DOMAIN}`) && (PathPrefix(`/`)"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=admin:${HASHPASS_ADMIN}"
