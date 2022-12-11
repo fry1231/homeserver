@@ -24,7 +24,7 @@ services:
       - 8080:8080
       - 443:443
     command:
-      #- "--log.level=DEBUG"
+      - "--log.level=DEBUG"
 #      - "--api.insecure=true"
       - "--api.dashboard=true"
       - "--providers.docker=true"
