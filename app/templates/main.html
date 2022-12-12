@@ -3,34 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+{#    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">#}
     <title>HomeServer</title>
-{#    <link href="{{ url_for('static', path='/main.css') }}" rel="stylesheet">#}
+    <script src="https://pamplin-cdn.azureedge.net/website_assets/all_local_assets/utility_2020.js"crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+{#    <link href="{{ url_for('static', path='/main.css') }}" rel="stylesheet">#}
 </head>
 <style>
     body {
         background-image: url({{ url_for('static', path='/images/bg.png') }});
     }
 </style>
+
+<script>
+    document.addEventListener("load", function(){
+        document.write(
+            '<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/main.css') }}">');
+    });
+</script>
+
 <body>
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <div class="row">
-                    <div class="col">
-                        {% include 'clock.html' %}
-                    </div>
-                    <div class="col">
-                        {% include 'clock2.html' %}
-                    </div>
+    <div class="container-fluid">
+    <div class="row">
+        {#        col1#}
+        <div class="col-8">
+            <div class="row">
+                <div class="col">
+                    {% include 'clock.html' %}
+                </div>
+                <div class="col">
+                    {% include 'clock2.html' %}
                 </div>
             </div>
-            <div class="col">
-                {% include 'weather_detailed.html' %}
+            <div class="row">
+                {% include 'calendar.html' %}
             </div>
         </div>
+
+{#        col2#}
+        <div class="col-4">
+            <div class="row">
+                {% include 'weather.html' %}
+            </div>
+            <div class="row d-flex align-items-center justify-content-center">
+                <div style="width: 90%;">
+                    {% include 'weather_detailed.html' %}
+                </div>
+
+            </div>
+        </div>
+    </div>
     </div>
 {#        <div class="clock">{% include 'clock.html' %}</div>#}
 {#        <div class="clock2">clock2</div>#}
