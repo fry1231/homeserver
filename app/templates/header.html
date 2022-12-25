@@ -58,10 +58,11 @@
         alert(ws)
         ws.onopen = function(event){
             addTasks(event);
-            alert("GET TASK MESSAGE")
+            alert("opened")
         };
         ws.onmessage = function(event){
             addTasks(event);
+            alert("recieved task message")
         };
         wsB = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/buses/ws/${client_id}`);
         wsB.onmessage = function (event) {
