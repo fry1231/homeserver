@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-{#    <meta name="apple-mobile-web-app-capable" content="yes">#}
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta http-equiv="Content-Security-Policy" content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;">
-{#    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">#}
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+
     <title>HomeServer</title>
     <script src="https://pamplin-cdn.azureedge.net/website_assets/all_local_assets/utility_2020.js" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
@@ -52,8 +55,10 @@
         else
             prefix = "wss";
         ws = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/tasks/ws/${client_id}`);
+        alert(ws)
         ws.onopen = function(event){
             addTasks(event);
+            alert("GET TASK MESSAGE")
         };
         ws.onmessage = function(event){
             addTasks(event);
