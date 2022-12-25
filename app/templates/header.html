@@ -46,7 +46,7 @@
         addEvents();
         let client_id = Date.now()
         let prefix = "";
-        if (`${DOMAIN}`=="localhost")
+        if (`{{ getenv("DOMAIN") }}`=="localhost")
             prefix = "ws";
         else
             prefix = "wss";
