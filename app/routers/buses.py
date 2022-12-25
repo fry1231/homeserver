@@ -14,6 +14,7 @@ from arq.connections import RedisSettings
 from datetime import datetime, timedelta
 import pytz
 from config_init import redis_connection
+import traceback
 
 
 router = APIRouter(
@@ -87,11 +88,14 @@ async def retrieve_arrivals():
         else:
             logger.debug("Entered retrieve_arrivals")
             async with AsyncClient() as session:
-                url = 'https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=STIF:StopArea:SP:50973:'
-                headers = {'Accept': 'application/json', 'apikey': os.getenv("IDF_TOKEN")}
-                response = await session.get(url=url, headers=headers)
-                data = response.json()
-                logger.debug("got arrivals data")
+                try:
+                    url = 'https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=STIF:StopArea:SP:50973:'
+                    headers = {'Accept': 'application/json', 'apikey': os.getenv("IDF_TOKEN")}
+                    response = await session.get(url=url, headers=headers)
+                    data = response.json()
+                    logger.debug("got arrivals data")
+                except:
+                    logger.error(traceback.format_exc())
 
             req_time = data['Siri']['ServiceDelivery']['ResponseTimestamp']
             departures = data['Siri']['ServiceDelivery']['StopMonitoringDelivery'][0]['MonitoredStopVisit']
@@ -118,7 +122,7 @@ async def retrieve_arrivals():
                 to_rer=show_data_rer
             )
             await redis_connection.publish('buses', orjson.dumps(res.dict()).decode('utf8'))
-            logger.info("Published bus arrivals to redis")
+            logger.debug("Published bus arrivals to redis")
         await asyncio.sleep(int(os.getenv("BUSES_REFRESH_TIME")))
 
 
