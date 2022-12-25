@@ -18,11 +18,11 @@ services:
       - 8000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN}`)"
+      - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN:?err}`)"
       - "traefik.http.routers.homescreen.entrypoints=web,websecure"
       - "traefik.http.routers.homescreen.entrypoints=web"
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
-      - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN}"
+      - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
       - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
 
   todobot:
@@ -46,13 +46,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER:?err}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
+      - POSTGRES_DB=${POSTGRES_DB:?err}
     healthcheck:
       test:
         - CMD-SHELL
-        - pg_isready -U ${POSTGRES_USER} --dbname=${POSTGRES_DB}
+        - pg_isready -U ${POSTGRES_USER} --dbname=${POSTGRES_DB:?err}
       interval: 10s
       timeout: 10s
       retries: 50
@@ -83,19 +83,19 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL:?err}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
     volumes:
       - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`dashboard.${DOMAIN}`)"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.${DOMAIN:?err}`)"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=admin:${HASHPASS_ADMIN}"
+      - "traefik.http.middlewares.auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
 volumes:
   postgres_data:
   letsencrypt:
