@@ -2,47 +2,102 @@ version: '3.3'
 
 services:
   homescreen:
+    container_name: homescreen
+    env_file:
+      - dev.env  # !
     build: app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --forwarded-allow-ips '*'
-#    command: bash
+    volumes:
+      - ./app:/app
+    depends_on:
+      redis:
+        condition: service_started
+      db:
+        condition: service_healthy
+#    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn main:app --host 0.0.0.0 --forwarded-allow-ips "*"'
+    command: uvicorn main:app --host 0.0.0.0 --forwarded-allow-ips '*' --log-level critical
     expose:
       - 8000
-#    volumes:
-#      - ./app:/app
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.homescreen.rule=Host(`homescreen.localhost`)"
+      - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN}`)"
+#      - "traefik.http.routers.homescreen.entrypoints=web,websecure"
       - "traefik.http.routers.homescreen.entrypoints=web"
 #      - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
       - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN}"
       - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
 
+  todobot:
+    container_name: todobot
+    env_file:
+      - dev.env  # !
+    build: todobot
+    depends_on:
+      - db
+    command: python -m main
+
+  db:
+    container_name: pg_container
+    image: postgres:13-alpine
+    user: postgres
+#    restart: always
+    depends_on:
+      - traefik
+    expose:
+      - 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER} --dbname=${POSTGRES_DB}
+      interval: 10s
+      timeout: 10s
+      retries: 50
+      start_period: 30s
+
+  redis:
+    container_name: redis
+    image: redis:7.0.7
+    expose:
+      - 6379
+
   traefik:
-    image: traefik:v2.6
+    container_name: traefik
+    image: traefik:v2.9
     ports:
-      - 8008:80
+      - 80:80
       - 8080:8080
 #      - 443:443
     command:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
-#      - "--api.dashboard=true"
+      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
 #      - "--entrypoints.websecure.address=:443"
+#      - "--entrypoints.web.http.redirections.entrypoint.to=:443"
+#      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+#      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
 #      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
 #      - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL}"
 #      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
     volumes:
 #      - "./traefik.toml:/etc/traefik/traefik.toml"
-#      - "./letsencrypt:/letsencrypt"
+      - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`dashboard.localhost`)"# && (PathPrefix(`/`)"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.${DOMAIN}`)"
 #      - "traefik.http.routers.dashboard.tls=true"
 #      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.middlewares=auth"
       - "traefik.http.middlewares.auth.basicauth.users=admin:${HASHPASS_ADMIN}"
+volumes:
+  postgres_data:
+  letsencrypt:

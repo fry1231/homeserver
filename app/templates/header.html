@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+{#    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">#}
+    <title>HomeServer</title>
+    <script src="https://pamplin-cdn.azureedge.net/website_assets/all_local_assets/utility_2020.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootlint/1.1.0/bootlint.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&amp;display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.standalone.min.css" rel="stylesheet">
+    <script src="{{ url_for('static', path='/main.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/main.css') }}">
+</head>
+<style>
+    body {
+        background-image: url({{ url_for('static', path='/images/bg.png') }});
+    }
+    p {
+        color: #ffffff;
+    }
+</style>
+
+<script>
+    let ws, wsB;
+    function addEvents() {
+        document.getElementById('taskBtn').addEventListener('click', addComment);
+
+        let elementsRemove = document.querySelectorAll(".remove");
+        elementsRemove.forEach(el => el.addEventListener('click', event => {
+            deleteTask(event);
+        }));
+
+        let elementsChange = document.querySelectorAll(".checkbox");
+        elementsChange.forEach(el => el.addEventListener('click', event => {
+            changeState(event);
+        }));
+    }
+    window.onload = function () {
+        addEvents();
+        let client_id = Date.now()
+        ws = new WebSocket(`ws://homescreen.{{ getenv("DOMAIN") }}/tasks/ws/${client_id}`);
+        ws.onopen = function(event){
+            addTasks(event);
+        };
+        ws.onmessage = function(event){
+            addTasks(event);
+        };
+        wsB = new WebSocket(`ws://homescreen.{{ getenv("DOMAIN") }}/buses/ws/${client_id}`);
+        wsB.onmessage = function (event) {
+            addBuses(event);
+            console.log(event)
+        }
+    }
+    {#function completedTask(el){#}
+    {#    return `#}
+    {#        <li class="completed">#}
+    {#            <div class="form-check">#}
+    {#                <label class="form-check-label">#}
+    {#                    <input id="a${el.id}" class="checkbox" type="checkbox" checked="">${el.text}#}
+    {#                    <i class="input-helper"></i>#}
+    {#                </label>#}
+    {#            </div>#}
+    {#            <i id="${el.id}" class="remove mdi mdi-close-circle-outline"</i>#}
+    {#        </li>#}
+    {#    `#}
+
+    {#    function uncompletedTask(el){#}
+    {#    return `#}
+    {#        <li>#}
+    {#            <div class="form-check">#}
+    {#                <label class="form-check-label">#}
+    {#                    <input id="a${el.id}" class="checkbox" type="checkbox">${el.text}#}
+    {#                    <i class="input-helper"></i>#}
+    {#                </label>#}
+    {#            </div>#}
+    {#            <i id="${el.id}" class="remove mdi mdi-close-circle-outline"></i>#}
+    {#        </li>#}
+    {#    `#}
+
+    function completedTask(el){
+        return `<li class="completed"><div class="form-check"><label class="form-check-label"><input id="a${el.id}" class="checkbox" type="checkbox" checked="">${el.text}<i class="input-helper"></i></label></div><i id="${el.id}" class="remove mdi mdi-close-circle-outline"</i></li>`
+    }
+    function uncompletedTask(el){
+        return `<li><div class="form-check"><label class="form-check-label"><input id="a${el.id}" class="checkbox" type="checkbox">${el.text}<i class="input-helper"></i></label></div><i id="${el.id}" class="remove mdi mdi-close-circle-outline"></i></li>`
+    }
+
+    function addTasks(event){
+        if (event.data === undefined)
+            return;
+        let taskList = JSON.parse(event.data);
+        let htmlToAdd = "";
+        let tasksArr = [];
+        for (const el of taskList) {
+            tasksArr.push(el);
+        }
+        tasksArr.sort(function (a, b) {
+            return b.id - a.id;
+        })
+        for (let i=0; i<tasksArr.length; i++){
+            let el = tasksArr[i];
+            if (el.finished)
+                htmlToAdd += completedTask(el);
+            else
+                htmlToAdd += uncompletedTask(el);
+        }
+        document.getElementsByClassName('todo-list')[0].innerHTML = htmlToAdd;
+        addEvents();
+    }
+
+    function addComment(event) {
+        console.log("addcomment");
+        event.preventDefault();
+        let text = document.getElementById('taskText').value;
+        const data = {"text": text};
+        const params = {
+            headers: {"content-type": "application/json; charset=UTF-8"},
+            body: JSON.stringify(data),
+            method: "POST"
+        };
+        fetch("tasks/add", params)
+            .then(res => triggerUpdateTasks());
+        document.getElementById('taskText').value = "";
+    }
+
+    function deleteTask(event) {
+        const task_id = event.target.id;
+        const params = {
+            headers: {"content-type": "application/json; charset=UTF-8"},
+            method: "DELETE"
+        };
+        fetch("tasks/delete/"+task_id, params)
+            .then(res => triggerUpdateTasks());
+    }
+
+    function changeState(event) {
+        const task_id = event.target.id.replace("a", "");
+        const params = {
+            headers: {"content-type": "application/json; charset=UTF-8"},
+            method: "PUT"
+        };
+        let is_finished = true;
+        if (event.target.hasAttribute("checked")) {
+            is_finished = false;
+        }
+
+        fetch("tasks/change_state/"+task_id+"?is_finished="+is_finished.toString(), params)
+            .then(res => triggerUpdateTasks());
+    }
+
+    function triggerUpdateTasks() {
+        ws.send(JSON.stringify({"command": "trigger"}))
+    }
+
+    function addBuses(event) {
+        if (event.data === undefined)
+            return;
+        let data = JSON.parse(event.data);
+        let toDefense = data['to_defense'];
+        let toRER = Array.from(data['to_rer']);
+        let time = Array.from(data['refresh_time']);
+        let htmlDefense = arrivalsBus(toDefense);
+        let htmlRER = arrivalsBus(toRER);
+
+        document.getElementById("arrivalsDefense").innerHTML = htmlDefense;
+        document.getElementById("arrivalsRER").innerHTML = htmlRER;
+    }
+    function arrivalsBus(arr) {
+        let html = "";
+        for (let i=0; i<arr.length; i++) {
+            let el = arr[i];
+            let badgeClass = "";
+            if (el['route'] == '259')
+                badgeClass = 'badge-primary';
+            else if (el['route'] == '258')
+                badgeClass = 'badge-danger';
+            else
+                badgeClass = 'badge-secondary';
+
+            let etd = new Date(el['etd']);
+            html += `
+                <div class="col-1">
+                    <span class="badge ${badgeClass}">${el['route']}</span>
+                </div>
+                <div class="col-7">
+                    <p>${el['destination']}</p>
+                </div>
+                <div class="col-2" backupTime="${etd.toISOString()}">
+                    <p>${etd.toLocaleTimeString("ru-RU")}</p>
+                </div>
+                <div class="col-2 timeRemaining">
+                    <p></p>
+                </div>
+            `;
+        }
+        return html;
+    }
+
+    function calctime() {
+        Array.from(document.getElementsByClassName("timeRemaining")).forEach(function(el) {
+            let timestring = el.previousElementSibling.children[0].innerHTML;
+            let dateNow = new Date();
+            {#let stringDatetime = dateNow.toISOString().split('T')[0];#}
+            {#stringDatetime += 'T' + timestring;#}
+            let etd = new Date(el.previousElementSibling.getAttribute("backupTime"));
+            console.log("etd: "+ etd.toISOString());
+            console.log("now: "+ dateNow.toISOString());
+            let rem = etd - dateNow;
+            rem = Math.round(rem / 1000);
+            let html = "";
+            if (rem < 3600)
+                html += new Date(rem * 1000).toISOString().substring(14, 19)
+            else
+                html += new Date(rem * 1000).toISOString().substring(11, 16)
+
+            el.children[0].innerHTML = html;
+        });
+    }
+
+    setInterval(calctime, 1000);
+</script>
+
+<body>
+{% block content %}
+{% endblock %}
+</body>
+</html>

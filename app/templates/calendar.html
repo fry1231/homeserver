@@ -1,1 +1,21 @@
-<iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=2&bgcolor=%23ffffff&ctz=Europe%2FParis&mode=AGENDA&showTitle=0&showCalendars=0&showTz=0&showTabs=1&showPrint=0&src=ZnJ5aHRjQGdtYWlsLmNvbQ&src=YWRkcmVzc2Jvb2sjY29udGFjdHNAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039BE5&color=%23F6BF26" style="border:solid 1px #777" width="768" height="600" frameborder="0" scrolling="no"></iframe>
+<div class="container p-3">
+    {% for event in events %}
+    <div class="row row-striped">
+        <div class="col-2 text-right">
+            <h4><span class="badge badge-secondary">{{ event.day }}</span></h4>
+            <p>{{ event.month }}</p>
+        </div>
+        <div class="col-10">
+            <h7 class="text-uppercase"><strong>{{ event.name }}</strong></h7>
+            <ul class="list-inline">
+                <li class="list-inline-item"><i class="fa fa-calendar-o" aria-hidden="true"></i> {{ event.weekday }}</li>
+                <li class="list-inline-item"><i class="fa fa-clock-o" aria-hidden="true"></i> {{ event.strtimeslot }}</li>
+                {% if event.location %}
+                <li class="list-inline-item"><i class="fa fa-location-arrow" aria-hidden="true"></i> {{ event.location }}</li>
+                {% endif %}
+            </ul>
+            <p>{{ event.description }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>

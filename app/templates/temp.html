@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Title</title>
+    </head>
+    <body>
+        <h1>Add new comment</h1>
+        <form action="" onsubmit="addComment(event)">
+            <input type="text" id="author" autocomplete="off"/>
+            <input type="text" id="content" autocomplete="off"/>
+            <button>Add comment</button>
+        </form>
+        <h2>Comments</h2>
+        <ul id='comments'>
+            {% for el in items %}
+                <li>
+                  <h3> {{el.id}} </h3>
+                  <p> {{el.text}} </p>
+                <p> {{el.finished}} </p>
+               </li>
+            {% endfor %}
+        </ul>
+        <script>
+            let client_id = Date.now()
+            let ws = new WebSocket(`ws://localhost:8000/todolist/ws/${client_id}`);
+            ws.onmessage = function(event){
+                let comments = document.getElementById('comments');
+                let comment = document.createElement('li');
+                let jsonObj = JSON.parse(event.data.toString());
+                console.log(jsonObj);
+                console.log(Object.keys(jsonObj));
+                console.log(Object.values(jsonObj));
+                let authorNode = document.createElement('h3');
+                authorNode.innerHTML = jsonObj['id'];
+                console.log(authorNode);
+                let contentNode = document.createElement('p');
+                contentNode.innerHTML = jsonObj['text'];
+                console.log(authorNode);
+                comment.appendChild(authorNode);
+                comment.appendChild(contentNode);
+                comments.appendChild(comment);
+            };
+            function addComment(event) {
+                let id = parseInt(document.getElementById('author').value);
+                let text = document.getElementById('content').value;
+                ws.send(JSON.stringify({"id": id, "text": text}));
+                event.preventDefault();
+                {#var author = document.getElementById("author")#}
+                {#var content = document.getElementById("content")#}
+                {#ws.send(JSON.stringify({"id": author.value, "text": content.value}))#}
+                {#author.value = ''#}
+                {#content.value = ''#}
+                {#event.preventDefault()#}
+            }
+        </script>
+    </body>
+</html>
