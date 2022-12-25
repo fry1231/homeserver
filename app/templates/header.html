@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+{#    <meta name="apple-mobile-web-app-capable" content="yes">#}
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;">
 {#    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">#}
     <title>HomeServer</title>
     <script src="https://pamplin-cdn.azureedge.net/website_assets/all_local_assets/utility_2020.js" crossorigin="anonymous"></script>
@@ -63,31 +64,6 @@
             console.log(event)
         }
     }
-    {#function completedTask(el){#}
-    {#    return `#}
-    {#        <li class="completed">#}
-    {#            <div class="form-check">#}
-    {#                <label class="form-check-label">#}
-    {#                    <input id="a${el.id}" class="checkbox" type="checkbox" checked="">${el.text}#}
-    {#                    <i class="input-helper"></i>#}
-    {#                </label>#}
-    {#            </div>#}
-    {#            <i id="${el.id}" class="remove mdi mdi-close-circle-outline"</i>#}
-    {#        </li>#}
-    {#    `#}
-
-    {#    function uncompletedTask(el){#}
-    {#    return `#}
-    {#        <li>#}
-    {#            <div class="form-check">#}
-    {#                <label class="form-check-label">#}
-    {#                    <input id="a${el.id}" class="checkbox" type="checkbox">${el.text}#}
-    {#                    <i class="input-helper"></i>#}
-    {#                </label>#}
-    {#            </div>#}
-    {#            <i id="${el.id}" class="remove mdi mdi-close-circle-outline"></i>#}
-    {#        </li>#}
-    {#    `#}
 
     function completedTask(el){
         return `<li class="completed"><div class="form-check"><label class="form-check-label"><input id="a${el.id}" class="checkbox" type="checkbox" checked="">${el.text}<i class="input-helper"></i></label></div><i id="${el.id}" class="remove mdi mdi-close-circle-outline"</i></li>`
