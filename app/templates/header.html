@@ -53,7 +53,7 @@
         if (`{{ getenv("DOMAIN") }}`=="localhost")
             prefix = "ws";
         else
-            prefix = "wss";
+            prefix = "ws";
         ws = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/tasks/ws/${client_id}`);
         alert(ws)
         ws.onopen = function(event){
