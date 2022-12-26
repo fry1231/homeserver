@@ -60,6 +60,7 @@ async def tasks_to_redis():
     tasks_jsonified = [task.dict() for task in tasks]
     data = redis_connection.get('data')
     if data is not None:
+        data = orjson.loads(data)
         data['tasks'] = tasks_jsonified
         redis_connection.set('data', orjson.dumps(data))
 
@@ -73,7 +74,7 @@ async def get_tasks():
 @router.post('/add', response_model=Task)
 async def add_task(task: Task):
     await task.save()
-    tasks_to_redis()
+    await tasks_to_redis()
     return task
 
 
@@ -83,7 +84,7 @@ async def change_state(task_id: int,
     task = await Task.objects.get(pk=task_id)
     task.finished = is_finished
     res = await task.update()
-    tasks_to_redis()
+    await tasks_to_redis()
     return res
 
 
@@ -92,7 +93,7 @@ async def delete_task(task_id: int):
     try:
         item_db = await Task.objects.get(pk=task_id)
         deleted_rows = await item_db.delete()
-        tasks_to_redis()
+        await tasks_to_redis()
         return {"deleted_rows": deleted_rows}
     except NoMatch:
         raise HTTPException(status_code=404, detail=f"Task with id={task_id} not found")

@@ -16,4 +16,4 @@ logger.setLevel(os.getenv("LOG_LEVEL"))
 # uvicorn_logger = logging.getLogger('uvicorn')
 # uvicorn_logger.removeHandler(uvicorn_logger.handlers[0])
 
-redis_connection = redis.Redis(host=os.getenv("REDIS_HOST"), port=6379, db=0, decode_responses=True)
+redis_connection = redis.Redis(host=os.getenv("REDIS_HOST"), port=6379, db=0)

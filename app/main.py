@@ -27,7 +27,7 @@ async def master_refresh():
         res = redis_connection.get('data')
         if res is None:
             return RefreshResponse()
-        return RefreshResponse(**res)
+        return RefreshResponse(**orjson.loads(res))
     except:
         logger.error(f"Redis data is {res}")
         logger.error(traceback.format_exc())

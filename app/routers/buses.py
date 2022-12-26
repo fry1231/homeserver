@@ -116,7 +116,8 @@ async def retrieve_arrivals():
             to_defense=show_data_defense,
             to_rer=show_data_rer
         )
-        data = redis_connection.get('data')
+        data = orjson.loads(redis_connection.get('data'))
+        logger.debug(f"redis data is {data}")
         if data is None:
             logger.debug('Data from redis is None, skipping update buses')
         else:
