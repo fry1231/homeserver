@@ -203,21 +203,17 @@
         fetch("/refresh", params)
             .then((response) => response.json())
             .then((data) => {
-                console.log(data);
                 if (data['buses']){
-                    console.log("updating buses");
                     addBuses(data['buses']);
+                    calctime();
                 }
-
                 if (data['tasks']){
-                    console.log("updating tasks");
                     addTasks(data['tasks']);
                 }
-
             });
     }
 
-    setInterval(calctime, 1000);
+    {#setInterval(calctime, 1000);#}
     setInterval(refreshMaster, 1000);
 </script>
 
