@@ -226,7 +226,7 @@
         fetch("/calendar", params)
             .then((response) => response.text())
             .then((data) => {
-                document.getElementById('calendar').innerText = data;
+                document.getElementById('calendar').innerHTML = data;
             })
     }
 
