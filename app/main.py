@@ -23,10 +23,14 @@ ws_manager = tasks.manager
 
 @app.get('/refresh')
 async def master_refresh():
-    res = redis_connection.get('data')
-    if res is None:
-        return RefreshResponse()
-    return RefreshResponse(**res)
+    try:
+        res = redis_connection.get('data')
+        if res is None:
+            return RefreshResponse()
+        return RefreshResponse(**res)
+    except:
+        logger.error(f"Redis data is {res}")
+        logger.error(traceback.format_exc())
 
 
 @app.get("/")
