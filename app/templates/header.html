@@ -202,11 +202,18 @@
         };
         fetch("/refresh", params)
             .then((response) => response.json())
-            .then((data) => function() {
-                if (data['buses'])
+            .then((data) => {
+                console.log(data);
+                if (data['buses']){
+                    console.log("updating buses");
                     addBuses(data['buses']);
-                if (data['tasks'])
+                }
+
+                if (data['tasks']){
+                    console.log("updating tasks");
                     addTasks(data['tasks']);
+                }
+
             });
     }
 
