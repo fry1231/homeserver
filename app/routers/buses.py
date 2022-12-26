@@ -85,33 +85,34 @@ async def retrieve_arrivals():
             ]
         else:
             logger.debug("Entered retrieve_arrivals")
-            async with AsyncClient() as session:
-                try:
+            data = []
+            try:
+                async with AsyncClient() as session:
                     url = 'https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=STIF:StopArea:SP:50973:'
                     headers = {'Accept': 'application/json', 'apikey': os.getenv("IDF_TOKEN")}
                     response = await session.get(url=url, headers=headers)
                     data = response.json()
                     logger.debug("got arrivals data")
-                except:
                     logger.error(traceback.format_exc())
 
-            req_time = data['Siri']['ServiceDelivery']['ResponseTimestamp']
-            departures = data['Siri']['ServiceDelivery']['StopMonitoringDelivery'][0]['MonitoredStopVisit']
-            for departure in departures:
-                d = {}
-                d['destination'] = departure['MonitoredVehicleJourney']['DestinationName'][0]['value']
-                d['etd'] = departure['MonitoredVehicleJourney']['MonitoredCall']['ExpectedDepartureTime']
-                d['route'] = departure['MonitoredVehicleJourney']['OperatorRef']['value'].split('.')[-1].replace(':', '')
+                departures = data['Siri']['ServiceDelivery']['StopMonitoringDelivery'][0]['MonitoredStopVisit']
+                for departure in departures:
+                    d = {}
+                    d['destination'] = departure['MonitoredVehicleJourney']['DestinationName'][0]['value']
+                    d['etd'] = departure['MonitoredVehicleJourney']['MonitoredCall']['ExpectedDepartureTime']
+                    d['route'] = departure['MonitoredVehicleJourney']['OperatorRef']['value'].split('.')[-1].replace(':', '')
 
-                d = BusArrival(**d)
-                if '2267' in departure['MonitoringRef']['value']:
-                    show_data_rer.append(d)
-                else:
-                    show_data_defense.append(d)
+                    d = BusArrival(**d)
+                    if '2267' in departure['MonitoringRef']['value']:
+                        show_data_rer.append(d)
+                    else:
+                        show_data_defense.append(d)
 
-            show_data_rer.sort(key=lambda el: datetime.strptime(el.etd, '%Y-%m-%dT%H:%M:%S.%fZ'))
-            show_data_defense.sort(key=lambda el: datetime.strptime(el.etd, '%Y-%m-%dT%H:%M:%S.%fZ'))
-
+                show_data_rer.sort(key=lambda el: datetime.strptime(el.etd, '%Y-%m-%dT%H:%M:%S.%fZ'))
+                show_data_defense.sort(key=lambda el: datetime.strptime(el.etd, '%Y-%m-%dT%H:%M:%S.%fZ'))
+            except:
+                logger.error(traceback.format_exc())
+                logger.error(f"IDF data is {data}")
         res = BusResponse(
             to_defense=show_data_defense,
             to_rer=show_data_rer
