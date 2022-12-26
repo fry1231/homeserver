@@ -46,7 +46,7 @@ async def trigger():
 @app.on_event("startup")
 async def startup():
     try:
-        logger.debug(f"Ping redis successful: {await redis_connection.ping()}")
+        # logger.debug(f"Ping redis successful: {await redis_connection.ping()}")
 
         loop = asyncio.get_event_loop()
         loop.create_task(buses.retrieve_arrivals())
