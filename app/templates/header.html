@@ -48,27 +48,26 @@
     }
     window.onload = function () {
         addEvents();
-        let client_id = Date.now()
-        let prefix = "";
-        if (`{{ getenv("DOMAIN") }}`=="localhost")
-            prefix = "ws";
-        else
-            prefix = "ws";
-        ws = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/tasks/ws/${client_id}`);
-        alert(ws)
-        ws.onopen = function(event){
-            addTasks(event);
-            alert("opened")
-        };
-        ws.onmessage = function(event){
-            addTasks(event);
-            alert("recieved task message")
-        };
-        wsB = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/buses/ws/${client_id}`);
-        wsB.onmessage = function (event) {
-            addBuses(event);
-            console.log(event)
-        }
+        {#let client_id = Date.now()#}
+        {#let prefix = "";#}
+        {#if (`{{ getenv("DOMAIN") }}`=="localhost")#}
+        {#    prefix = "ws";#}
+        {#else#}
+        {#    prefix = "wss";#}
+        {#ws = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/tasks/ws/${client_id}`);#}
+        {#ws.onopen = function(event){#}
+        {#    addTasks(event);#}
+        {#    alert("opened")#}
+        {# }; #}
+        {#ws.onmessage = function(event){#}
+        {#    addTasks(event);#}
+        {#    alert("recieved task message")#}
+        {# }; #}
+        {#wsB = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/buses/ws/${client_id}`);#}
+        {#wsB.onmessage = function (event) {#}
+        {#    addBuses(event);#}
+        {#    console.log(event)#}
+        {# } #}
     }
 
     function completedTask(el){
@@ -78,10 +77,7 @@
         return `<li><div class="form-check"><label class="form-check-label"><input id="a${el.id}" class="checkbox" type="checkbox">${el.text}<i class="input-helper"></i></label></div><i id="${el.id}" class="remove mdi mdi-close-circle-outline"></i></li>`
     }
 
-    function addTasks(event){
-        if (event.data === undefined)
-            return;
-        let taskList = JSON.parse(event.data);
+    function addTasks(taskList){
         let htmlToAdd = "";
         let tasksArr = [];
         for (const el of taskList) {
@@ -145,13 +141,9 @@
         ws.send(JSON.stringify({"command": "trigger"}))
     }
 
-    function addBuses(event) {
-        if (event.data === undefined)
-            return;
-        let data = JSON.parse(event.data);
+    function addBuses(data) {
         let toDefense = data['to_defense'];
         let toRER = Array.from(data['to_rer']);
-        let time = Array.from(data['refresh_time']);
         let htmlDefense = arrivalsBus(toDefense);
         let htmlRER = arrivalsBus(toRER);
 
@@ -193,11 +185,7 @@
         Array.from(document.getElementsByClassName("timeRemaining")).forEach(function(el) {
             let timestring = el.previousElementSibling.children[0].innerHTML;
             let dateNow = new Date();
-            {#let stringDatetime = dateNow.toISOString().split('T')[0];#}
-            {#stringDatetime += 'T' + timestring;#}
             let etd = new Date(el.previousElementSibling.getAttribute("backupTime"));
-            console.log("etd: "+ etd.toISOString());
-            console.log("now: "+ dateNow.toISOString());
             let rem = etd - dateNow;
             rem = Math.round(rem / 1000);
             let html = "";
@@ -210,7 +198,23 @@
         });
     }
 
+    function refreshMaster() {
+        const params = {
+            headers: {"content-type": "application/json; charset=UTF-8"},
+            method: "GET"
+        };
+        fetch("/refresh", params)
+            .then((response) => response.json())
+            .then((data) => function() {
+                if (data['buses'])
+                    addBuses(data['buses']);
+                if (data['tasks'])
+                    addTasks(data['tasks']);
+            });
+    }
+
     setInterval(calctime, 1000);
+    setInterval(refreshMaster, 1000);
 </script>
 
 <body>

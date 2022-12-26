@@ -1,18 +1,15 @@
 from config_init import templates, redis_connection, logger
 import uvicorn
 from fastapi import FastAPI, Request
-# from fastapi.requests import Request
-from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from db.database import Task
 from typing import List, Dict, Any
 from routers import tasks, users, buses
-from db.database import database
-import redis.asyncio as redis
+from db.database import database, RefreshResponse, Task
 import os
 import asyncio
 from utils import get_events
 import traceback
+import orjson
 
 
 app = FastAPI()
@@ -24,6 +21,14 @@ app.include_router(buses.router)
 ws_manager = tasks.manager
 
 
+@app.get('/refresh')
+async def master_refresh():
+    res = redis_connection.get('data')
+    if res is None:
+        return RefreshResponse()
+    return RefreshResponse(**res)
+
+
 @app.get("/")
 async def index(request: Request):
     try:
@@ -32,6 +37,7 @@ async def index(request: Request):
     except:
         logger.error(traceback.format_exc())
 
+
 @app.post("/trigger_tasks_update", status_code=200)
 async def trigger():
     await ws_manager.broadcast()
@@ -39,16 +45,25 @@ async def trigger():
 
 @app.on_event("startup")
 async def startup():
-    logger.debug(f"Ping redis successful: {await redis_connection.ping()}")
+    try:
+        logger.debug(f"Ping redis successful: {await redis_connection.ping()}")
 
-    loop2 = asyncio.get_event_loop()
-    loop2.create_task(buses.retrieve_arrivals())
+        loop = asyncio.get_event_loop()
+        loop.create_task(buses.retrieve_arrivals())
 
-    loop3 = asyncio.get_event_loop()
-    loop3.create_task(buses.publisher())
+        tasks_ = await Task.objects.all()
+        data = redis_connection.get('data')
+        if data is None:
+            tasks_jsonified = [task.dict() for task in tasks_]
+            redis_connection.set('data', orjson.dumps(RefreshResponse(buses=None, tasks=tasks_jsonified).dict()))
+            logger.info('Initial data set on redis')
+        # loop3 = asyncio.get_event_loop()
+        # loop3.create_task(buses.publisher())
 
-    if not database.is_connected:
-        await database.connect()
+        if not database.is_connected:
+            await database.connect()
+    except:
+        logger.error(traceback.format_exc())
 
 
 @app.on_event("shutdown")

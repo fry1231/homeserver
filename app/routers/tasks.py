@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect, HTTPException
 from db.database import Task, User
 from typing import List
-from config_init import logger
+from config_init import logger, redis_connection
 from ormar.exceptions import NoMatch
 import orjson
 
@@ -55,6 +55,15 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
         manager.disconnect(websocket)
 
 
+def tasks_to_redis():
+    tasks: List[Task] = await Task.objects.all()
+    tasks_jsonified = [task.dict() for task in tasks]
+    data = redis_connection.get('data')
+    if data is not None:
+        data['tasks'] = tasks_jsonified
+        redis_connection.set('data', orjson.dumps(data))
+
+
 @router.get('/', response_model=List[Task])
 async def get_tasks():
     tasks = await Task.objects.all()
@@ -64,6 +73,7 @@ async def get_tasks():
 @router.post('/add', response_model=Task)
 async def add_task(task: Task):
     await task.save()
+    tasks_to_redis()
     return task
 
 
@@ -72,13 +82,17 @@ async def change_state(task_id: int,
                        is_finished: bool):
     task = await Task.objects.get(pk=task_id)
     task.finished = is_finished
-    return await task.update()
+    res = await task.update()
+    tasks_to_redis()
+    return res
 
 
 @router.delete("/delete/{task_id}")
 async def delete_task(task_id: int):
     try:
         item_db = await Task.objects.get(pk=task_id)
-        return {"deleted_rows": await item_db.delete()}
+        deleted_rows = await item_db.delete()
+        tasks_to_redis()
+        return {"deleted_rows": deleted_rows}
     except NoMatch:
         raise HTTPException(status_code=404, detail=f"Task with id={task_id} not found")

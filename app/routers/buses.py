@@ -29,7 +29,6 @@ class BusArrival(BaseModel):
 
 
 class BusResponse(BaseModel):
-    refresh_time: datetime
     to_defense: List[BusArrival]
     to_rer: List[BusArrival]
 
@@ -76,7 +75,7 @@ async def retrieve_arrivals():
         current_hour = datetime.now().astimezone(pytz.timezone('Europe/Paris')).hour
         if (1 <= current_hour <= 4) and os.getenv("LOG_LEVEL") != "DEBUG":
             res = {
-                "refresh_time": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                # "refresh_time": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                 "to_defense": [{
                     "route": "69",
                     "destination": "Время спать, куда ехать собрались?",
@@ -117,12 +116,17 @@ async def retrieve_arrivals():
             show_data_defense.sort(key=lambda el: datetime.strptime(el.etd, '%Y-%m-%dT%H:%M:%S.%fZ'))
 
             res = BusResponse(
-                refresh_time=req_time,
+                # refresh_time=req_time,
                 to_defense=show_data_defense,
                 to_rer=show_data_rer
             )
-            await redis_connection.publish('buses', orjson.dumps(res.dict()).decode('utf8'))
-            logger.debug("Published bus arrivals to redis")
+            data = redis_connection.get('data')
+            if data is None:
+                logger.debug('Data from redis is None, skipping update buses')
+            else:
+                data['buses'] = res.dict()
+                redis_connection.set('data', orjson.dumps(data))
+                logger.debug("Published bus arrivals to redis")
         await asyncio.sleep(int(os.getenv("BUSES_REFRESH_TIME")))
 
 
