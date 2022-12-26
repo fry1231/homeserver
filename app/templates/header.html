@@ -48,23 +48,23 @@
     }
     window.onload = function () {
         addEvents();
-        let client_id = Date.now()
-        let prefix = "";
-        if (`{{ getenv("DOMAIN") }}`=="localhost")
-            prefix = "ws";
-        else
-            prefix = "wss";
-        ws = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/tasks/ws/${client_id}`);
-        ws.onopen = function(event){
-            {#addTasks(event);#}
-         };
-        ws.onmessage = function(event){
-            {#addTasks(event);#}
-         };
-        wsB = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/buses/ws/${client_id}`);
-        wsB.onmessage = function (event) {
-            {#addBuses(event);#}
-         }
+        {#let client_id = Date.now()#}
+        {#let prefix = "";#}
+        {#if (`{{ getenv("DOMAIN") }}`=="localhost")#}
+        {#    prefix = "ws";#}
+        {#else#}
+        {#    prefix = "wss";#}
+        {#ws = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/tasks/ws/${client_id}`);#}
+        {#ws.onopen = function(event){#}
+        {#    addTasks(event);#}
+        {# };#}
+        {#ws.onmessage = function(event){#}
+        {#    addTasks(event);#}
+        {# };#}
+        {#wsB = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/buses/ws/${client_id}`);#}
+        {#wsB.onmessage = function (event) {#}
+        {#    addBuses(event);#}
+        {# }#}
     }
 
     function completedTask(el){
@@ -185,14 +185,16 @@
 
     function calctime() {
         Array.from(document.getElementsByClassName("timeRemaining")).forEach(function(el) {
-            let timestring = el.previousElementSibling.children[0].innerHTML;
             let dateNow = new Date();
             let etd = new Date(el.previousElementSibling.getAttribute("backupTime"));
             let rem = etd - dateNow;
             rem = Math.round(rem / 1000);
             let html = "";
             if (rem < 3600)
-                html += new Date(rem * 1000).toISOString().substring(14, 19)
+                if (rem < 0)
+                    html += 'Missed';
+                else
+                    html += new Date(rem * 1000).toISOString().substring(14, 19)
             else
                 html += new Date(rem * 1000).toISOString().substring(11, 16)
 
@@ -215,7 +217,7 @@
                 if (data['tasks']){
                     addTasks(data['tasks']);
                 }
-            });
+            })
     }
 
     function refreshCalendar() {
@@ -230,7 +232,7 @@
             })
     }
 
-    {#setInterval(calctime, 1000);#}
+    setInterval(calctime, 1000 * 60);
     setInterval(refreshMaster, 2000);
     setInterval(refreshCalendar, 1000 * 60 * 10);
 </script>
