@@ -68,10 +68,10 @@
     }
 
     function completedTask(el){
-        return `<li class="completed"><div class="form-check"><label class="form-check-label"><input id="a${el.id}" class="checkbox" type="checkbox" checked="">${el.text}<i class="input-helper"></i></label></div><i id="${el.id}" class="remove mdi mdi-close-circle-outline"</i></li>`
+        return `<li class="completed"><div class="form-check"><label class="form-check-label"><input id="a${el.id}" class="" type="">${el.text}<i class="input-helper"></i></label></div><i id="${el.id}" class="remove mdi mdi-close-circle-outline"</i></li>`
     }
     function uncompletedTask(el){
-        return `<li><div class="form-check"><label class="form-check-label"><input id="a${el.id}" class="checkbox" type="checkbox">${el.text}<i class="input-helper"></i></label></div><i id="${el.id}" class="remove mdi mdi-close-circle-outline"></i></li>`
+        return `<li><div class="form-check"><label class="form-check-label"><input id="a${el.id}" class="" type="">${el.text}<i class="input-helper"></i></label></div><i id="${el.id}" class="remove mdi mdi-close-circle-outline"></i></li>`
     }
 
     function addTasks(taskList){
@@ -160,7 +160,11 @@
                 badgeClass = 'badge-secondary';
 
             let etd = new Date(el['etd']);
-            html += `
+            let dateNow = new Date();
+            if ((dateNow - etd) > 0)
+                html += ''
+            else {
+                html += `
                 <div class="col-1">
                     <span class="badge ${badgeClass}">${el['route']}</span>
                 </div>
@@ -174,6 +178,7 @@
                     <p></p>
                 </div>
             `;
+            }
         }
         return html;
     }
@@ -213,8 +218,21 @@
             });
     }
 
+    function refreshCalendar() {
+        const params = {
+            headers: {"content-type": "application/json; charset=UTF-8"},
+            method: "GET"
+        };
+        fetch("/calendar", params)
+            .then((response) => response.text())
+            .then((data) => {
+                document.getElementById('calendar').innerText = data;
+            })
+    }
+
     {#setInterval(calctime, 1000);#}
-    setInterval(refreshMaster, 1000);
+    setInterval(refreshMaster, 2000);
+    setInterval(refreshCalendar, 1000 * 60 * 10);
 </script>
 
 <body>

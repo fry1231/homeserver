@@ -3,7 +3,7 @@ import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from typing import List, Dict, Any
-from routers import tasks, users, buses
+from routers import tasks, users, buses, calendar
 from db.database import database, RefreshResponse, Task
 import os
 import asyncio
@@ -17,6 +17,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(tasks.router)
 app.include_router(users.router)
 app.include_router(buses.router)
+app.include_router(calendar.router)
 
 ws_manager = tasks.manager
 
@@ -63,10 +64,6 @@ async def startup():
             tasks_jsonified = [task.dict() for task in tasks_]
             redis_connection.set('data', orjson.dumps(RefreshResponse(buses=None, tasks=tasks_jsonified).dict()))
             logger.info('Initial data set on redis')
-        # loop3 = asyncio.get_event_loop()
-        # loop3.create_task(buses.publisher())
-
-
     except:
         logger.error(traceback.format_exc())
 
