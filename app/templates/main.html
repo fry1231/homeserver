@@ -4,8 +4,8 @@
     <div class="row">
         {#        col1#}
         <div class="col-8">
-            <div class="row">
-                <div class="col rounded p-3">
+            <div class="row align-items-center justify-content-center">
+                <div class="col d-flex justify-content-end rounded p-3">
                     {% include 'clock.html' %}
                 </div>
                 <div class="col rounded p-3">
@@ -17,24 +17,24 @@
                     {% include 'calendar.html' %}
                 {% endwith %}
             </div>
-            <div class="row element rounded m-3">
+            <div class="row element rounded m-3 p-3">
                 {% include 'buses.html' %}
             </div>
         </div>
 
 {#        col2#}
         <div class="col-4">
-            <div class="row d-flex align-items-center justify-content-center element rounded-top mt-3">
+            <div class="row d-flex align-items-center justify-content-center rounded-top mt-3">
                 <div style="width: 90%;">
                     {% include 'weather.html' %}
                 </div>
             </div>
-            <div class="row d-flex align-items-center justify-content-center element rounded">
+            <div class="row d-flex align-items-center justify-content-center">
                 <div style="width: 90%;">
                     {% include 'weather_detailed.html' %}
                 </div>
             </div>
-            <div class="row d-flex align-items-center justify-content-center rounded">
+            <div class="row d-flex align-items-center justify-content-center element rounded m-3">
                 {% include "todolist.html" %}
             </div>
         </div>
