@@ -87,13 +87,10 @@ async def retrieve_arrivals():
             logger.debug("Entered retrieve_arrivals")
             data = []
             try:
-                async with AsyncClient() as session:
-                    url = 'https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=STIF:StopArea:SP:50973:'
-                    headers = {'Accept': 'application/json', 'apikey': os.getenv("IDF_TOKEN")}
-                    response = await session.get(url=url, headers=headers)
-                    data = response.json()
-                    logger.debug("got arrivals data")
-                    logger.error(traceback.format_exc())
+                url = 'https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=STIF:StopArea:SP:50973:'
+                headers = {'Accept': 'application/json', 'apikey': os.getenv("IDF_TOKEN")}
+                response = requests.get(url=url, headers=headers)
+                data = response.json()
 
                 departures = data['Siri']['ServiceDelivery']['StopMonitoringDelivery'][0]['MonitoredStopVisit']
                 for departure in departures:
