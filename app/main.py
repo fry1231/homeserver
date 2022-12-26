@@ -47,6 +47,8 @@ async def trigger():
 async def startup():
     try:
         # logger.debug(f"Ping redis successful: {await redis_connection.ping()}")
+        if not database.is_connected:
+            await database.connect()
 
         loop = asyncio.get_event_loop()
         loop.create_task(buses.retrieve_arrivals())
@@ -60,8 +62,7 @@ async def startup():
         # loop3 = asyncio.get_event_loop()
         # loop3.create_task(buses.publisher())
 
-        if not database.is_connected:
-            await database.connect()
+
     except:
         logger.error(traceback.format_exc())
 

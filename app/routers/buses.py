@@ -71,19 +71,18 @@ async def retrieve_arrivals():
     Get bus arrivals, save data to redis 'buses' channel
     """
     while True:
+        show_data_rer = []
+        show_data_defense = []
         # Disable update during night hours
         current_hour = datetime.now().astimezone(pytz.timezone('Europe/Paris')).hour
         if (1 <= current_hour <= 4) and os.getenv("LOG_LEVEL") != "DEBUG":
-            res = {
-                # "refresh_time": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-                "to_defense": [{
+            show_data_defense = [
+                {
                     "route": "69",
                     "destination": "Время спать, куда ехать собрались?",
                     "etd": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-                }],
-                "to_rer": []
-            }
-            await redis_connection.publish('buses', orjson.dumps(res).decode('utf8'))
+                }
+            ]
         else:
             logger.debug("Entered retrieve_arrivals")
             async with AsyncClient() as session:
@@ -98,8 +97,6 @@ async def retrieve_arrivals():
 
             req_time = data['Siri']['ServiceDelivery']['ResponseTimestamp']
             departures = data['Siri']['ServiceDelivery']['StopMonitoringDelivery'][0]['MonitoredStopVisit']
-            show_data_rer = []
-            show_data_defense = []
             for departure in departures:
                 d = {}
                 d['destination'] = departure['MonitoredVehicleJourney']['DestinationName'][0]['value']
@@ -115,18 +112,17 @@ async def retrieve_arrivals():
             show_data_rer.sort(key=lambda el: datetime.strptime(el.etd, '%Y-%m-%dT%H:%M:%S.%fZ'))
             show_data_defense.sort(key=lambda el: datetime.strptime(el.etd, '%Y-%m-%dT%H:%M:%S.%fZ'))
 
-            res = BusResponse(
-                # refresh_time=req_time,
-                to_defense=show_data_defense,
-                to_rer=show_data_rer
-            )
-            data = redis_connection.get('data')
-            if data is None:
-                logger.debug('Data from redis is None, skipping update buses')
-            else:
-                data['buses'] = res.dict()
-                redis_connection.set('data', orjson.dumps(data))
-                logger.debug("Published bus arrivals to redis")
+        res = BusResponse(
+            to_defense=show_data_defense,
+            to_rer=show_data_rer
+        )
+        data = redis_connection.get('data')
+        if data is None:
+            logger.debug('Data from redis is None, skipping update buses')
+        else:
+            data['buses'] = res.dict()
+            redis_connection.set('data', orjson.dumps(data))
+            logger.debug("Published bus arrivals to redis")
         await asyncio.sleep(int(os.getenv("BUSES_REFRESH_TIME")))
 
 
