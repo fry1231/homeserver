@@ -48,26 +48,23 @@
     }
     window.onload = function () {
         addEvents();
-        {#let client_id = Date.now()#}
-        {#let prefix = "";#}
-        {#if (`{{ getenv("DOMAIN") }}`=="localhost")#}
-        {#    prefix = "ws";#}
-        {#else#}
-        {#    prefix = "wss";#}
-        {#ws = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/tasks/ws/${client_id}`);#}
-        {#ws.onopen = function(event){#}
-        {#    addTasks(event);#}
-        {#    alert("opened")#}
-        {# }; #}
-        {#ws.onmessage = function(event){#}
-        {#    addTasks(event);#}
-        {#    alert("recieved task message")#}
-        {# }; #}
-        {#wsB = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/buses/ws/${client_id}`);#}
-        {#wsB.onmessage = function (event) {#}
-        {#    addBuses(event);#}
-        {#    console.log(event)#}
-        {# } #}
+        let client_id = Date.now()
+        let prefix = "";
+        if (`{{ getenv("DOMAIN") }}`=="localhost")
+            prefix = "ws";
+        else
+            prefix = "wss";
+        ws = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/tasks/ws/${client_id}`);
+        ws.onopen = function(event){
+            {#addTasks(event);#}
+         };
+        ws.onmessage = function(event){
+            {#addTasks(event);#}
+         };
+        wsB = new WebSocket(`${prefix}://homescreen.{{ getenv("DOMAIN") }}/buses/ws/${client_id}`);
+        wsB.onmessage = function (event) {
+            {#addBuses(event);#}
+         }
     }
 
     function completedTask(el){

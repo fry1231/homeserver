@@ -55,7 +55,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
         manager.disconnect(websocket)
 
 
-def tasks_to_redis():
+async def tasks_to_redis():
     tasks: List[Task] = await Task.objects.all()
     tasks_jsonified = [task.dict() for task in tasks]
     data = redis_connection.get('data')
