@@ -18,9 +18,9 @@ async def add_calendar(message: types.Message):
 @require_auth
 async def process_cal(message: types.Message):
     user_id = message.from_user.id
-    async with io.BytesIO() as buf:
-        await message.document.download(destination_file=buf)
-        buf.seek(0)
+    buf = io.BytesIO()
+    await message.document.download(destination_file=buf)
+    buf.seek(0)
     if crud.add_calendar(buf, f'calendar_{user_id}.ics'):
         await message.reply('Успешно загружено!')
     else:
