@@ -1,5 +1,6 @@
 import requests as req
 from typing import List
+import io
 
 
 homescreen_url = 'http://homescreen:8000'
@@ -52,9 +53,10 @@ def delete_task(task_id: int) -> bool:
     return False
 
 
-def add_calendar(file, filename) -> bool:
-    response = req.post(f'{homescreen_url}/calendar/upload/{filename}', data=file, verify=False)
+def add_calendar(file: io.BytesIO, filename: str) -> bool:
+    response = req.post(f'{homescreen_url}/calendar/upload',
+                        files={'file': (filename, file)})
     if response.status_code != 200:
-        print(response)
+        print(response.json())
         return False
     return True

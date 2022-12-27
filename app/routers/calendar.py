@@ -20,12 +20,11 @@ async def get_users(request: Request):
     })
 
 
-@router.post('/upload/{filename}')
-async def update_cal(filename: str, file: UploadFile = File(...)):
+@router.post('/upload')
+async def update_cal(file: UploadFile):
     try:
-        contents = file.file.read()
-        with open(filename, 'wb') as f:
-            f.write(contents)
+        with open(file.filename, 'wb') as f:
+            f.write(await file.read())
     except Exception:
         logger.error(f"Error handling uploading calendar\n{traceback.format_exc()}")
         raise HTTPException(status_code=400, detail="Wrong file format")
