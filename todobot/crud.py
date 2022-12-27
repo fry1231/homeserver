@@ -55,5 +55,6 @@ def delete_task(task_id: int) -> bool:
 def add_calendar(file, filename) -> bool:
     response = req.post(f'{homescreen_url}/calendar/upload/{filename}', data=file, verify=False)
     if response.status_code != 200:
+        print(response)
         return False
     return True
