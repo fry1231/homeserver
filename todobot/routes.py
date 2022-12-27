@@ -1,7 +1,7 @@
 from aiogram import types
 from os import getenv
 
-from fsm_forms import *
+from additional_routes import *
 from bot import dp, bot
 from utils import notify_me
 from crud import user_validated, add_trusted_user
@@ -13,7 +13,7 @@ async def send_welcome(message: types.Message):
     Greet user, print telegram_id in reply
     """
     user_id = message.from_user.id
-    if not user_validated(user_id):
+    if not (validated := user_validated(user_id)):
         first_name = message.from_user.first_name
         user_name = message.from_user.username
         await notify_me(f'--notification\n'
@@ -25,9 +25,10 @@ async def send_welcome(message: types.Message):
     Список доступных комманд:
     🔘 /add_task - добавить задачу
     🔘 /delete_task - удалить задачу
-    
-    Для продолжения необходимо ввести пароль
+    🔘 /delete_task - удалить задачу
     """
+    if not validated:
+        text += '\nДля продолжения необходимо ввести пароль'
     await message.reply(text)
 
 
@@ -61,3 +62,4 @@ async def handle_other(message: types.Message):
                         f'{message.text}\n\n'
                         f'user_id={message.from_user.id}\n'
                         f'message_id={message.message_id}')
+        await message.reply("Доступ запрещён, введите пароль:")

@@ -14,7 +14,6 @@ async def on_startup(_):
     await notify_me('Bot restarted')
     await bot.set_my_commands([
         types.bot_command.BotCommand('add_task', 'новая задача'),
-        types.bot_command.BotCommand('change_state', 'выполнить задачу'),
         types.bot_command.BotCommand('delete_task', 'удалить задачу'),
     ])
 

@@ -50,3 +50,10 @@ def delete_task(task_id: int) -> bool:
     if res.status_code == 200:
         return True
     return False
+
+
+def add_calendar(file, filename) -> bool:
+    response = req.post(f'{homescreen_url}/calendar/upload/{filename}', data=file, verify=False)
+    if response.status_code != 200:
+        return False
+    return True
