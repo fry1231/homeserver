@@ -21,7 +21,7 @@ body{background-color: #f9f9fa}
     flex-direction: column;
     min-width: 0;
     word-wrap: break-word;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
     background-clip: border-box;
     /*border: 1px solid #d2d2dc;*/
     /*border-radius: 0*/
