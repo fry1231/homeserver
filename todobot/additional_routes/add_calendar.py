@@ -23,7 +23,6 @@ async def process_cal(message: types.Message):
         await message.reply('Расширение файла должно быть .ics')
     else:
         await message.document.download(destination_file=buf)
-        buf.seek(0)
         if crud.add_calendar(buf, f'calendar_{user_id}.ics'):
             await message.reply('Успешно загружено!')
         else:
