@@ -15,6 +15,7 @@ async def on_startup(_):
     await bot.set_my_commands([
         types.bot_command.BotCommand('add_task', 'новая задача'),
         types.bot_command.BotCommand('delete_task', 'удалить задачу'),
+        types.bot_command.BotCommand('add_calendar', 'добавить календарь'),
     ])
 
 
