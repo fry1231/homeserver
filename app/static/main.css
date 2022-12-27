@@ -52,10 +52,10 @@ body{background-color: #f9f9fa}
 .list-wrapper{height: 100%;max-height: 100%}
 .add-items{margin-bottom: 1.5rem;overflow: hidden}
 .add-items input[type="text"]{
-    /*border-top-right-radius: 0;*/
-    /*border-bottom-right-radius: 0;*/
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
     width: 100%;
-    background: rgba(0, 62, 255, 0.12);
+    background: rgba(255, 255, 255, 0.1);
 }
 .add-items .btn, .add-items .fc button, .fc .add-items button, .add-items .ajax-upload-dragdrop .ajax-file-upload, .ajax-upload-dragdrop .add-items .ajax-file-upload, .add-items .swal2-modal .swal2-buttonswrapper .swal2-styled, .swal2-modal .swal2-buttonswrapper .add-items .swal2-styled, .add-items .wizard>.actions a, .wizard>.actions .add-items a{margin-left: .5rem}.rtl .add-items .btn, .rtl .add-items .fc button, .fc .rtl .add-items button, .rtl .add-items .ajax-upload-dragdrop .ajax-file-upload, .ajax-upload-dragdrop .rtl .add-items .ajax-file-upload, .rtl .add-items .swal2-modal .swal2-buttonswrapper .swal2-styled, .swal2-modal .swal2-buttonswrapper .rtl .add-items .swal2-styled, .rtl .add-items .wizard>.actions a, .wizard>.actions .rtl .add-items a{margin-left: auto;margin-right: .5rem}.list-wrapper{height: 100%;max-height: 100%}.list-wrapper ul{padding: 0;text-align: left;list-style: none;margin-bottom: 0}.list-wrapper ul li{font-size: .9375rem;padding: .4rem 0;border-bottom: 1px solid #f3f3f3
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              }
