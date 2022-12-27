@@ -19,9 +19,12 @@ async def add_calendar(message: types.Message):
 async def process_cal(message: types.Message):
     user_id = message.from_user.id
     buf = io.BytesIO()
-    await message.document.download(destination_file=buf)
-    buf.seek(0)
-    if crud.add_calendar(buf, f'calendar_{user_id}.ics'):
-        await message.reply('Успешно загружено!')
+    if message.document.file_name[-4:] != '.ics':
+        await message.reply('Расширение файла должно быть .ics')
     else:
-        await message.reply('Ошибка при загрузке')
+        await message.document.download(destination_file=buf)
+        buf.seek(0)
+        if crud.add_calendar(buf, f'calendar_{user_id}.ics'):
+            await message.reply('Успешно загружено!')
+        else:
+            await message.reply('Ошибка при загрузке')
