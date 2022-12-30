@@ -20,7 +20,6 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN:?err}`)"
       - "traefik.http.routers.homescreen.entrypoints=web,websecure"
-#      - "traefik.http.routers.homescreen.entrypoints=web"
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
       - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
       - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
