@@ -322,8 +322,8 @@
     }
 
     function refreshWeather() {
-        document.getElementById("weather").innerHTML = {% include 'weather.html' %};
-        document.getElementById("weatherDetailed").innerHTML = {% include 'weather_detailed.html' %};
+        document.getElementById("weather").innerHTML = `{% include 'weather.html' %}`;
+        document.getElementById("weatherDetailed").innerHTML = `{% include 'weather_detailed.html' %}`;
     }
 
     setInterval(calctime, 1000 * 60);
