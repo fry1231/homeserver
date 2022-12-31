@@ -271,17 +271,61 @@
                         mode: 'lines',
                         line: {color: 'orange'}
                     });
+                    tracesTemp.push({
+                        x: time[0],
+                        y: 40,
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {
+                            size: 0
+                        },
+                        textfont: {
+                            color: '#ffffff'
+                        },
+                        text: [temperature[temperature.length - 1]].toString() + '°C',
+                        textposition: 'right'
+                    });
+
                     tracesRelHum.push({
                         x: time,
                         y: rel_humidity,
                         mode: 'lines',
                         line: {color: 'blue'}
                     });
+                    tracesRelHum.push({
+                        x: time[0],
+                        y: 90,
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {
+                            size: 0
+                        },
+                        textfont: {
+                            color: '#ffffff'
+                        },
+                        text: [temperature[temperature.length - 1]].toString() + '%',
+                        textposition: 'right'
+                    });
+
                     tracesAbsHum.push({
                         x: time,
                         y: abs_humidity,
                         mode: 'lines',
                         line: {color: 'grey'}
+                    });
+                    tracesAbsHum.push({
+                        x: time[0],
+                        y: 22,
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {
+                            size: 0
+                        },
+                        text: [temperature[temperature.length - 1]].toString() + 'g/m3',
+                        textfont: {
+                            color: '#ffffff'
+                        },
+                        textposition: 'right'
                     });
                 }
                 let layoutBase = {
