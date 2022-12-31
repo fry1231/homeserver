@@ -23,7 +23,7 @@ services:
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
       - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
       - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
-      - "traefik.http.routers.homescreen_http.rule=Host(`homescreen.${DOMAIN:?err}`)"
+      - "traefik.http.routers.homescreen_http.rule=Host(`unsafe.${DOMAIN:?err}`)"
       - "traefik.http.routers.homescreen_http.entrypoints=web"
 
   todobot:
@@ -61,15 +61,18 @@ services:
 
   influxdb:
     container_name: influx
-    image: influxdb:latest
+    image: influxdb:1.8.10-alpine
     expose:
       - 8086
     volumes:
       - influxdb-storage:/var/lib/influxdb
     environment:
-      - INFLUXDB_DB=db0
-      - INFLUXDB_ADMIN_USER=${INFLUXDB_USERNAME:?err}
-      - INFLUXDB_ADMIN_PASSWORD=${INFLUXDB_PASSWORD:?err}
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME:?err}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD:?err}
+      - DOCKER_INFLUXDB_INIT_ORG=influx-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=influx-bucket
+      - DOCKER_INFLUXDB_INIT_RETENTION=7d
 
   redis:
     container_name: redis
