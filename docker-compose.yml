@@ -21,10 +21,11 @@ services:
       - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN:?err}`)"
       - "traefik.http.routers.homescreen.entrypoints=websecure"
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.homescreen-http.rule=Host(`unsafe.${DOMAIN:?err}`)"
-      - "traefik.http.routers.homescreen-http.entrypoints=web"
       - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
       - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
+      - "traefik.http.routers.homescreen-http.rule=Host(`unsafe.${DOMAIN:?err}`)"
+      - "traefik.http.routers.homescreen-http.entrypoints=web"
+      - "traefik.http.routers.homescreen-http.middlewares=homescreen-auth"
 
 
   todobot:
@@ -89,7 +90,7 @@ services:
       - 8080:8080
       - 443:443
     command:
-      - "--log.level=INFO"
+      - "--log.level=DEBUG"
 #      - "--api.insecure=true"
       - "--api.dashboard=true"
       - "--providers.docker=true"
