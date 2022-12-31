@@ -23,7 +23,7 @@ services:
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
       - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
       - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
-      - "traefik.http.routers.homescreen-http.rule=Host(`unsafe.${DOMAIN:?err}`)"
+      - "traefik.http.routers.homescreen-http.rule=Host(`homescreen.${DOMAIN:?err}`)"
       - "traefik.http.routers.homescreen-http.entrypoints=web"
       - "traefik.http.routers.homescreen-http.middlewares=homescreen-auth"
 
