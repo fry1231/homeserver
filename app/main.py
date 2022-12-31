@@ -3,8 +3,11 @@ import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from typing import List, Dict, Any
-from routers import tasks, users, buses, calendar
-from db.database import database, RefreshResponse, Task
+from routers import tasks, users, buses, calendar, ambiance
+from db.database import database, Task
+from pydantic import BaseModel
+from routers.buses import BusResponse
+from pydantic.schema import Optional
 import os
 import asyncio
 from utils import get_events
@@ -18,8 +21,14 @@ app.include_router(tasks.router)
 app.include_router(users.router)
 app.include_router(buses.router)
 app.include_router(calendar.router)
+app.include_router(ambiance.router)
 
 ws_manager = tasks.manager
+
+
+class RefreshResponse(BaseModel):
+    buses: Optional[BusResponse]
+    tasks: Optional[List[Task]]
 
 
 @app.get('/refresh')

@@ -9,7 +9,6 @@ import logging
 import os
 from pydantic import BaseModel
 from pydantic.schema import Optional, List, Dict
-from routers.buses import BusResponse
 
 
 # if 'C:\\WINDOWS\\system32' in os.getenv('path'):  # for running offline migrations
@@ -43,11 +42,6 @@ class User(ormar.Model):
     class Meta(BaseMeta):
         tablename = 'users'
     telegram_id = Integer(primary_key=True)
-
-
-class RefreshResponse(BaseModel):
-    buses: Optional[BusResponse]
-    tasks: Optional[List[Task]]
 
 
 engine = sqlalchemy.create_engine(db_url)

@@ -13,6 +13,8 @@ services:
         condition: service_started
       db:
         condition: service_healthy
+      influxdb:
+        condition: service_started
 #    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn main:app --host 0.0.0.0 --forwarded-allow-ips "*"'
     command: uvicorn main:app --host 0.0.0.0 --forwarded-allow-ips '*' --log-level critical
     expose:
@@ -59,6 +61,21 @@ services:
       retries: 50
       start_period: 30s
 
+  influxdb:
+    container_name: influx
+    image: influxdb:1.8.10-alpine
+    expose:
+      - 8086
+    volumes:
+      - influxdb-storage:/var/lib/influxdb
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME:?err}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD:?err}
+      - DOCKER_INFLUXDB_INIT_ORG=influx-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=influx-bucket
+      - DOCKER_INFLUXDB_INIT_RETENTION=7d
+
   redis:
     container_name: redis
     image: redis:7.0.7
@@ -101,3 +118,4 @@ services:
 volumes:
   postgres_data:
   letsencrypt:
+  influxdb-storage:

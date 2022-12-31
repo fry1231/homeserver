@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta http-equiv="Content-Security-Policy" content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+{#    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">#}
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="cache-control" content="no-cache">
 
@@ -15,6 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootlint/1.1.0/bootlint.min.js"></script>
+    <script src='https://cdn.plot.ly/plotly-2.16.1.min.js'></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&amp;display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -235,9 +236,99 @@
             })
     }
 
+    function refreshCharts() {
+        const params = {
+            headers: {"content-type": "application/json; charset=UTF-8"},
+            method: "GET"
+        };
+        fetch("/ambiance", params)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data);
+                let tracesTemp = [];
+                let tracesRelHum = [];
+                let tracesAbsHum = [];
+                for (let points of data) {
+                    console.log("Points data:");
+                    console.log(points);
+                    let roomName = points['room_name'];
+                    let sensorsData = points['data'];
+                    let time = [];
+                    let temperature = [];
+                    let rel_humidity = [];
+                    let abs_humidity = [];
+                    console.log("Sensors data:");
+                    console.log(sensorsData);
+                    for (let point of sensorsData) {
+                        time.push(point['time']);
+                        let temp = point['temperature'];
+                        temperature.push(temp);
+                        if (point['rel_humidity']) {
+                            let rel_h = point['rel_humidity'];
+                            rel_humidity.push(rel_h);
+                            abs_humidity.push(6.112 * Math.exp(17.67 * temp / (temp + 243.5)) * rel_h * 2.1674 / (273.15 + temp));
+                        }
+                    }
+                    tracesTemp.push({
+                        x: time,
+                        y: temperature,
+                        mode: 'lines',
+                        line: {color: 'orange'}
+                    });
+                    tracesRelHum.push({
+                        x: time,
+                        y: rel_humidity,
+                        mode: 'lines',
+                        line: {color: 'blue'}
+                    });
+                    tracesAbsHum.push({
+                        x: time,
+                        y: abs_humidity,
+                        mode: 'lines',
+                        line: {color: 'grey'}
+                    });
+                }
+                let layoutBase = {
+                    margin: {
+                        t: 10,
+                        l: 50,
+                        b: 15,
+                        r: 10
+                    },
+                    paper_bgcolor: "rgba(0,0,0,0)",
+                    plot_bgcolor: "rgba(0,0,0,0)",
+                };
+                let layoutTemp = {...layoutBase, ...{
+                        yaxis: {range: [0, 45], showgrid: false},
+                        xaxis: {showgrid: false, showticklabels: false}
+                    }
+                };
+                let layoutHum = {...layoutBase, ...{
+                        yaxis: {range: [10, 100], showgrid: false},
+                        xaxis: {showgrid: false, showticklabels: false}
+                    }
+                };
+                let layoutAbsHum = {...layoutBase, ...{
+                        yaxis: {range: [0, 25], showgrid: false},
+                        xaxis: {showgrid: false}
+                    }
+                };
+                let config = {
+                    staticPlot: true,
+                    showlegend: false,
+                    displayModeBar: false,
+                    displaylogo: false,
+                }
+                Plotly.newPlot('homeTemperature', tracesTemp, layoutTemp, config);
+                Plotly.newPlot('homeHumidity', tracesRelHum, layoutHum, config);
+                Plotly.newPlot('homeAbsHumidity', tracesAbsHum, layoutAbsHum, config);
+            })
+    }
+
     setInterval(calctime, 1000 * 60);
-    setInterval(refreshMaster, 2000);
+    setInterval(refreshMaster, 1000 * 2);
     setInterval(refreshCalendar, 1000 * 60 * 10);
+    setInterval(refreshCharts, 1000 * 60);
 </script>
 
 <body>
