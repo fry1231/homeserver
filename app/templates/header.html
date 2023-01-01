@@ -9,8 +9,8 @@
     <meta http-equiv="cache-control" content="no-cache">
 
     <title>HomeServer</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="https://pamplin-cdn.azureedge.net/website_assets/all_local_assets/utility_2020.js" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
@@ -263,7 +263,8 @@
                     let sensorsData = points['data'];
 
                     for (let point of sensorsData) {
-                        time.push(point['time']);
+                        let timePoint = new Date(point['time']);
+                        time.push(timePoint);
                         let temp = point['temperature'];
                         temperature.push(temp);
                         if (point['rel_humidity']) {
@@ -306,7 +307,7 @@
                     textfont: {
                         color: 'rgb(253,162,27)'
                     },
-                    text: [Math.round(temperature[temperature.length - 1]).toString() + '°C'],
+                    text: [(Math.round(temperature[temperature.length - 1] * 10) / 10).toString() + '°C'],
                     textposition: 'right bottom'
                 });
 
@@ -368,7 +369,7 @@
                     },
                     paper_bgcolor: "rgba(0,0,0,0)",
                     plot_bgcolor: "rgba(0,0,0,0)",
-                    showlegend: false,
+                    showlegend: false
                 };
                 let layoutTemp = {...layoutBase, ...{
                         yaxis: {
@@ -410,7 +411,8 @@
                         xaxis: {
                             showgrid: false,
                             color: '#ffffff',
-                            zerolinecolor: 'rgba(0,0,0,0)'
+                            zerolinecolor: 'rgba(0,0,0,0)',
+                            tickformat: '%Hh'
                         }
                     }
                 };
@@ -429,12 +431,14 @@
     }
 
     function refreshWeather() {
-        let weatherEl = document.getElementById("weather");
-        let weatherDetEl = document.getElementById("weatherDetailed");
-        let contentw = weatherEl.innerHTML;
-        let contentwd = weatherDetEl.innerHTML;
-        weatherEl.innerHTML = contentw;
-        weatherDetEl.innerHTML = contentwd;
+        {#let weatherEl = document.getElementById("weather");#}
+        {#let weatherDetEl = document.getElementById("weatherDetailed");#}
+        {#let contentw = weatherEl.innerHTML;#}
+        {#let contentwd = weatherDetEl.innerHTML;#}
+        {#weatherEl.innerHTML = contentw;#}
+        {#weatherDetEl.innerHTML = contentwd;#}
+        $("#weather").load(window.location.href + " #weather");
+        $("#weatherDetailed").load(window.location.href + " #weatherDetailed");
     }
     setTimeout(refreshCharts, 5000);
 </script>

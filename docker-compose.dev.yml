@@ -28,14 +28,14 @@ services:
       - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN}"
       - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
 
-  todobot:
-    container_name: todobot
-    env_file:
-      - dev.env  # !
-    build: todobot
-    depends_on:
-      - db
-    command: python -m main
+#  todobot:
+#    container_name: todobot
+#    env_file:
+#      - dev.env  # !
+#    build: todobot
+#    depends_on:
+#      - db
+#    command: python -m main
 
   db:
     container_name: pg_container
