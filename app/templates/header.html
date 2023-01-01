@@ -50,6 +50,10 @@
             changeState(event);
         }));
     }
+
+    let weatherContent;
+    let weatherDetContent;
+
     window.onload = function () {
         addEvents();
         setInterval(calctime, 1000 * 60);
@@ -57,6 +61,9 @@
         setInterval(refreshCalendar, 1000 * 60 * 10);
         setInterval(refreshCharts, 1000 * 60 * 5);
         setInterval(refreshWeather, 1000 * 60 * 15);
+        weatherContent = document.getElementById("weather").innerHTML;
+        weatherDetContent = document.getElementById("weatherDetailed").innerHTML;
+
         {#let client_id = Date.now()#}
         {#let prefix = "";#}
         {#if (`{{ getenv("DOMAIN") }}`=="localhost")#}
@@ -305,9 +312,10 @@
                         color: 'rgba(0,0,0,0)'
                     },
                     textfont: {
+                        size: 15,
                         color: 'rgb(253,162,27)'
                     },
-                    text: [(Math.round(temperature[temperature.length - 1] * 10) / 10).toString() + '°C'],
+                    text: ['<b>'+(Math.round(temperature[temperature.length - 1] * 10) / 10).toString() + '°C</b>'],
                     textposition: 'right bottom'
                 });
 
@@ -329,9 +337,10 @@
                         color: 'rgba(0,0,0,0)'
                     },
                     textfont: {
+                        size: 15,
                         color: 'rgb(65,92,255)'
                     },
-                    text: [Math.round(rel_humidity[rel_humidity.length - 1]).toString() + '%'],
+                    text: ['<b>'+Math.round(rel_humidity[rel_humidity.length - 1]).toString() + '%</b>'],
                     textposition: 'bottom right'
                 });
 
@@ -352,8 +361,9 @@
                         size: 0,
                         color: 'rgba(0,0,0,0)'
                     },
-                    text: [(Math.round(abs_humidity[abs_humidity.length - 1] * 10) / 10).toString() + ' g/m3'],
+                    text: ['<b>'+(Math.round(abs_humidity[abs_humidity.length - 1] * 10) / 10).toString() + ' g/m3</b>'],
                     textfont: {
+                        size: 15,
                         color: '#acacac'
                     },
                     textposition: 'right'
@@ -365,7 +375,7 @@
                         t: 10,
                         l: 25,
                         b: 15,
-                        r: 0
+                        r: 10
                     },
                     paper_bgcolor: "rgba(0,0,0,0)",
                     plot_bgcolor: "rgba(0,0,0,0)",
@@ -431,6 +441,8 @@
     }
 
     function refreshWeather() {
+        document.getElementById("weather").innerHTML = weatherContent;
+        document.getElementById("weatherDetailed").innerHTML = weatherDetContent;
         updateWidget('ww_bb23ac0dcd89', 0);
         updateWidget('ww_d29f5caa69e31', 0);
     }
