@@ -422,7 +422,10 @@
                             showgrid: false,
                             color: '#ffffff',
                             zerolinecolor: 'rgba(0,0,0,0)',
-                            tickformat: '%Hh'
+                            tickformat: '%Hh',
+                            tickmode: "linear",
+                            tick0: time[0],
+                            dtick: 1000 * 60 * 60 * 2 // milliseconds
                         }
                     }
                 };
@@ -443,8 +446,8 @@
     function refreshWeather() {
         document.getElementById("weather").innerHTML = weatherContent;
         document.getElementById("weatherDetailed").innerHTML = weatherDetContent;
-        updateWidget('ww_bb23ac0dcd89', 0);
-        updateWidget('ww_d29f5caa69e31', 0);
+        updateWidget('ww_b98dfdb5c11fa', 0);
+        updateWidget('ww_8de6bcd2bdab1', 0);
     }
 
     function requestGet(url, callback, id, gen) {
