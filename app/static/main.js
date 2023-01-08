@@ -18,8 +18,8 @@ let weatherDetContent;
 
 window.onload = function () {
     addEvents();
-    setInterval(calctime, 1000 * 60);
-    setInterval(refreshMaster, 1000 * 2);
+    setInterval(calctime, 1000 * 1);
+    setInterval(refreshMaster, 1000 * 15);
     setInterval(refreshCalendar, 1000 * 60 * 10);
     setInterval(refreshCharts, 1000 * 60 * 5);
     setInterval(refreshWeather, 1000 * 60 * 15);
@@ -190,7 +190,6 @@ function refreshMaster() {
         .then((data) => {
             if (data['buses']){
                 addBuses(data['buses']);
-                calctime();
             }
             if (data['tasks']){
                 addTasks(data['tasks']);
