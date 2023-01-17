@@ -60,12 +60,8 @@ async def trigger():
 @app.on_event("startup")
 async def startup():
     try:
-        # logger.debug(f"Ping redis successful: {await redis_connection.ping()}")
         if not database.is_connected:
             await database.connect()
-
-        loop = asyncio.get_event_loop()
-        loop.create_task(buses.retrieve_arrivals())
 
         tasks_ = await Task.objects.all()
         data = redis_connection.get('data')
@@ -73,6 +69,9 @@ async def startup():
             tasks_jsonified = [task.dict() for task in tasks_]
             redis_connection.set('data', orjson.dumps(RefreshResponse(buses=None, tasks=tasks_jsonified).dict()))
             logger.info('Initial data set on redis')
+
+        loop = asyncio.get_event_loop()
+        loop.create_task(buses.retrieve_arrivals())
     except:
         logger.error(traceback.format_exc())
 

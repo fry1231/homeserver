@@ -119,6 +119,9 @@ async def retrieve_arrivals():
             logger.debug(f"redis data is {data}")
         except orjson.JSONDecodeError:
             logger.error(f'JSONDecodeError while getting buses data from redis: {redis_connection.get("data")}')
+            data = None
+        if data is None:
+            logger.info('Redis data is None, skipping update buses')
         else:
             data['buses'] = res.dict()
             redis_connection.set('data', orjson.dumps(data))
