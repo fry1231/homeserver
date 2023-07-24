@@ -3,6 +3,7 @@ version: '3.3'
 services:
   homescreen:
     container_name: homescreen
+    restart: always
     env_file:
       - .env  # !
     build: app
@@ -28,20 +29,20 @@ services:
       - "traefik.http.routers.homescreen-http.middlewares=homescreen-auth"
 
 
-  todobot:
-    container_name: todobot
-    env_file:
-      - .env  # !
-    build: todobot
-    depends_on:
-      - db
-    command: python -m main
+#  todobot:
+#    container_name: todobot
+#    env_file:
+#      - .env  # !
+#    build: todobot
+#    depends_on:
+#      - db
+#    command: python -m main
 
   db:
     container_name: pg_container
     image: postgres:13-alpine
     user: postgres
-#    restart: always
+    restart: always
     depends_on:
       - traefik
     expose:
@@ -64,6 +65,7 @@ services:
   influxdb:
     container_name: influx
     image: influxdb:1.8.10-alpine
+    restart: always
     expose:
       - 8086
     volumes:
@@ -74,17 +76,19 @@ services:
       - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD:?err}
       - DOCKER_INFLUXDB_INIT_ORG=influx-org
       - DOCKER_INFLUXDB_INIT_BUCKET=influx-bucket
-      - DOCKER_INFLUXDB_INIT_RETENTION=7d
+      - DOCKER_INFLUXDB_INIT_RETENTION=1d
 
   redis:
     container_name: redis
     image: redis:7.0.7
+    restart: always
     expose:
       - 6379
 
   traefik:
     container_name: traefik
     image: traefik:v2.9
+    restart: always
     ports:
       - 80:80
       - 8080:8080
