@@ -20,7 +20,7 @@ window.onload = function () {
     addEvents();
     setInterval(calctime, 1000 * 1);
     setInterval(refreshMaster, 1000 * 15);
-    setInterval(refreshCalendar, 1000 * 60 * 10);
+    setInterval(refreshCalendar, 1000 * 60 * 60);
     setInterval(refreshCharts, 1000 * 60 * 5);
     setInterval(refreshWeather, 1000 * 60 * 15);
     weatherContent = document.getElementById("weather").innerHTML;
