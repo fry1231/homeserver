@@ -45,8 +45,8 @@ services:
     restart: always
     depends_on:
       - traefik
-    expose:
-      - 5432
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
@@ -57,9 +57,9 @@ services:
       test:
         - CMD-SHELL
         - pg_isready -U ${POSTGRES_USER} --dbname=${POSTGRES_DB:?err}
-      interval: 10s
+      interval: 3600s
       timeout: 10s
-      retries: 50
+      retries: 5
       start_period: 30s
 
   influxdb:
