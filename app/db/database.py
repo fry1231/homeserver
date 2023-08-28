@@ -44,6 +44,6 @@ class User(ormar.Model):
     telegram_id = Integer(primary_key=True)
 
 
-engine = sqlalchemy.create_engine(db_url)
-
-logging.info(f"DB {db_url} connected")
+# engine = sqlalchemy.create_engine(db_url)
+#
+# logging.info(f"DB {db_url} connected")
