@@ -12,8 +12,8 @@ services:
     depends_on:
       redis:
         condition: service_started
-      db:
-        condition: service_healthy
+#      db:
+#        condition: service_started
     command: uvicorn main:app --host 0.0.0.0 --forwarded-allow-ips '*' --log-level critical
     expose:
       - 8000
@@ -38,29 +38,29 @@ services:
 #      - db
 #    command: python -m main
 
-  db:
-    container_name: pg_container
-    image: postgres:13-alpine
-    user: postgres
-    restart: always
-    depends_on:
-      - traefik
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER:?err}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
-      - POSTGRES_DB=${POSTGRES_DB:?err}
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - pg_isready -U ${POSTGRES_USER} --dbname=${POSTGRES_DB:?err}
-      interval: 3600s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+#  db:
+#    container_name: pg_container
+#    image: postgres:13-alpine
+#    user: postgres
+#    restart: always
+#    depends_on:
+#      - traefik
+##    ports:
+##      - "5432:5432"
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data/
+#    environment:
+#      - POSTGRES_USER=${POSTGRES_USER:?err}
+#      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
+#      - POSTGRES_DB=${POSTGRES_DB:?err}
+#    healthcheck:
+#      test:
+#        - CMD-SHELL
+#        - pg_isready -U ${POSTGRES_USER} --dbname=${POSTGRES_DB:?err}
+#      interval: 3600s
+#      timeout: 10s
+#      retries: 5
+#      start_period: 30s
 
   influxdb:
     container_name: influx

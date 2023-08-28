@@ -79,7 +79,7 @@ async def retrieve_arrivals():
             show_data_defense = [
                 {
                     "route": "69",
-                    "destination": "Время спать, куда ехать собрались?",
+                    "destination": "---",
                     "etd": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                 }
             ]

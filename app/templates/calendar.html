@@ -2,7 +2,11 @@
     {% for event in events %}
     <div class="row row-striped">
         <div class="col-2 text-right">
-            <h4><span class="badge badge-secondary">{{ event.day }}</span></h4>
+            {% if event.is_today %}
+                <h4><span class="badge badge-success">{{ event.day }}</span></h4>
+            {% else %}
+                <h4><span class="badge badge-secondary">{{ event.day }}</span></h4>
+            {% endif %}
             <p>{{ event.month }}</p>
         </div>
         <div class="col-10">

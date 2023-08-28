@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from typing import List, Dict, Any
 from routers import tasks, users, buses, calendar, ambiance
-from db.database import database, Task
+# from db.database import database, Task
 from pydantic import BaseModel
 from routers.buses import BusResponse
 from pydantic.schema import Optional
@@ -60,10 +60,11 @@ async def trigger():
 @app.on_event("startup")
 async def startup():
     try:
-        if not database.is_connected:
-            await database.connect()
+        # if not database.is_connected:
+        #     await database.connect()
 
-        tasks_ = await Task.objects.all()
+        # tasks_ = await Task.objects.all()
+        tasks_ = []
         data = redis_connection.get('data')
         if data is None:
             tasks_jsonified = [task.dict() for task in tasks_]

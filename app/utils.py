@@ -14,6 +14,7 @@ class Event(BaseModel):
     month: str
     weekday: str
     strtimeslot: str
+    is_today: bool
 
 
 def get_events() -> List[Event]:
@@ -74,5 +75,9 @@ def get_events() -> List[Event]:
         event['weekday'] = event['start_time'].strftime('%A')
         event['day'] = event['start_time'].strftime('%d')
         event['month'] = event['start_time'].strftime('%b')
+
+        todays_day = datetime.now().strftime('%d')
+        todays_month = datetime.now().strftime('%b')
+        event['is_today'] = True if todays_day == event['day'] and todays_month == event['month'] else False
         event_list.append(Event(**event))
     return event_list
