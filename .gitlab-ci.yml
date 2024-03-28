@@ -1,0 +1,58 @@
+stages:
+  - check_vars
+  - pull
+  - build
+  - migration
+  - run
+
+check_vars:
+  stage: check_vars
+  when: manual
+  script:
+    - |
+      if [ -z "$DOMAIN" ] || \
+      [ -z "$IDF_TOKEN" ] || \
+      [ -z "$POSTGRES_USER" ] || \
+      [ -z "$POSTGRES_PASS" ] || \
+      [ -z "$SECRET" ] || \
+      [ -z "$EMAIL" ] || \
+      [ -z "$IS_TESTING" ] || \
+      [ -z "$HASHPASS_ADMIN" ] || \
+      [ -z "$INFLUXDB_PASSWORD" ] || \
+      [ -z "$INFLUXDB_USERNAME" ]; then
+        echo "Error: Missing one or more required environment variables."
+        exit 1
+      fi
+
+pull:
+  stage: pull
+  when: on_success
+  needs:
+    - check_vars
+  script:
+    - git config --global --add safe.directory /usr/homeserver
+    - cd /usr/homeserver
+    - git pull
+
+build:
+  stage: build
+  when: on_success
+  needs:
+    - pull
+  script:
+    - cd /usr/homeserver
+    - docker compose build
+
+migration:
+  stage: migration
+  when: manual
+  script:
+    - cd /usr/homeserver
+    - docker compose run migrebot alembic upgrade head
+
+run:
+  stage: run
+  when: manual
+  script:
+    - cd /usr/homeserver
+    - docker compose up -d

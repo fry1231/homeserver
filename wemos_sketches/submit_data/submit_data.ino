@@ -14,7 +14,7 @@ GyverOLED<SSD1306_128x32, OLED_BUFFER> oled;
 
 const char* ssid = "ssid";
 const char* password = "pass";
-const char* host = "http://{user}:{pass}@homescreen.{domain}/ambiance/submit";
+const char* host = "http://{user}:{pass}@homescreen.fry1231.net/ambiance/submit";
 const int interval = 1000 * 60 * 5;
 DynamicJsonDocument doc(1024);
 

@@ -1,4 +1,4 @@
-from config_init import logger, templates
+from config import logger, templates
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile
 from db.database import Task, User
 from typing import List

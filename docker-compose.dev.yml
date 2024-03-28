@@ -8,13 +8,10 @@ services:
     build: app
     volumes:
       - ./app:/app
-    depends_on:
-      redis:
-        condition: service_started
-      db:
-        condition: service_healthy
-      influxdb:
-        condition: service_started
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:?err}
+      - POSTGRES_PASS=${POSTGRES_PASS:?err}
+      -
 #    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn main:app --host 0.0.0.0 --forwarded-allow-ips "*"'
     command: uvicorn main:app --host 0.0.0.0 --forwarded-allow-ips '*' --log-level critical
     expose:
@@ -28,38 +25,6 @@ services:
       - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN}"
       - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
 
-  todobot:
-    container_name: todobot
-    env_file:
-      - dev.env  # !
-    build: todobot
-    depends_on:
-      - db
-    command: python -m main
-
-  db:
-    container_name: pg_container
-    image: postgres:13-alpine
-    user: postgres
-#    restart: always
-    depends_on:
-      - traefik
-    expose:
-      - 5432
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - pg_isready -U ${POSTGRES_USER} --dbname=${POSTGRES_DB}
-      interval: 10s
-      timeout: 10s
-      retries: 50
-      start_period: 30s
 
   influxdb:
     container_name: influx
@@ -76,11 +41,11 @@ services:
       - DOCKER_INFLUXDB_INIT_BUCKET=influx-bucket
       - DOCKER_INFLUXDB_INIT_RETENTION=7d
 
-  redis:
-    container_name: redis
-    image: redis:7.0.7
-    expose:
-      - 6379
+  #  redis:
+  #    container_name: redis
+  #    image: redis:7.0.7
+  #    expose:
+  #      - 6379
 
   traefik:
     container_name: traefik
@@ -88,7 +53,7 @@ services:
     ports:
       - 80:80
       - 8080:8080
-#      - 443:443
+    #      - 443:443
     command:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
@@ -96,26 +61,64 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-#      - "--entrypoints.websecure.address=:443"
-#      - "--entrypoints.web.http.redirections.entrypoint.to=:443"
-#      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-#      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
-#      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-#      - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL}"
-#      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    #      - "--entrypoints.websecure.address=:443"
+    #      - "--entrypoints.web.http.redirections.entrypoint.to=:443"
+    #      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    #      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+    #      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+    #      - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL}"
+    #      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
     volumes:
-#      - "./traefik.toml:/etc/traefik/traefik.toml"
+      #      - "./traefik.toml:/etc/traefik/traefik.toml"
       - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`dashboard.${DOMAIN}`)"
-#      - "traefik.http.routers.dashboard.tls=true"
-#      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      #      - "traefik.http.routers.dashboard.tls=true"
+      #      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.middlewares=auth"
       - "traefik.http.middlewares.auth.basicauth.users=admin:${HASHPASS_ADMIN}"
+
 volumes:
-  postgres_data:
   letsencrypt:
   influxdb-storage:
+
+
+
+
+#
+#  todobot:
+#    container_name: todobot
+#    env_file:
+#      - dev.env  # !
+#    build: todobot
+#    depends_on:
+#      - db
+#    command: python -m main
+
+#  db:
+#    container_name: homeserver_db
+#    image: postgres:15-alpine
+#    user: postgres
+##    restart: always
+#    depends_on:
+#      - traefik
+#    expose:
+#      - 5432
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data/
+#    environment:
+#      - POSTGRES_USER=${POSTGRES_USER}
+#      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+#      - POSTGRES_DB=${POSTGRES_DB}
+#    healthcheck:
+#      test:
+#        - CMD-SHELL
+#        - pg_isready -U ${POSTGRES_USER} --dbname=${POSTGRES_DB}
+#      interval: 10s
+#      timeout: 10s
+#      retries: 50
+#      start_period: 30s
+
