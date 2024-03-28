@@ -16,8 +16,6 @@ services:
       - INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD:?err}
       - IS_TESTING=${IS_TESTING:?err}
     build: app
-    volumes:
-      - ./app:/app
     networks:
       - migrebot_migrebot-network
 #    depends_on:

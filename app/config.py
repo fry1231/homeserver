@@ -16,23 +16,22 @@ logger.setLevel(logging.DEBUG)
 
 IS_TESTING = False if os.getenv('IS_TESTING', default='1') == '0' else False
 
-if IS_TESTING:
-    DOMAIN = 'localhost' if IS_TESTING else os.getenv('DOMAIN')
+DOMAIN = 'localhost' if IS_TESTING else os.getenv('DOMAIN')
 
-    IDF_TOKEN = os.getenv("IDF_TOKEN")
+IDF_TOKEN = os.getenv("IDF_TOKEN")
 
-    INFLUXDB_HOST = 'influx',
-    INFLUXDB_PORT = 8086,
-    INFLUXDB_USERNAME = os.getenv('INFLUXDB_USERNAME'),
-    INFLUXDB_PASSWORD = os.getenv('INFLUXDB_PASSWORD')
+INFLUXDB_HOST = 'influx',
+INFLUXDB_PORT = 8086,
+INFLUXDB_USERNAME = os.getenv('INFLUXDB_USERNAME'),
+INFLUXDB_PASSWORD = os.getenv('INFLUXDB_PASSWORD')
 
-    DATABASE_NAME = 'hs_db'
-    DATABASE2_NAME = 'db_prod'
-    POSTGRES_USER = 'postgres' if IS_TESTING else os.getenv("POSTGRES_USER")
-    POSTGRES_PASS = 'POSTGRES_PASS' if IS_TESTING else os.getenv("POSTGRES_PASS")
-    POSTGRES_HOST = 'localhost' if IS_TESTING else 'migraine_db'
-    POSTGRES_PORT = '5433' if IS_TESTING else '5432'
-    DB_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE_NAME}'
-    DB2_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE2_NAME}'
+DATABASE_NAME = 'hs_db'
+DATABASE2_NAME = 'db_prod'
+POSTGRES_USER = 'postgres' if IS_TESTING else os.getenv("POSTGRES_USER")
+POSTGRES_PASS = 'POSTGRES_PASS' if IS_TESTING else os.getenv("POSTGRES_PASS")
+POSTGRES_HOST = 'localhost' if IS_TESTING else 'migraine_db'
+POSTGRES_PORT = '5433' if IS_TESTING else '5432'
+DB_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE_NAME}'
+DB2_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE2_NAME}'
 
-    SECRET = 'secret' if IS_TESTING else os.getenv("SECRET")
+SECRET = 'secret' if IS_TESTING else os.getenv("SECRET")
