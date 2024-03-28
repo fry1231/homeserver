@@ -124,3 +124,5 @@ class OrmarStatistics(ormar.Model):
 
 OrmarMigraineUser.update_forward_refs()
 OrmarPainCase.update_forward_refs()
+
+ormar_metadata = base_config.metadata
