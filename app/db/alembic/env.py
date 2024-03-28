@@ -23,10 +23,10 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from db.sql.models import ormar_metadata as BaseMeta
+from db.sql.models import ormar_metadata as target_metadata
 
 
-target_metadata = BaseMeta.metadata
+# target_metadata = BaseMeta.metadata
 
 
 # other values from the config, defined by the needs of env.py,
