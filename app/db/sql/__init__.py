@@ -60,7 +60,7 @@ async def connect_create_if_not_exists(user, password, db_name):
         raise ConnectionAbortedError('Database created, now run migrations if needed or restart the app')
 
 try:
-    asyncio.get_event_loop().run_until_complete(
+    asyncio.get_event_loop().create_task(
         connect_create_if_not_exists(user=POSTGRES_USER, password=POSTGRES_PASS, db_name=DATABASE_NAME)
     )
 except ConnectionRefusedError as e:
