@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect, HTTPException
 from pydantic import BaseModel
-from pydantic.schema import Optional, List
+from typing import List, Optional
 from datetime import datetime
 import traceback
 import pytz
