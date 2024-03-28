@@ -139,5 +139,5 @@ volumes:
   influxdb-storage:
 
 networks:
-  migrebot-network:
+  migrebot_migrebot-network as migrebot-network:
     external: true
