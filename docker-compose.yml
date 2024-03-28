@@ -23,7 +23,7 @@ services:
 #        condition: service_started
 #      db:
 #        condition: service_started
-    command: uvicorn app.main:app --proxy-headers --host 0.0.0.0 --forwarded-allow-ips '172.19.0.250' --log-level critical
+    command: uvicorn main:app --proxy-headers --host 0.0.0.0 --forwarded-allow-ips '172.19.0.250' --log-level critical
     expose:
       - 8000
     labels:
