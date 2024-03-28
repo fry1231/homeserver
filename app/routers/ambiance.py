@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect, HTTPException
-from db.database import Task, User
 from pydantic import BaseModel
 from pydantic.schema import Optional, List
-from config_init import influx_client, logger
 from datetime import datetime
 import traceback
 import pytz
+
+from config import logger
+from db.influx import influx_client
 
 
 router = APIRouter(

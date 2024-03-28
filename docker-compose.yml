@@ -4,17 +4,28 @@ services:
   homescreen:
     container_name: homescreen
     restart: always
-    env_file:
-      - .env  # !
+#    env_file:
+#      - .env  # !
+    environment:
+      - DOMAIN=${DOMAIN:?err}
+      - IDF_TOKEN=${IDF_TOKEN:?err}
+      - POSTGRES_USER=${POSTGRES_USER:?err}
+      - POSTGRES_PASS=${POSTGRES_PASS:?err}
+      - SECRET=${SECRET:?err}
+      - INFLUXDB_USERNAME=${INFLUXDB_USERNAME:?err}
+      - INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD:?err}
+      - IS_TESTING=${IS_TESTING:?err}
     build: app
     volumes:
       - ./app:/app
-    depends_on:
-      redis:
-        condition: service_started
+    networks:
+      - migrebot-network
+#    depends_on:
+#      redis:
+#        condition: service_started
 #      db:
 #        condition: service_started
-    command: uvicorn main:app --host 0.0.0.0 --forwarded-allow-ips '*' --log-level critical
+    command: uvicorn app.main:app --proxy-headers --host 0.0.0.0 --forwarded-allow-ips '172.19.0.250' --log-level critical
     expose:
       - 8000
     labels:
@@ -23,10 +34,10 @@ services:
       - "traefik.http.routers.homescreen.entrypoints=websecure"
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
       - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
-      - "traefik.http.routers.homescreen.middlewares=homescreen-auth"
-      - "traefik.http.routers.homescreen-http.rule=Host(`homescreen.${DOMAIN:?err}`)"
-      - "traefik.http.routers.homescreen-http.entrypoints=web"
-      - "traefik.http.routers.homescreen-http.middlewares=homescreen-auth"
+#      - "traefik.http.routers.homescreen.middlewares=homescreen-auth"   # switched to jwt
+      - "traefik.http.routers.homescreen-insecure.rule=Host(`homescreen.${DOMAIN:?err}`)"
+      - "traefik.http.routers.homescreen-insecure.entrypoints=web"
+      - "traefik.http.routers.homescreen-insecure.middlewares=homescreen-auth"
 
 
 #  todobot:
@@ -66,6 +77,8 @@ services:
     container_name: influx
     image: influxdb:1.8.10-alpine
     restart: always
+    networks:
+      - migrebot-network
     expose:
       - 8086
     volumes:
@@ -76,32 +89,35 @@ services:
       - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD:?err}
       - DOCKER_INFLUXDB_INIT_ORG=influx-org
       - DOCKER_INFLUXDB_INIT_BUCKET=influx-bucket
-      - DOCKER_INFLUXDB_INIT_RETENTION=1d
+      - DOCKER_INFLUXDB_INIT_RETENTION=14d
 
-  redis:
-    container_name: redis
-    image: redis:7.0.7
-    restart: always
-    expose:
-      - 6379
+#  redis:
+#    container_name: redis
+#    image: redis:7.0.7
+#    restart: always
+#    expose:
+#      - 6379
 
   traefik:
     container_name: traefik
     image: traefik:v2.9
     restart: always
+    networks:
+      migrebot-network:
+        ipv4_address: 172.19.0.250   # change accordingly to the subnet or set the subnet implicitly in the network definition
     ports:
-      - 80:80
-      - 8080:8080
-      - 443:443
+      - "80:80"
+      - "8080:8080"
+      - "443:443"
     command:
-      - "--log.level=DEBUG"
+      - "--log.level=INFO"
 #      - "--api.insecure=true"
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-#      - "--entrypoints.web.http.redirections.entrypoint.to=:443"
+#      - "--entrypoints.web.http.redirections.entrypoint.to=:443"     # backward compatibility
 #      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
 #      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
@@ -119,6 +135,9 @@ services:
       - "traefik.http.routers.dashboard.middlewares=auth"
       - "traefik.http.middlewares.auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
 volumes:
-  postgres_data:
   letsencrypt:
   influxdb-storage:
+
+networks:
+  migrebot-network:
+    external: true

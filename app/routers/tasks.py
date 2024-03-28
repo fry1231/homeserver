@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect, HTTPException
 from db.database import Task, User
 from typing import List
-from config_init import logger, redis_connection
+from config import logger, redis_connection
 from ormar.exceptions import NoMatch
 import orjson
 
@@ -81,7 +81,7 @@ async def add_task(task: Task):
 @router.put('/change_state/{task_id}')
 async def change_state(task_id: int,
                        is_finished: bool):
-    task = await Task.objects.get(pk=task_id)
+    task = await Task.objects.get_or_none(pk=task_id)
     task.finished = is_finished
     res = await task.update()
     await tasks_to_redis()
@@ -91,7 +91,7 @@ async def change_state(task_id: int,
 @router.delete("/delete/{task_id}")
 async def delete_task(task_id: int):
     try:
-        item_db = await Task.objects.get(pk=task_id)
+        item_db = await Task.objects.get_or_none(pk=task_id)
         deleted_rows = await item_db.delete()
         await tasks_to_redis()
         return {"deleted_rows": deleted_rows}
