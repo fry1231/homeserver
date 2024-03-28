@@ -7,6 +7,7 @@ import requests
 import os
 from config import logger
 import asyncio
+import async_timeout
 # from httpx import AsyncClient
 # from arq import create_pool
 # from arq.connections import RedisSettings
@@ -68,7 +69,7 @@ async def generate_sse_events():
 
 @router.get("/arrivals")
 async def arrivals():
-    return StreamingResponse(generate_sse_events(), media_type="text/event-stream")
+    return StreamingResponse(reader(), media_type="text/event-stream")
 
 
 async def retrieve_arrivals():
@@ -123,25 +124,22 @@ async def retrieve_arrivals():
         await redis_conn.publish('channel:buses', orjson.dumps(data))
 
         # Sleep time can be changed in Redis
-        sleep_seconds = await redis_conn.get('BUSES_REFRESH_TIME')
-        if sleep_seconds is None:
-            sleep_seconds = os.getenv("BUSES_REFRESH_TIME")
-            if sleep_seconds is None:
+
+        if (sleep_seconds := await redis_conn.get('BUSES_REFRESH_TIME')) is None:
+            if (sleep_seconds := os.getenv("BUSES_REFRESH_TIME")) is None:
                 sleep_seconds = 90
             await redis_conn.set('BUSES_REFRESH_TIME', sleep_seconds)
         await asyncio.sleep(int(sleep_seconds))
 
 
-async def reader(conn, channel: redis.client.PubSub):
+async def reader():
+    channel = redis_conn.pubsub()
+    await channel.subscribe("channel:buses")
     while True:
-        message = await channel.get_message(ignore_subscribe_messages=True)
-        if message is not None:
-            logger.info(f"(Reader) Message Received: {message}")
-            await conn.broadcast(message['data'].decode('utf8'))
-
-
-async def publisher():
-    async with redis_connection.pubsub() as pubsub:
-        await pubsub.subscribe("buses")
-        future = asyncio.create_task(reader(buses_manager, pubsub))
-        await future
+        try:
+            async with async_timeout.timeout(1):
+                message = await channel.get_message(ignore_subscribe_messages=True)
+                yield message['data']
+            await asyncio.sleep(0.1)
+        except asyncio.TimeoutError:
+            pass
