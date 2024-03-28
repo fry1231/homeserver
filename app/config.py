@@ -1,30 +1,38 @@
-from pydantic import BaseModel
+import logging
 import os
+import sys
 
 
-class LogConfig(BaseModel):
-    LOGGER_NAME: str = "custom"
-    LOG_FORMAT: str = "%(levelprefix)s | %(asctime)s | %(message)s"
-    LOG_LEVEL: str = os.getenv("LOG_LEVEL")
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s (%(filename)s:%(lineno)s)',
+    datefmt='%d.%m.%Y_%H:%M:%S',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
-    # Logging config
-    version = 1
-    disable_existing_loggers = False
-    formatters = {
-        "default": {
-            "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": LOG_FORMAT,
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-            # 'format': LOG_FORMAT
-        },
-    }
-    handlers = {
-        "default": {
-            "formatter": "default",
-            "class": "logging.StreamHandler",
-            "stream": "ext://sys.stderr",
-        },
-    }
-    loggers = {
-        LOGGER_NAME: {"handlers": ["default"], "level": LOG_LEVEL},
-    }
+IS_TESTING = False if os.getenv('IS_TESTING', default='1') == '0' else False
+
+if IS_TESTING:
+    DOMAIN = 'localhost' if IS_TESTING else os.getenv('DOMAIN')
+
+    IDF_TOKEN = os.getenv("IDF_TOKEN")
+
+    INFLUXDB_HOST = 'influx',
+    INFLUXDB_PORT = 8086,
+    INFLUXDB_USERNAME = os.getenv('INFLUXDB_USERNAME'),
+    INFLUXDB_PASSWORD = os.getenv('INFLUXDB_PASSWORD')
+
+    DATABASE_NAME = 'hs_db'
+    DATABASE2_NAME = 'db_prod'
+    POSTGRES_USER = 'postgres' if IS_TESTING else os.getenv("POSTGRES_USER")
+    POSTGRES_PASS = 'POSTGRES_PASS' if IS_TESTING else os.getenv("POSTGRES_PASS")
+    POSTGRES_HOST = 'localhost' if IS_TESTING else 'migraine_db'
+    POSTGRES_PORT = '5433' if IS_TESTING else '5432'
+    DB_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE_NAME}'
+    DB2_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE2_NAME}'
+
+    SECRET = 'secret' if IS_TESTING else os.getenv("SECRET")

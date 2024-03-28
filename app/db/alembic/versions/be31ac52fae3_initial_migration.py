@@ -1,16 +1,16 @@
-"""Initial migration
+"""initial migration
 
-Revision ID: bbb74af2f5af
+Revision ID: be31ac52fae3
 Revises: 
-Create Date: 2022-12-18 22:06:45.733383
+Create Date: 2024-03-12 00:56:24.139061
 
 """
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'bbb74af2f5af'
+revision = 'be31ac52fae3'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,8 +25,12 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
-    sa.Column('telegram_id', sa.Integer(), nullable=False),
-    sa.PrimaryKeyConstraint('telegram_id')
+    sa.Column('uuid', postgresql.UUID(), nullable=False),
+    sa.Column('username', sa.String(length=256), nullable=False),
+    sa.Column('hashed_password', sa.String(length=256), nullable=False),
+    sa.Column('email', sa.String(length=256), nullable=False),
+    sa.Column('is_admin', sa.Boolean(), nullable=True),
+    sa.PrimaryKeyConstraint('uuid')
     )
     # ### end Alembic commands ###
 
