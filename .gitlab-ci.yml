@@ -48,7 +48,7 @@ migration:
   when: manual
   script:
     - cd /usr/homeserver
-    - docker compose run migrebot alembic upgrade head
+    - docker compose run homescreen alembic upgrade head
 
 run:
   stage: run
