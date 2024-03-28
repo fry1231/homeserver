@@ -7,7 +7,7 @@ stages:
 
 check_vars:
   stage: check_vars
-  when: manual
+#  when: manual
   script:
     - |
       if [ -z "$DOMAIN" ] || \

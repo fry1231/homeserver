@@ -19,7 +19,7 @@ services:
     volumes:
       - ./app:/app
     networks:
-      - migrebot-network
+      - migrebot_migrebot-network
 #    depends_on:
 #      redis:
 #        condition: service_started
@@ -78,7 +78,7 @@ services:
     image: influxdb:1.8.10-alpine
     restart: always
     networks:
-      - migrebot-network
+      - migrebot_migrebot-network
     expose:
       - 8086
     volumes:
@@ -103,7 +103,7 @@ services:
     image: traefik:v2.9
     restart: always
     networks:
-      migrebot-network:
+      migrebot_migrebot-network:
         ipv4_address: 172.19.0.250   # change accordingly to the subnet or set the subnet implicitly in the network definition
     ports:
       - "80:80"
@@ -139,5 +139,5 @@ volumes:
   influxdb-storage:
 
 networks:
-  migrebot_migrebot-network as migrebot-network:
+  migrebot_migrebot-network:
     external: true
