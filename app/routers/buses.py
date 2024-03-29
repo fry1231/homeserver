@@ -74,8 +74,9 @@ async def arrivals():
 
 async def retrieve_arrivals():
     """
-    Get bus arrivals, save data to redis 'channel:buses' channel
+    Get bus arrivals, save data to redis 'data' (data['buses']) and submit it to 'channel:buses'
     """
+    logger.info('Starting retrieve_arrivals()')
     while True:
         show_data_rer = []
         show_data_defense = []

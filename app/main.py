@@ -1,3 +1,5 @@
+import asyncio
+
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -25,6 +27,7 @@ async def lifespan(app: FastAPI):
         await database_.connect()
     if not migraine_database.is_connected:
         await migraine_database.connect()
+    asyncio.create_task(buses.retrieve_arrivals())
 
     yield
 
@@ -126,7 +129,6 @@ async def index(request: Request):
 #         # loop.create_task(buses.retrieve_arrivals())
 #     except:
 #         logger.error(traceback.format_exc())
-
 
 
 if __name__ == "__main__":
