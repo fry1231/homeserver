@@ -34,6 +34,7 @@ services:
       - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
 #      - "traefik.http.routers.homescreen.middlewares=homescreen-auth"   # switched to jwt
       - "traefik.http.routers.homescreen-insecure.rule=Host(`homescreen.${DOMAIN:?err}`)"
+      - "traefik.http.routers.homescreen-insecure.rule=Host(`${IP}`)"
       - "traefik.http.routers.homescreen-insecure.entrypoints=web"
       - "traefik.http.routers.homescreen-insecure.middlewares=homescreen-auth"
 

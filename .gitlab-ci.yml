@@ -52,7 +52,9 @@ migration:
 
 run:
   stage: run
-  when: manual
+  when: on_success
+  needs:
+      - build
   script:
     - cd /usr/homeserver
     - docker compose up -d

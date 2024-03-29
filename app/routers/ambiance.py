@@ -20,6 +20,16 @@ class AmbianceData(BaseModel):
     rel_humidity: Optional[float]
 
 
+class FarmData(BaseModel):
+    temperature: float
+    soil_moisture: float
+    water_level: float
+
+
+class FarmResponseItem(FarmData):
+    time: str
+
+
 class AmbianceResponseItem(BaseModel):
     time: str
     temperature: float
@@ -55,6 +65,26 @@ async def get_ambiance_data():
         raise HTTPException(status_code=503, detail="Error deserializing influx data")
 
 
+@router.get('/farmdata', response_model=List[FarmResponseItem])
+async def get_farm_data():
+    try:
+        data = influx_client.query(
+            'SELECT * FROM "home"."autogen"."farm" WHERE time > now() - 14d')
+    except:
+        logger.error("Error while getting data from influx:\n", traceback.format_exc())
+        raise HTTPException(status_code=503, detail=f"Cannot read data from InfluxDB")
+    response = []
+    try:
+        columns = data.raw['series'][0]['columns']
+        values = data.raw['series'][0]['values']
+        for point_values in values:
+            response.append(FarmResponseItem(**{k: v for k, v in zip(columns, point_values)}))
+        return response
+    except:
+        logger.error("Error deserializing influx data:\n", traceback.format_exc())
+        raise HTTPException(status_code=503, detail="Error deserializing influx data")
+
+
 @router.post('/submit')
 async def submit_ambiance_point(data: AmbianceData):
     fields = {'temperature': data.temperature}
@@ -67,6 +97,22 @@ async def submit_ambiance_point(data: AmbianceData):
         },
         'time': datetime.now().astimezone(tz=pytz.timezone('Europe/Paris')),
         'fields': fields
+    }
+    if not influx_client.write_points([payload]):
+        logger.error("Error writing to influx")
+        raise HTTPException(status_code=503, detail='Error writing to InfluxDB')
+
+
+@router.post('/submit/farm')
+async def submit_farm_data(data: FarmData):
+    payload = {
+        'measurement': 'farm',
+        'time': datetime.now().astimezone(tz=pytz.UTC),
+        'fields': {
+            'temperature': data.temperature,
+            'soil_moisture': data.soil_moisture,
+            'water_level': data.water_level
+        }
     }
     if not influx_client.write_points([payload]):
         logger.error("Error writing to influx")

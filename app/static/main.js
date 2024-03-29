@@ -214,6 +214,193 @@ function refreshCharts() {
         headers: {"content-type": "application/json; charset=UTF-8"},
         method: "GET"
     };
+    fetch("/ambiance/farmdata", params)
+        .then((response) => response.json())
+        .then((data) => {
+            let tracesTemp = [];
+            let tracesSoil = [];
+            let tracesLevel = [];
+            let time = [];
+            let temperature = [];
+            let soil = [];
+            let level = [];
+            for (let points of data) {
+                let sensorsData = points['data'];
+
+                for (let point of sensorsData) {
+                    let timePoint = new Date(point['time']);
+                    time.push(timePoint);
+                    temperature.push(point['temperature']);
+                    soil.push(point['soil_moisture']);
+                    level.push(point['water_level']);
+                }
+
+                // Filling traces
+                let tempmax = Math.max(...temperature);
+                let tempmin = Math.min(...temperature);
+                let soilmax = Math.max(...soil);
+                let soilmin = Math.min(...soil);
+                let levelmax = Math.max(...level);
+                let levelmin = Math.min(...level);
+
+                let tempdiff = tempmax - tempmin;
+                let soildiff = soilmax - soilmin;
+                let leveldiff = levelmax - levelmin;
+                const diffMultiplier = 0.1;
+
+                tracesTemp.push({
+                    x: time,
+                    y: temperature,
+                    mode: 'lines',
+                    line: {color: 'rgba(255,163,27,0.2)'},
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(255,163,27,0.2)'
+                });
+
+                tracesTemp.push({
+                    x: [time[0]],
+                    y: [tempmax + tempdiff * diffMultiplier],
+                    type: 'scatter',
+                    mode: 'markers+text',
+                    marker: {
+                        size: 0,
+                        color: 'rgba(0,0,0,0)'
+                    },
+                    textfont: {
+                        size: 15,
+                        color: 'rgb(253,162,27)'
+                    },
+                    text: ['<b>'+(Math.round(temperature[temperature.length - 1] * 10) / 10).toString() + '°C</b>'],
+                    textposition: 'right bottom'
+                });
+
+                tracesSoil.push({
+                    x: time,
+                    y: soil,
+                    mode: 'lines',
+                    line: {color: 'rgba(24,55,255,0.2)'},
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(24,55,255,0.2)'
+                });
+
+                tracesSoil.push({
+                    x: [time[0]],
+                    y: [soilmax + soildiff * diffMultiplier],
+                    type: 'scatter',
+                    mode: 'markers+text',
+                    marker: {
+                        size: 0,
+                        color: 'rgba(0,0,0,0)'
+                    },
+                    textfont: {
+                        size: 15,
+                        color: 'rgb(65,92,255)'
+                    },
+                    text: ['<b>'+Math.round(soil[soil.length - 1]).toString() + '%</b>'],
+                    textposition: 'bottom right'
+                });
+
+                tracesLevel.push({
+                    x: time,
+                    y: level,
+                    mode: 'lines',
+                    line: {color: 'rgba(255,255,255,0.2)'},
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(255,255,255,0.2)'
+                });
+
+                tracesLevel.push({
+                    x: [time[0]],
+                    y: [levelmax],
+                    type: 'scatter',
+                    mode: 'markers+text',
+                    marker: {
+                        size: 0,
+                        color: 'rgba(0,0,0,0)'
+                    },
+                    text: ['<b>'+(Math.round(level[level.length - 1] * 10) / 10).toString() + ' cm</b>'],
+                    textfont: {
+                        size: 15,
+                        color: '#acacac'
+                    },
+                    textposition: 'right'
+                });
+
+                // Configuring traces layout
+                let layoutBase = {
+                    margin: {
+                        t: 10,
+                        l: 25,
+                        b: 15,
+                        r: 10
+                    },
+                    paper_bgcolor: "rgba(0,0,0,0)",
+                    plot_bgcolor: "rgba(0,0,0,0)",
+                    showlegend: false
+                };
+                let layoutTemp = {...layoutBase, ...{
+                        yaxis: {
+                            range: [tempmin - tempdiff*diffMultiplier, tempmax + tempdiff*diffMultiplier],
+                            showgrid: false,
+                            color: '#ffffff',
+                            zerolinecolor: 'rgba(0,0,0,0)'
+                        },
+                        xaxis: {
+                            showgrid: false,
+                            showticklabels: false,
+                            color: '#ffffff',
+                            zerolinecolor: 'rgba(0,0,0,0)'
+                        }
+                    }
+                };
+                let layoutSoil = {...layoutBase, ...{
+                        yaxis: {
+                            range: [soilmin - soildiff*diffMultiplier, soilmax + soildiff*diffMultiplier],
+                            showgrid: false,
+                            color: '#ffffff',
+                            zerolinecolor: 'rgba(0,0,0,0)'
+                        },
+                        xaxis: {
+                            showgrid: false,
+                            showticklabels: false,
+                            color: '#ffffff',
+                            zerolinecolor: 'rgba(0,0,0,0)'
+                        }
+                    }
+                };
+                let layoutLevel = {...layoutBase, ...{
+                        yaxis: {
+                            range: [levelmin - leveldiff*diffMultiplier, levelmax + leveldiff*diffMultiplier],
+                            showgrid: false,
+                            color: '#ffffff',
+                            zerolinecolor: 'rgba(0,0,0,0)'
+                        },
+                        xaxis: {
+                            showgrid: false,
+                            color: '#ffffff',
+                            zerolinecolor: 'rgba(0,0,0,0)',
+                            tickformat: '%Hh',
+                            tickmode: "linear",
+                            tick0: time[0],
+                            dtick: 1000 * 60 * 60 * 3 // 3h
+                        }
+                    }
+                };
+                let config = {
+                    staticPlot: true,
+                    showlegend: false,
+                    displayModeBar: false,
+                    displaylogo: false,
+                }
+
+                // Plotting
+                Plotly.newPlot('farmTemperature', tracesTemp, layoutTemp, config);
+                Plotly.newPlot('farmSoil', tracesSoil, layoutSoil, config);
+                Plotly.newPlot('farmLevel', tracesLevel, layoutLevel, config);
+            }
+        });
+
+
     fetch("/ambiance", params)
         .then((response) => response.json())
         .then((data) => {
@@ -403,6 +590,8 @@ function refreshCharts() {
             Plotly.newPlot('homeAbsHumidity', tracesAbsHum, layoutAbsHum, config);
         })
 }
+
+
 
 function refreshWeather() {
     document.getElementById("weather").innerHTML = weatherContent;
