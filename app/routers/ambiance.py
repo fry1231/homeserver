@@ -75,10 +75,11 @@ async def get_farm_data():
         raise HTTPException(status_code=503, detail=f"Cannot read data from InfluxDB")
     response = []
     try:
-        columns = data.raw['series'][0]['columns']
-        values = data.raw['series'][0]['values']
-        for point_values in values:
-            response.append(FarmResponseItem(**{k: v for k, v in zip(columns, point_values)}))
+        for series in data.raw['series']:
+            columns = series['columns']
+            values = series['values']
+            for point_values in values:
+                response.append(FarmResponseItem(**{k: v for k, v in zip(columns, point_values)}))
         return response
     except:
         logger.error("Error deserializing influx data:\n", traceback.format_exc())

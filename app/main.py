@@ -1,11 +1,11 @@
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
 import orjson
 from contextlib import asynccontextmanager
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from config import logger, DOMAIN, templates
 from routers import (
@@ -15,6 +15,7 @@ from routers.graphql import graphql_app
 from db.sql import database, migraine_database
 from db.redis import redis_conn
 from routers.buses import BusResponse
+from utils import get_events
 
 
 @asynccontextmanager
@@ -76,14 +77,20 @@ class RefreshResponse(BaseModel):
 
 @app.get('/refresh')   # backward compatibility
 async def master_refresh():
+    res = None
     try:
         res = await redis_conn.get('data')
         if res is None:
-            return RefreshResponse()
+            return RefreshResponse(buses=None)
         return RefreshResponse(**orjson.loads(res))
+    except ValidationError as e:
+        logger.error(f"Redis data is {res}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=503, detail="Cannot read data from Redis")
     except:
         logger.error(f"Redis data is {res}")
         logger.error(traceback.format_exc())
+        raise HTTPException(status_code=503, detail="Error while deserializing data")
 
 
 @app.get("/")
