@@ -2,18 +2,14 @@ import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.templating import Jinja2Templates
-from typing import List, Dict, Any
-import asyncio
 import traceback
 import orjson
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
-import os
 
-from config import logger, DOMAIN
+from config import logger, DOMAIN, templates
 from routers import (
-    buses, states, users, logs, ambiance
+    buses, states, users, logs, ambiance, calendar
 )
 from routers.graphql import graphql_app
 from db.sql import database, migraine_database
@@ -35,9 +31,6 @@ async def lifespan(app: FastAPI):
     await migraine_database.disconnect()
 
 
-templates = Jinja2Templates(directory="templates")
-templates.env.globals.update(getenv=os.getenv)
-
 app = FastAPI(lifespan=lifespan)
 app.state.database = database
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -47,7 +40,7 @@ app.include_router(buses.router)
 app.include_router(states.router)
 app.include_router(logs.router)
 app.include_router(graphql_app, prefix="/graphql", include_in_schema=False)
-# app.include_router(calendar.router)
+app.include_router(calendar.router)
 app.include_router(ambiance.router)
 
 
