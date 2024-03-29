@@ -1,6 +1,5 @@
 from calendar_parser import CalendarParser
 from pydantic import BaseModel
-from pydantic.schema import Optional, List
 from datetime import datetime
 import pytz
 import os
@@ -9,7 +8,7 @@ import os
 class Event(BaseModel):
     name: str
     description: str
-    location: Optional[str]
+    location: str | None
     day: int
     month: str
     weekday: str
@@ -17,7 +16,7 @@ class Event(BaseModel):
     is_today: bool
 
 
-def get_events() -> List[Event]:
+def get_events() -> list[Event]:
     events = []
     today = datetime.now().astimezone(pytz.timezone('Europe/Paris'))
     for file in os.listdir():
