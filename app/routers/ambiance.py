@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect, HTTPException, Depends
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Annotated
 from datetime import datetime
 import traceback
 import pytz
 
 from config import logger
 from db.influx import influx_client
+from db.sql.models import User
+from misc.security import is_admin
 
 
 router = APIRouter(
@@ -105,7 +107,7 @@ async def submit_ambiance_point(data: AmbianceData):
 
 
 @router.post('/submit/farm')
-async def submit_farm_data(data: FarmData):
+async def submit_farm_data(data: FarmData, current_user: Annotated[User, Depends(is_admin)]):
     payload = {
         'measurement': 'farm',
         'time': datetime.now().astimezone(tz=pytz.UTC),

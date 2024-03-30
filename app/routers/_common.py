@@ -1,7 +1,4 @@
-from fastapi import WebSocket, WebSocketException, status
-from config import logger
-import asyncio
-from misc.security import user_authorized
+from fastapi import WebSocket
 
 
 class WebsocketConnectionManager:
