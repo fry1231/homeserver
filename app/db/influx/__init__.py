@@ -33,6 +33,7 @@ for db_name in ['home', 'farm']:
                                                  replication=1)
             logger.info(f'Retention policy for {db_name} updated')
         except InfluxDBClientError:
+            influx_client.switch_database(db_name)
             influx_client.create_retention_policy(name=db_name + '_ret_policy',
                                                   duration=retention_policies[db_name],
                                                   replication='1')
