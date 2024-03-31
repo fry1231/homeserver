@@ -31,13 +31,27 @@ services:
       - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN:?err}`)"
       - "traefik.http.routers.homescreen.entrypoints=websecure"
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
-      - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
+#      - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
 #      - "traefik.http.routers.homescreen.middlewares=homescreen-auth"   # switched to jwt
-      - "traefik.http.routers.homescreen-insecure.rule=Host(`homescreen.${DOMAIN:?err}`)"
-      - "traefik.http.routers.homescreen-insecure.rule=Host(`${IP}`)"
-      - "traefik.http.routers.homescreen-insecure.entrypoints=web"
-      - "traefik.http.routers.homescreen-insecure.middlewares=homescreen-auth"
+#      - "traefik.http.routers.homescreen-insecure.rule=Host(`homescreen.${DOMAIN:?err}`)"
+#      - "traefik.http.routers.homescreen-insecure.rule=Host(`${IP}`)"
+#      - "traefik.http.routers.homescreen-insecure.entrypoints=web"
+#      - "traefik.http.routers.homescreen-insecure.middlewares=homescreen-auth"
 
+
+  react:
+    container_name: react
+    restart: always
+    build: react-app
+    networks:
+      - migrebot_migrebot-network
+    expose:
+      - 3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.react.rule=Host(`hs.${DOMAIN:?err}`)"
+      - "traefik.http.routers.react.entrypoints=websecure"
+      - "traefik.http.routers.react.tls.certresolver=letsencrypt"
 
 #  todobot:
 #    container_name: todobot

@@ -26,7 +26,7 @@ export default function StateView() {
     }
     // Only set up the websocket once
     if (!clientRef.current && token) {
-      const client = new WebSocket(`${protocol}://${import.meta.env.VITE_REACT_APP_HOST}:8000/states/ws/${Date.now()}?token=${token}`);
+      const client = new WebSocket(`${protocol}://${import.meta.env.VITE_REACT_APP_HOST}/states/ws/${Date.now()}?token=${token}`);
       clientRef.current = client;
       
       client.onerror = (e) => console.error(e);

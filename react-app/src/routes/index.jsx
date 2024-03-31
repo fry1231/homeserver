@@ -8,7 +8,7 @@ import SignIn from "../components/SignIn";
 import Topbar from "../components/global/Topbar";
 import BusArrivals from "../components/BusArrivals";
 import StateView from "../components/views/StateView";
-import LogsView from "../components/LogsView";
+import Logs from "../components/Logs";
 import Statistics from "../components/Statistics";
 import DraggableContainer from "../components/global/DraggableContainer";
 
@@ -52,7 +52,7 @@ const Routes = () => {
                 },
                 {
                     path: "/logs",
-                    element: <LogsView />,
+                    element: <Logs />,
                 },
 
             ],

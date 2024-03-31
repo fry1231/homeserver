@@ -29,11 +29,12 @@ class AmbianceResponse(BaseModel):
 
 
 @router.get('/', response_model=List[AmbianceResponse])
-async def get_ambiance_data(influxdb_client=Depends(home_client)):
+async def get_ambiance_data(days: int = 1, offset: int = 0, influxdb_client=Depends(home_client)):
     items = get_influx_data(client=influxdb_client,
                             measurement='ambiance',
-                            days=1,
-                            ResponseClass=AmbianceResponseItem)
+                            ResponseClass=AmbianceResponseItem,
+                            days=days,
+                            offset=offset)
     response = [AmbianceResponse(room_name='room1', data=items)]
     return response
 

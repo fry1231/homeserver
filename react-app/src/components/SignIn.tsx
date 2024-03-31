@@ -24,7 +24,7 @@ export default function SignIn() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    axios.post('/users/token', data)
+    axios.post('/users/token', data, {timeout: 1000})
       .then((response) => {
         if (response.status === 200) {
           const token = response.data.access_token;

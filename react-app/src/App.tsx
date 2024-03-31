@@ -26,8 +26,8 @@ const store = configureStore({
 
 function App() {
   let protocol: string;
-  import.meta.env.IN_PRODUCTION ? protocol = "https" : protocol = "http";
-  axios.defaults.baseURL = `${protocol}://${import.meta.env.VITE_REACT_APP_HOST}:8000`;
+  import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? protocol = "https" : protocol = "http";
+  axios.defaults.baseURL = `${protocol}://${import.meta.env.VITE_REACT_APP_HOST}`;
   
   const [theme, colorMode] = useMode();
   return (

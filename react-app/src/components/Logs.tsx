@@ -7,7 +7,7 @@ import {tokens} from "../theme";
 import {useTheme} from "@mui/material/styles";
 
 
-export default function LogsView() {
+export default function Logs() {
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.logs);
   let protocol: string;
@@ -78,7 +78,7 @@ export default function LogsView() {
     }
     // Only set up the websocket once
     if (!clientRef.current && token) {
-      const client = new WebSocket(`${protocol}://${import.meta.env.VITE_REACT_APP_HOST}:8000/logs/ws/${Date.now()}?token=${token}`);
+      const client = new WebSocket(`${protocol}://${import.meta.env.VITE_REACT_APP_HOST}/logs/ws/${Date.now()}?token=${token}`);
       clientRef.current = client;
       
       client.onerror = (e) => console.error(e);

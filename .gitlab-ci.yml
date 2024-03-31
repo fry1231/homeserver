@@ -7,7 +7,6 @@ stages:
 
 check_vars:
   stage: check_vars
-#  when: manual
   script:
     - |
       if [ -z "$DOMAIN" ] || \
@@ -17,6 +16,7 @@ check_vars:
       [ -z "$SECRET" ] || \
       [ -z "$EMAIL" ] || \
       [ -z "$IS_TESTING" ] || \
+      [ -z "$DOTENV_FILE" ] || \
       [ -z "$HASHPASS_ADMIN" ] || \
       [ -z "$INFLUXDB_PASSWORD" ] || \
       [ -z "$INFLUXDB_USERNAME" ]; then
@@ -33,6 +33,7 @@ pull:
     - git config --global --add safe.directory /usr/homeserver
     - cd /usr/homeserver
     - git pull
+    - cp $DOTENV_FILE /usr/homeserver/react-app/.env
 
 build:
   stage: build
@@ -40,10 +41,21 @@ build:
   needs:
     - pull
   script:
-    - cd /usr/homeserver
+    - cd /usr/homeserver/react-app
     - docker compose build
 
-migration:
+migration_auto:
+  stage: migration
+  script:
+    - cd /usr/homeserver
+    - docker compose run homescreen alembic upgrade head
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /migration/
+      when: on_success
+      needs:
+        - build
+
+migration_manual:
   stage: migration
   when: manual
   script:
