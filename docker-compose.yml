@@ -43,6 +43,7 @@ services:
     container_name: react
     restart: always
     build: react-app
+    command: npm run dev
     networks:
       - migrebot_migrebot-network
     expose:
