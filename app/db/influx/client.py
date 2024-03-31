@@ -10,6 +10,6 @@ def get_influx_client(db_name: str):
                                             password=INFLUXDB_PASSWORD,
                                             database=db_name)
     try:
-        yield client
+        return client
     finally:
         client.close()
