@@ -12,6 +12,7 @@ COPY package.json ./
 COPY package-lock.json ./
 RUN npm install --force
 RUN npm install react-scripts@3.4.1 -g
+RUN npm install --save react-helmet --force
 
 # add app
 COPY . ./
