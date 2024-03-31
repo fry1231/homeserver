@@ -1,7 +1,7 @@
 from influxdb import InfluxDBClient
 from influxdb.exceptions import InfluxDBClientError
 from config import INFLUXDB_HOST, INFLUXDB_PASSWORD, INFLUXDB_USERNAME, INFLUXDB_PORT, logger
-from db.influx.client import InfluxClient
+from db.influx.client import get_influx_client
 from db.influx.crud import get_influx_data, write_influx_data
 
 

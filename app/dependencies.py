@@ -8,7 +8,7 @@ from starlette import status
 from starlette.websockets import WebSocket
 
 from config import SECRET, logger
-from db.influx.client import InfluxClient
+from db.influx import get_influx_client
 from db.redis import redis_pool
 from db.sql.models import User
 from misc.security import oauth2_scheme, ALGORITHM, TokenData, user_authorized
@@ -16,8 +16,8 @@ from misc.security import oauth2_scheme, ALGORITHM, TokenData, user_authorized
 
 # ========= database clients
 # influx
-home_client = InfluxClient('home')
-farm_client = InfluxClient('farm')
+home_client = lambda: get_influx_client('home')
+farm_client = lambda: get_influx_client('farm')
 
 
 # redis

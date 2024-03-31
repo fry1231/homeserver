@@ -42,8 +42,8 @@ async def get_farm_data():
 
 
 @router.get('/watering', response_model=List[WateringResponseItem])
-async def get_watering_data():
-    return get_influx_data(client=farm_client,
+async def get_watering_data(influxdb_client=Depends(farm_client)):
+    return get_influx_data(client=influxdb_client,
                            measurement='watering',
                            days=14,
                            ResponseClass=WateringResponseItem)
@@ -55,14 +55,14 @@ async def is_watering_needed():
 
 
 @router.post('/submit/sensors-data')
-async def submit_farm_data(data: FarmData):
-    write_influx_data(client=farm_client,
+async def submit_farm_data(data: FarmData, influxdb_client = Depends(farm_client)):
+    write_influx_data(client=influxdb_client,
                       measurement='farm',
                       fields=data.model_dump())
 
 
 @router.post('/submit/watering')
-async def submit_watering(data: Watering):
-    write_influx_data(client=farm_client,
+async def submit_watering(data: Watering, influxdb_client=Depends(farm_client)):
+    write_influx_data(client=influxdb_client,
                       measurement='watering',
                       fields=data.model_dump())
