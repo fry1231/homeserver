@@ -11,7 +11,7 @@ export default function StateView() {
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.states);
   let protocol: string;
-  import.meta.env.IN_PRODUCTION ? protocol = "wss" : protocol = "ws";
+  import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? protocol = "wss" : protocol = "ws";
   
   const clientRef = useRef(null);
   const [waitingToReconnect, setWaitingToReconnect] = useState(null);

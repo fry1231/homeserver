@@ -11,7 +11,7 @@ export default function Logs() {
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.logs);
   let protocol: string;
-  import.meta.env.IN_PRODUCTION ? protocol = "wss" : protocol = "ws";
+  import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? protocol = "wss" : protocol = "ws";
   
   const clientRef = useRef(null);
   const [waitingToReconnect, setWaitingToReconnect] = useState(null);
