@@ -34,8 +34,8 @@ class WateringResponseItem(Watering):
 
 
 @router.get('/farmdata', response_model=List[FarmResponseItem])
-async def get_farm_data():
-    return get_influx_data(client=farm_client,
+async def get_farm_data(influxdb_client=Depends(farm_client)):
+    return get_influx_data(client=influxdb_client,
                            measurement='farm',
                            days=14,
                            ResponseClass=FarmResponseItem)
