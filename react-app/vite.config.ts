@@ -10,7 +10,7 @@ export default ({mode}) => {
     server: {
       port: 3000,
       strictPort: true,
-      host: true,
+      host: '0.0.0.0',
       origin: `https://${process.env.VITE_REACT_APP_HOST}`,
     },
   });
