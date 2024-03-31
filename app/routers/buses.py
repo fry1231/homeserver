@@ -15,9 +15,8 @@ import datetime
 import pytz
 import traceback
 from db.sql.models import User
-from misc.security import is_admin
+from dependencies import is_admin, get_redis_conn
 from config import IDF_TOKEN
-from db.redis import redis_conn
 
 
 router = APIRouter(
@@ -121,6 +120,8 @@ async def retrieve_arrivals():
             to_rer=show_data_rer
         )
         data = {'buses': res.model_dump()}
+
+        redis_conn = get_redis_conn()
         await redis_conn.set('data', orjson.dumps(data))   # for backward compatibility
         await redis_conn.publish('channel:buses', orjson.dumps(data))
 
@@ -134,6 +135,7 @@ async def retrieve_arrivals():
 
 
 async def reader():
+    redis_conn = get_redis_conn()
     channel = redis_conn.pubsub()
     await channel.subscribe("channel:buses")
     while True:

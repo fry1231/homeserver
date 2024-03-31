@@ -11,9 +11,9 @@ from misc.security import (
     authenticate_user,
     create_access_token,
     ACCESS_TOKEN_EXPIRE_DAYS,
-    Token,
-    is_admin
+    Token
 )
+from dependencies import is_admin
 from typing import Annotated
 
 

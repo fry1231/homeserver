@@ -1,7 +1,7 @@
 import asyncio
 
 import uvicorn
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
@@ -15,9 +15,9 @@ from routers import (
 )
 from routers.graphql import graphql_app
 from db.sql import database, migraine_database
-from db.redis import redis_conn
 from routers.buses import BusResponse
 from utils import get_events
+from dependencies import get_redis_conn
 
 
 @asynccontextmanager
@@ -79,7 +79,7 @@ class RefreshResponse(BaseModel):
 
 
 @app.get('/refresh')   # backward compatibility
-async def master_refresh():
+async def master_refresh(redis_conn=Depends(get_redis_conn)):
     res = None
     try:
         res = await redis_conn.get('data')

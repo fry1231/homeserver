@@ -4,11 +4,9 @@ import async_timeout
 import orjson
 
 from db.redis.models import State, States, StateUpdate
-from db.redis import redis_conn
 from routers import WebsocketConnectionManager
 from config import logger
-from misc.security import websocket_authorized
-
+from dependencies import websocket_authorized, get_redis_conn
 
 router = APIRouter(
     prefix="/states",
@@ -23,9 +21,10 @@ class ConnectionManager(WebsocketConnectionManager):
         super().__init__()
         self.listen_updates_task = None
         self.mocked_incr_val = -1
+        self.redis_conn = get_redis_conn()
 
     async def subscribe_to_states(self):
-        channel = redis_conn.pubsub()
+        channel = self.redis_conn.pubsub()
         await channel.subscribe('channel:states')
         while True:
             try:
@@ -60,6 +59,7 @@ class ConnectionManager(WebsocketConnectionManager):
 
 
 async def get_current_states():
+    redis_conn = get_redis_conn()
     state_keys = await redis_conn.keys("state:*")
     state_vals = await redis_conn.mget(state_keys)
     states = [

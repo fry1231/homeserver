@@ -1,5 +1,3 @@
 import aioredis
-import asyncio
 
-
-redis_conn: aioredis.Redis = aioredis.from_url("redis://redis", db=1, decode_responses=True)
+redis_pool = aioredis.ConnectionPool.from_url("redis://redis", db=1, max_connections=5)
