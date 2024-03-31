@@ -11,7 +11,7 @@ from pydantic import BaseModel, ValidationError
 
 from config import logger, DOMAIN, templates
 from routers import (
-    buses, states, users, logs, ambiance, calendar
+    buses, states, users, logs, ambiance, calendar, farm
 )
 from routers.graphql import graphql_app
 from db.sql import database, migraine_database
@@ -46,6 +46,7 @@ app.include_router(logs.router)
 app.include_router(graphql_app, prefix="/graphql", include_in_schema=False)
 app.include_router(calendar.router)
 app.include_router(ambiance.router)
+app.include_router(farm.router)
 
 
 # @app.middleware("http")
