@@ -59,10 +59,12 @@ origins = [
     "https://localhost.tiangolo.com",
     f"http://{DOMAIN}",
     f"http://{DOMAIN}:8000",
-    f"http://{DOMAIN}:5173",
+    f"http://{DOMAIN}:3000",
     f"https://{DOMAIN}",
     f"https://{DOMAIN}:8000",
-    f"https://{DOMAIN}:5173"
+    f"https://{DOMAIN}:3000",
+    f"https://hs.{DOMAIN}",
+    f"https://homescreen.{DOMAIN}",
 ]
 
 app.add_middleware(
