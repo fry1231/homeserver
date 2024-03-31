@@ -41,7 +41,7 @@ build:
   needs:
     - pull
   script:
-    - cd /usr/homeserver/react-app
+    - cd /usr/homeserver
     - docker compose build
 
 migration_auto:
