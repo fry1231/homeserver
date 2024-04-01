@@ -34,8 +34,9 @@ class ConnectionManager(WebsocketConnectionManager):
                     message = await channel.get_message(ignore_subscribe_messages=True)
                     if message is not None:
                         logger.debug(f"Received message: {message}")
+                        parsed_message = orjson.loads(message['data'])
                         await self.broadcast(
-                            StateUpdate(**message['data']).model_dump_json()
+                            StateUpdate(**parsed_message).model_dump_json()
                         )
                         logger.debug(f"Broadcasted message")
                     await asyncio.sleep(0.01)
