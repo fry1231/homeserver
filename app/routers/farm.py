@@ -25,11 +25,11 @@ class FarmResponseItem(FarmData):
     time: str
 
 
-class Watering(BaseModel):
+class WateringData(BaseModel):
     duration: int
 
 
-class WateringResponseItem(Watering):
+class WateringResponseItem(WateringData):
     time: str
 
 
@@ -52,7 +52,7 @@ async def get_farm_data(days: int = 1, offset: int = 0, influxdb_client=Depends(
 
 # Submit and get data about watering pump on/off
 @router.post('/watering/submit-data')
-async def submit_watering(data: Watering, influxdb_client=Depends(farm_client)):
+async def submit_watering(data: WateringData, influxdb_client=Depends(farm_client)):
     write_influx_data(client=influxdb_client,
                       measurement='watering',
                       fields=data.model_dump())

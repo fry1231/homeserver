@@ -15,4 +15,4 @@ def get_influx_client(db_name: str):
         logger.error(f"Error while creating influx client for {db_name}")
         raise
     finally:
-        logger.debug(f"Closing influx client for {db_name}")
+        client.close()
