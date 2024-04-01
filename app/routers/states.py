@@ -132,10 +132,13 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int, authorized: b
     :return:
     """
     try:
+        logger.debug("Getting current states")
         current_states = await get_current_states()
+        logger.debug("Trying to connect the websocket")
         await manager.connect(websocket)
+        logger.debug(f"Sending personal message")
         await manager.send_personal_message(current_states.model_dump_json(), websocket)
-
+        logger.debug("Finished setting up the connection")
         while True:
             data = await websocket.receive_text()
             if data == "ping":
