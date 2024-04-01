@@ -21,7 +21,7 @@ router = APIRouter(
 
 
 class ConnectionManager(WebsocketConnectionManager):
-    def __init__(self, redis_conn: Depends(get_redis_conn)):
+    def __init__(self):
         super().__init__()
         self.listen_updates_task = None
         self.mocked_incr_val = -1
