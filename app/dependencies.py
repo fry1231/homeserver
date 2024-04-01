@@ -1,8 +1,12 @@
-from typing import Annotated
-
+import inspect
+from contextlib import AsyncExitStack
+from functools import wraps
+from typing import Any, Callable, Coroutine, TypeVar, Annotated
 import orjson
 import aioredis
-from fastapi import Depends, HTTPException, Cookie, Query, WebSocketException
+from fastapi import Request, Depends, HTTPException, Cookie, Query, WebSocketException
+from fastapi.dependencies.models import Dependant
+from fastapi.dependencies.utils import get_dependant, solve_dependencies
 from jose import jwt, JWTError
 from starlette import status
 from starlette.websockets import WebSocket
@@ -12,6 +16,64 @@ from db.influx import get_influx_client
 from db.redis import redis_pool
 from db.sql.models import User
 from misc.security import oauth2_scheme, ALGORITHM, TokenData, user_authorized
+
+
+T = TypeVar("T")
+
+
+class DependencyError(Exception):
+    """Exception raised for errors during dependency injection."""
+    pass
+
+
+def injectable(
+        func: Callable[..., Coroutine[Any, Any, T]],
+) -> Callable[..., Coroutine[Any, Any, T]]:
+    """
+    ©barapa
+    https://github.com/tiangolo/fastapi/discussions/7720#discussioncomment-8661497
+
+    A decorator to enable FastAPI-style dependency injection for any asynchronous function.
+    This allows dependencies defined with FastAPI's Depends mechanism to be automatically
+    resolved and injected into CLI tools or other components, not just web endpoints.
+    Args:
+        func: The asynchronous function to be wrapped, enabling dependency injection.
+    Returns:
+        The wrapped function with dependencies injected.
+    Raises:
+        ValueError: If the dependant.call is not a callable function.
+        RuntimeError: If the wrapped function is not asynchronous.
+        DependencyError: If an error occurs during dependency resolution.
+    """
+
+    @wraps(func)
+    async def call_with_solved_dependencies(*args: Any, **kwargs: Any) -> T:  # type: ignore
+        dependant: Dependant = get_dependant(path="command", call=func)
+        if dependant.call is None or not callable(dependant.call):
+            raise ValueError("The dependant.call attribute must be a callable.")
+
+        if not inspect.iscoroutinefunction(dependant.call):
+            raise RuntimeError("The decorated function must be asynchronous.")
+
+        fake_request = Request({"type": "http", "headers": [], "query_string": ""})
+        values: dict[str, Any] = {}
+        errors: list[Any] = []
+
+        async with AsyncExitStack() as stack:
+            solved_result = await solve_dependencies(
+                request=fake_request,
+                dependant=dependant,
+                async_exit_stack=stack,
+            )
+            values, errors = solved_result[0], solved_result[1]
+
+            if errors:
+                error_details = "\n".join([str(error) for error in errors])
+                logger.info(f"Dependency resolution errors: {error_details}")
+
+            return await dependant.call(*args, **{**values, **kwargs})
+
+    return call_with_solved_dependencies
 
 
 # ========= database clients

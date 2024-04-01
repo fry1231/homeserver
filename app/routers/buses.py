@@ -8,14 +8,10 @@ import os
 from config import logger
 import asyncio
 import async_timeout
-# from httpx import AsyncClient
-# from arq import create_pool
-# from arq.connections import RedisSettings
 import datetime
 import pytz
 import traceback
-from db.sql.models import User
-from dependencies import is_admin, get_redis_conn
+from dependencies import is_admin, get_redis_conn, injectable
 from config import IDF_TOKEN
 
 
@@ -71,7 +67,8 @@ async def arrivals():
     return StreamingResponse(reader(), media_type="text/event-stream")
 
 
-async def retrieve_arrivals(redis_conn: Depends(get_redis_conn)):
+@injectable
+async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
     """
     Get bus arrivals, save data to redis 'data' (data['buses']) and submit it to 'channel:buses'
     """
@@ -133,7 +130,8 @@ async def retrieve_arrivals(redis_conn: Depends(get_redis_conn)):
         await asyncio.sleep(int(sleep_seconds))
 
 
-async def reader(redis_conn: Depends(get_redis_conn)):
+@injectable
+async def reader(redis_conn=Depends(get_redis_conn)):
     channel = redis_conn.pubsub()
     await channel.subscribe("channel:buses")
     while True:
