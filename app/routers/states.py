@@ -59,9 +59,13 @@ class ConnectionManager(WebsocketConnectionManager):
 
 
 async def get_current_states():
+    logger.debug("Entered get_current_states")
     redis_conn = get_redis_conn()
+    logger.debug("Got redis connection")
     state_keys = await redis_conn.keys("state:*")
+    logger.debug(f"Got state_keys: {state_keys}")
     state_vals = await redis_conn.mget(state_keys)
+    logger.debug(f"Got state_vals: {state_vals}")
     states = [
         State(
             state_name=state_key.split(":", maxsplit=1)[1],
@@ -69,8 +73,10 @@ async def get_current_states():
         )
         for state_key, state_val in zip(state_keys, state_vals)
     ]
+    logger.debug(f"Got states: {states}")
     incr_value = await redis_conn.get("incr_value")
     incr_value = int(incr_value)
+    logger.debug(f"Got incr_value: {incr_value}")
     return States(states=states, incr_value=incr_value)
 
 
