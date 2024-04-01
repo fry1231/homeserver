@@ -42,3 +42,5 @@ def write_influx_data(client, measurement: str, fields: dict):
     if not client.write_points([payload]):
         logger.error("Error writing to influx")
         raise HTTPException(status_code=503, detail='Error writing to InfluxDB')
+    else:
+        logger.debug("Data written to influx")

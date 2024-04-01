@@ -41,6 +41,7 @@ async def submit_farm_data(data: FarmData, influxdb_client=Depends(farm_client))
                       measurement='farm',
                       fields=data.model_dump())
     logger.debug('Data written to influx')
+    return Response(status_code=201, content='Data written to influx')
 
 
 @router.get('/sensors/data', response_model=List[FarmResponseItem])
@@ -58,6 +59,7 @@ async def submit_watering(data: WateringData, influxdb_client=Depends(farm_clien
     write_influx_data(client=influxdb_client,
                       measurement='watering',
                       fields=data.model_dump())
+    return Response(status_code=201, content='Data written to influx')
 
 
 @router.get('/watering/data', response_model=List[WateringResponseItem])
