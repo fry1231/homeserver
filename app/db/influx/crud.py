@@ -37,7 +37,6 @@ def write_influx_data(client, measurement: str, fields: dict):
         logger.debug(f"Writing to influx: {fields}")
         payload = {
             'measurement': measurement,
-            'time': 'now()',
             'fields': fields
         }
         if not client.write_points([payload]):
