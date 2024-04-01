@@ -44,6 +44,7 @@ class ConnectionManager(WebsocketConnectionManager):
                     await asyncio.sleep(0.01)
             except asyncio.TimeoutError:
                 pass
+            await asyncio.sleep(0.01)
 
     async def connect(self, websocket: WebSocket, token: str = None):
         await websocket.accept()
