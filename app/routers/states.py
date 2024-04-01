@@ -34,9 +34,12 @@ class ConnectionManager(WebsocketConnectionManager):
                     message = await channel.get_message(ignore_subscribe_messages=True)
                     if message is not None:
                         logger.debug(f"Received message: {message}")
-                        await self.broadcast(
-                            StateUpdate(**message['data']).model_dump_json()
-                        )
+                        for connection in self.active_connections:
+                            logger.debug(f"Sending message to connection: {connection}")
+                            await connection.send_text(StateUpdate(**message['data']).model_dump_json())
+                        # await self.broadcast(
+                        #     StateUpdate(**message['data']).model_dump_json()
+                        # )
                         logger.debug(f"Broadcasted message")
                     await asyncio.sleep(0.01)
             except asyncio.TimeoutError:
