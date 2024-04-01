@@ -33,16 +33,13 @@ class ConnectionManager(WebsocketConnectionManager):
                 async with async_timeout.timeout(1):
                     message = await channel.get_message(ignore_subscribe_messages=True)
                     if message is not None:
-                        logger.debug(f"Received message: {message}")
                         parsed_message = orjson.loads(message['data'])
                         await self.broadcast(
                             StateUpdate(**parsed_message).model_dump_json()
                         )
-                        logger.debug(f"Broadcasted message")
                     await asyncio.sleep(0.01)
             except asyncio.TimeoutError:
-                await asyncio.sleep(0.01)
-            await asyncio.sleep(0.01)
+                pass
 
     async def connect(self, websocket: WebSocket, token: str = None):
         await websocket.accept()

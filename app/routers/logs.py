@@ -4,6 +4,7 @@ import datetime
 from pydantic import BaseModel
 from typing import Annotated
 import async_timeout
+import orjson
 
 from db.redis.models import LogsSnapshot, LogUpdate
 from db.sql.models import User
@@ -35,8 +36,9 @@ class ConnectionManager(WebsocketConnectionManager):
                 async with async_timeout.timeout(1):
                     message = await channel.get_message(ignore_subscribe_messages=True)
                     if message is not None:
+                        parsed_message = orjson.loads(message['data'])
                         await self.broadcast(
-                            LogUpdate(**message['data']).model_dump_json()
+                            LogUpdate(**parsed_message).model_dump_json()
                         )
                     await asyncio.sleep(0.01)
             except asyncio.TimeoutError:

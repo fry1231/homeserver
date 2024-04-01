@@ -158,7 +158,13 @@ export default function StateView() {
                     return (
                       <Box key={j} mx={1} display="flex" flexDirection="column" alignItems="center" justifyContent="space-between">
                         <Typography variant="h6">{state.state_name.split(':')[2]}</Typography>
-                        <Typography variant="h6">{state.user_ids.length}</Typography>
+                        
+                        <Typography variant="h6"
+                          color={state.user_ids.length > 0 ? 'error' : 'textPrimary'}
+                          onClick={() => {
+                            alert(state.user_ids);
+                          }}
+                        >{state.user_ids.length}</Typography>
                       </Box>
                     );
                   })}
