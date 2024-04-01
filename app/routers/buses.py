@@ -71,7 +71,7 @@ async def arrivals():
     return StreamingResponse(reader(), media_type="text/event-stream")
 
 
-async def retrieve_arrivals():
+async def retrieve_arrivals(redis_conn: Depends(get_redis_conn)):
     """
     Get bus arrivals, save data to redis 'data' (data['buses']) and submit it to 'channel:buses'
     """
@@ -121,7 +121,6 @@ async def retrieve_arrivals():
         )
         data = {'buses': res.model_dump()}
 
-        redis_conn = Depends(get_redis_conn)
         await redis_conn.set('data', orjson.dumps(data))   # for backward compatibility
         await redis_conn.publish('channel:buses', orjson.dumps(data))
 
@@ -134,8 +133,7 @@ async def retrieve_arrivals():
         await asyncio.sleep(int(sleep_seconds))
 
 
-async def reader():
-    redis_conn = Depends(get_redis_conn)
+async def reader(redis_conn: Depends(get_redis_conn)):
     channel = redis_conn.pubsub()
     await channel.subscribe("channel:buses")
     while True:

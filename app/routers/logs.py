@@ -21,11 +21,11 @@ router = APIRouter(
 
 
 class ConnectionManager(WebsocketConnectionManager):
-    def __init__(self):
+    def __init__(self, redis_conn: Depends(get_redis_conn)):
         super().__init__()
         self.listen_updates_task = None
         self.mocked_incr_val = -1
-        self.redis_conn = Depends(get_redis_conn)
+        self.redis_conn = redis_conn
 
     async def subscribe_to_logs(self):
 
@@ -64,8 +64,7 @@ class ConnectionManager(WebsocketConnectionManager):
                 logger.error("listen_updates_task was not created")
 
 
-async def get_logs(start: int, end: int):
-    redis_conn = Depends(get_redis_conn)
+async def get_logs(start: int, end: int, redis_conn: Depends(get_redis_conn)):
     logs = await redis_conn.lrange('logs', start, end)
     log_incr_value = await redis_conn.get('log_incr_value')
     log_incr_value = int(log_incr_value)
