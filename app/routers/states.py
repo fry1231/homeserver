@@ -43,6 +43,7 @@ class ConnectionManager(WebsocketConnectionManager):
                         logger.debug(f"Broadcasted message")
                     await asyncio.sleep(0.01)
             except asyncio.TimeoutError:
+                logger.debug("TimeoutError in subscribe_to_states")
                 pass
 
     async def connect(self, websocket: WebSocket, token: str = None):
