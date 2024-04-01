@@ -24,16 +24,20 @@ class ConnectionManager(WebsocketConnectionManager):
         self.redis_conn = get_redis_conn()
 
     async def subscribe_to_states(self):
+        logger.debug("Subscribing to channel:states")
         channel = self.redis_conn.pubsub()
         await channel.subscribe('channel:states')
+        logger.debug("Subscribed to channel:states")
         while True:
             try:
                 async with async_timeout.timeout(1):
                     message = await channel.get_message(ignore_subscribe_messages=True)
                     if message is not None:
+                        logger.debug(f"Received message: {message}")
                         await self.broadcast(
                             StateUpdate(**message['data']).model_dump_json()
                         )
+                        logger.debug(f"Broadcasted message")
                     await asyncio.sleep(0.01)
             except asyncio.TimeoutError:
                 pass
@@ -133,13 +137,9 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int, authorized: b
     :return:
     """
     try:
-        logger.debug("Getting current states")
         current_states = await get_current_states()
-        logger.debug("Trying to connect the websocket")
         await manager.connect(websocket)
-        logger.debug(f"Sending personal message")
         await manager.send_personal_message(current_states.model_dump_json(), websocket)
-        logger.debug("Finished setting up the connection")
         while True:
             data = await websocket.receive_text()
             if data == "ping":
@@ -148,6 +148,5 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int, authorized: b
             if data == "refresh_states":
                 current_states = await get_current_states()
                 await manager.send_personal_message(current_states.model_dump_json(), websocket)
-                logger.debug(f"Sent states to client #{client_id}")
     except WebSocketDisconnect:
         await manager.disconnect(websocket)

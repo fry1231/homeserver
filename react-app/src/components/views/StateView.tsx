@@ -84,6 +84,7 @@ export default function StateView() {
   
   useEffect(() => {
     if (incomingMessage) {
+      console.log(incomingMessage);
       const data = JSON.parse(incomingMessage);
       if ("states" in data) {
         dispatch(statesRefreshed(data));
@@ -153,9 +154,9 @@ export default function StateView() {
                   borderRadius: 1,
                   boxShadow: 1
                 }}>
-                  {steps.map((state) => {
+                  {steps.map((state, j) => {
                     return (
-                      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="space-between">
+                      <Box key={j} mx={1} display="flex" flexDirection="column" alignItems="center" justifyContent="space-between">
                         <Typography variant="h6">{state.state_name.split(':')[2]}</Typography>
                         <Typography variant="h6">{state.user_ids.length}</Typography>
                       </Box>
