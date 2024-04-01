@@ -33,6 +33,7 @@ def get_influx_data(client: InfluxDBClient,
 
 
 def write_influx_data(client, measurement: str, fields: dict):
+    logger.debug(f"Writing to influx: {fields}")
     payload = {
         'measurement': measurement,
         'time': 'now()',
