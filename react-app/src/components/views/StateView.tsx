@@ -161,6 +161,7 @@ export default function StateView() {
                         
                         <Typography variant="h6"
                           color={state.user_ids.length > 0 ? 'error' : 'textPrimary'}
+                          style={{backgroundColor: state.user_ids.length > 0 ? 'error' : 'textPrimary'}}
                           onClick={() => {
                             alert(state.user_ids);
                           }}

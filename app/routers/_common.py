@@ -1,5 +1,4 @@
 from fastapi import WebSocket
-from config import logger
 
 
 class WebsocketConnectionManager:
@@ -20,8 +19,5 @@ class WebsocketConnectionManager:
         await websocket.send_text("pong")
 
     async def broadcast(self, text: str):
-        logger.debug(f"Broadcasting message: {text}")
         for connection in self.active_connections:
-            logger.debug(f"Sending message to connection: {connection}")
             await connection.send_text(text)
-            logger.debug(f"Message sent to connection: {connection}")

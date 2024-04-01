@@ -21,7 +21,7 @@ class ConnectionManager(WebsocketConnectionManager):
         super().__init__()
         self.listen_updates_task = None
         self.mocked_incr_val = -1
-        self.redis_conn = get_redis_conn()
+        self.redis_conn = Depends(get_redis_conn)
 
     async def subscribe_to_states(self):
         logger.debug("Subscribing to channel:states")
@@ -62,7 +62,7 @@ class ConnectionManager(WebsocketConnectionManager):
 
 
 async def get_current_states():
-    redis_conn = get_redis_conn()
+    redis_conn = Depends(get_redis_conn)
     state_keys = await redis_conn.keys("state:*")
     state_keys = [key.decode("utf-8") for key in state_keys]
     state_vals = await redis_conn.mget(state_keys)
