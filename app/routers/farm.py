@@ -36,9 +36,11 @@ class WateringResponseItem(WateringData):
 # Submit and get data from farm sensors (temperature, soil moisture, water level)
 @router.post('/sensors/submit-data')
 async def submit_farm_data(data: FarmData, influxdb_client=Depends(farm_client)):
+    logger.debug(f'Got farm data: {data.model_dump()}')
     write_influx_data(client=influxdb_client,
                       measurement='farm',
                       fields=data.model_dump())
+    logger.debug('Data written to influx')
 
 
 @router.get('/sensors/data', response_model=List[FarmResponseItem])
