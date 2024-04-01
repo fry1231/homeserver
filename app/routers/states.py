@@ -18,13 +18,19 @@ router = APIRouter(
 
 class ConnectionManager(WebsocketConnectionManager):
     @injectable
-    def __init__(self, redis_conn=Depends(get_redis_conn)):
+    def __init__(self):
         super().__init__()
         self.listen_updates_task = None
         self.mocked_incr_val = -1
-        self.redis_conn = redis_conn
+        self.redis_conn = None
+
+    @injectable
+    async def init_redis_conn(self, redis_conn=Depends(get_redis_conn)):
+        if self.redis_conn is None:
+            self.redis_conn = redis_conn
 
     async def subscribe_to_states(self):
+        await self.init_redis_conn()
         logger.debug("Subscribing to channel:states")
         channel = self.redis_conn.pubsub()
         await channel.subscribe('channel:states')
