@@ -84,3 +84,5 @@ async def is_watering_needed(redis_conn=Depends(get_redis_conn)):  # , influxdb_
         return watering_needed
     else:
         return '0'
+
+

@@ -69,6 +69,7 @@ class ConnectionManager(WebsocketConnectionManager):
                 logger.error("listen_updates_task was not created")
 
 
+@injectable
 async def get_logs(start: int, end: int, redis_conn: Depends(get_redis_conn)):
     logs = await redis_conn.lrange('logs', start, end)
     log_incr_value = await redis_conn.get('log_incr_value')

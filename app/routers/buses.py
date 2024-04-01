@@ -63,8 +63,8 @@ async def generate_sse_events():
 
 
 @router.get("/arrivals")
-async def arrivals():
-    return StreamingResponse(reader(), media_type="text/event-stream")
+async def arrivals(redis_conn=Depends(get_redis_conn)):
+    return StreamingResponse(reader(redis_conn), media_type="text/event-stream")
 
 
 @injectable
@@ -130,8 +130,7 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
         await asyncio.sleep(int(sleep_seconds))
 
 
-@injectable
-async def reader(redis_conn=Depends(get_redis_conn)):
+async def reader(redis_conn):
     channel = redis_conn.pubsub()
     await channel.subscribe("channel:buses")
     while True:

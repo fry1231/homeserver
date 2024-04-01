@@ -16,6 +16,7 @@
     "@mui/icons-material": "^5.15.11",
     "@mui/material": "^5.15.11",
     "@mui/system": "^5.15.11",
+    "@mui/x-charts": "^7.1.0",
     "@react-buddy/ide-toolbox": "^2.4.0",
     "@react-buddy/palette-mui": "^5.0.1",
     "@reduxjs/toolkit": "^2.2.1",

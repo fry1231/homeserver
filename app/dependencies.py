@@ -82,12 +82,8 @@ home_client = lambda: get_influx_client('home')
 farm_client = lambda: get_influx_client('farm')
 
 
-n = 0
-# redis
+# redis connection from pool
 def get_redis_conn():
-    global n
-    n += 1
-    logger.debug(f"Got redis connection {n}")
     redis_conn = aioredis.Redis(connection_pool=redis_pool, decode_responses=True)
     return redis_conn
 
