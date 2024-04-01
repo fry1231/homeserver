@@ -70,7 +70,6 @@ class ConnectionManager(WebsocketConnectionManager):
 @injectable
 async def get_current_states(redis_conn=Depends(get_redis_conn)):
     state_keys = await redis_conn.keys("state:*")
-    state_keys = [key.decode("utf-8") for key in state_keys]
     state_vals = await redis_conn.mget(state_keys)
     states = [
         State(

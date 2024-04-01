@@ -15,7 +15,7 @@ def get_influx_data(client: InfluxDBClient,
         data = client.query(
             f'SELECT * FROM "{measurement}" '
             f'WHERE time > now() - {days}d - {offset}d '
-            f'AND time <= now() - {offset}d)')
+            f'AND time <= now() - {offset}d')
     except:
         logger.error("Error while getting data from influx:\n", traceback.format_exc())
         raise HTTPException(status_code=503, detail=f"Cannot read data from InfluxDB")
