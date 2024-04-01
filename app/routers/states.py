@@ -36,14 +36,13 @@ class ConnectionManager(WebsocketConnectionManager):
                         logger.debug(f"Received message: {message}")
                         for connection in self.active_connections:
                             logger.debug(f"Sending message to connection: {connection}")
-                            await connection.send_text(StateUpdate(**message['data']).model_dump_json())
+                            asyncio.create_task(connection.send_text(StateUpdate(**message['data']).model_dump_json()))
                         # await self.broadcast(
                         #     StateUpdate(**message['data']).model_dump_json()
                         # )
                         logger.debug(f"Broadcasted message")
                     await asyncio.sleep(0.01)
             except asyncio.TimeoutError:
-                logger.debug("TimeoutError in subscribe_to_states")
                 pass
 
     async def connect(self, websocket: WebSocket, token: str = None):
