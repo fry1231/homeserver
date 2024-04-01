@@ -33,14 +33,16 @@ def get_influx_data(client: InfluxDBClient,
 
 
 def write_influx_data(client, measurement: str, fields: dict):
-    logger.debug(f"Writing to influx: {fields}")
-    payload = {
-        'measurement': measurement,
-        'time': 'now()',
-        'fields': fields
-    }
-    if not client.write_points([payload]):
-        logger.error("Error writing to influx")
-        raise HTTPException(status_code=503, detail='Error writing to InfluxDB')
-    else:
-        logger.debug("Data written to influx")
+    try:
+        logger.debug(f"Writing to influx: {fields}")
+        payload = {
+            'measurement': measurement,
+            'time': 'now()',
+            'fields': fields
+        }
+        if not client.write_points([payload]):
+            logger.error("Error writing to influx")
+            raise HTTPException(status_code=503, detail='Error writing to InfluxDB')
+    except:
+        logger.error("Error while writing data to influx:\n", traceback.format_exc())
+        raise HTTPException(status_code=503, detail="Error writing to InfluxDB")
