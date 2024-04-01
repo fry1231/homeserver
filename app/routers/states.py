@@ -17,7 +17,6 @@ router = APIRouter(
 
 
 class ConnectionManager(WebsocketConnectionManager):
-    @injectable
     def __init__(self):
         super().__init__()
         self.listen_updates_task = None
