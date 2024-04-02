@@ -33,11 +33,13 @@ const Topbar = () => {
       </MenuItem>
     );
   }
+  
   const links = {
     Home: '/',
     States: '/states',
     Buses: '/buses',
     Logs: '/logs',
+    Farm: '/farm',
     Statistics: '/statistics',
   }
   const menuItems = [];

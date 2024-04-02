@@ -10,6 +10,7 @@ import BusArrivals from "../components/BusArrivals";
 import StateView from "../components/views/StateView";
 import Logs from "../components/Logs";
 import Statistics from "../components/Statistics";
+import Farm from "../components/Farm";
 import DraggableContainer from "../components/global/DraggableContainer";
 
 
@@ -53,6 +54,10 @@ const Routes = () => {
                 {
                     path: "/logs",
                     element: <Logs />,
+                },
+                {
+                    path: "/farm",
+                    element: <Farm />,
                 },
 
             ],

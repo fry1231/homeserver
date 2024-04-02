@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Response
 from pydantic import BaseModel
 from typing import List
-from datetime import datetime
+import datetime
 import pytz
 
 from config import logger
@@ -67,6 +67,21 @@ async def get_watering_data(days: int = 14, offset: int = 0, influxdb_client=Dep
                            ResponseClass=WateringResponseItem,
                            days=days,
                            offset=offset)
+
+
+@router.get('/watering/last')
+async def get_last_watering_time(influxdb_client=Depends(farm_client)):
+    data: list[WateringResponseItem] = get_influx_data(client=influxdb_client,
+                                                       measurement='watering',
+                                                       ResponseClass=WateringResponseItem,
+                                                       days=1,
+                                                       offset=0)
+    if len(data) == 0:
+        raise HTTPException(status_code=404, detail='No watering data found')
+    time_str = data[-1].time    # "2024-04-01T18:34:45.743561Z"
+    time = datetime.datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+    return str(int(time.timestamp()))
+
 
 
 @router.post('/watering/set-needed')
