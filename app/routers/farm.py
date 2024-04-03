@@ -83,7 +83,6 @@ async def get_last_watering_time(influxdb_client=Depends(farm_client)):
     return str(int(time.timestamp()))
 
 
-
 @router.post('/watering/set-needed')
 async def set_watering_needed(redis_conn=Depends(get_redis_conn)):
     if await redis_conn.get('watering_needed') == '1':
@@ -93,13 +92,12 @@ async def set_watering_needed(redis_conn=Depends(get_redis_conn)):
 
 
 @router.get('/watering/is-needed')
-async def is_watering_needed(redis_conn=Depends(get_redis_conn)):  # , influxdb_client=Depends(farm_client)):
+async def is_watering_needed(noreset: bool | None = None, redis_conn=Depends(get_redis_conn)):  # , influxdb_client=Depends(farm_client)):
     watering_needed = await redis_conn.get('watering_needed')   # '1' or '0' or None
     if watering_needed is not None:
         if watering_needed == '1':
-            await redis_conn.set('watering_needed', '0')    # Water once and reset the flag
+            if noreset is None:
+                await redis_conn.set('watering_needed', '0')    # Water once and reset the flag
         return watering_needed
     else:
         return '0'
-
-

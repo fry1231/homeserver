@@ -3,6 +3,8 @@ import axios from "axios";
 import {ChartContainer, ChartsLegend, ChartsXAxis, ChartsYAxis, LineChart, LinePlot} from "@mui/x-charts";
 import {useEffect, useState} from "react";
 import {Box} from "@mui/material";
+import {useAuth} from "../misc/authProvider.jsx";
+import {timeoutAbortSignal} from "../misc/utils";
 
 interface SensorsDataPoint {
   time: string;       // "2024-04-01T18:34:45.743561Z"
@@ -23,7 +25,7 @@ const combinedChart = (sensorsData: SensorsDataPoint[], wateringData: WateringDa
   wateringData.map((dataPoint) => {
     const date = new Date(dataPoint.time);
     const ms = date.getTime();
-    const ms2 = ms + 1000;
+    const ms2 = ms + 1;
     const nextDate = new Date(ms2);
     timeSeries.push(date);
     timeSeries.push(nextDate);
@@ -50,14 +52,14 @@ const combinedChart = (sensorsData: SensorsDataPoint[], wateringData: WateringDa
       skipFlag = false;
       return;
     }
-    if (wateringData.some((dataPoint) => new Date(dataPoint.time).getTime() === time.getTime())) {
-      const dataPoint = wateringData.find((dataPoint) => new Date(dataPoint.time).getTime() === time.getTime());
-      wateringSeries.push(0);
-      wateringSeries.push(dataPoint.duration);
-      skipFlag = true;
-    } else {
-      wateringSeries.push(null);
-    }
+    // if (wateringData.some((dataPoint) => new Date(dataPoint.time).getTime() === time.getTime())) {
+    //   const dataPoint = wateringData.find((dataPoint) => new Date(dataPoint.time).getTime() === time.getTime());
+    //   wateringSeries.push(0);
+    //   wateringSeries.push(dataPoint.duration);
+    //   skipFlag = true;
+    // } else {
+    //   wateringSeries.push(null);
+    // }
   });
   return {
     timeline: timeSeries.map((time) => time.getTime()),
@@ -83,44 +85,50 @@ const combinedChart = (sensorsData: SensorsDataPoint[], wateringData: WateringDa
         yAxisKey: 'water_level',
         color: 'blue'
       },
-      {
-        type: 'line',
-        data: wateringSeries,
-        label: 'Watering',
-        yAxisKey: 'watering_duration',
-        color: 'purple',
-        // width: 0.5
-      }
+      // {
+      //   type: 'line',
+      //   data: wateringSeries,
+      //   label: 'Watering',
+      //   yAxisKey: 'watering_duration',
+      //   color: 'purple',
+      //   // width: 0.5
+      // }
     ]
   }
 }
 
-export const Farm = () => {
+export const FarmChart = () => {
+  const {token} = useAuth();
   const [chartData, setChartData] = useState({
     timeline: [],
     series: []
   });
   useEffect(() => {
-    axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data`)
-    .then(r => {
-      const sensorsData: SensorsDataPoint[] = r.data;
-      axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/data`)
+    // Get chart data every minute
+    const getData = setInterval(function _() {
+      axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data`, {
+        signal: timeoutAbortSignal(5000)
+      })
       .then(r => {
-        const wateringData: WateringDataPoint[] = r.data;
-        console.log('sensor data:', sensorsData);
-        console.log('watering data:', wateringData);
-        const combined = combinedChart(sensorsData, wateringData);
-        console.log(combined);
-        setChartData(combined);
+        const sensorsData: SensorsDataPoint[] = r.data;
+        axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/data`)
+        .then(r => {
+          const wateringData: WateringDataPoint[] = r.data;
+          wateringData.length = 0;    // ==============================================
+          const combined = combinedChart(sensorsData, wateringData);
+          setChartData(combined);
+        })
+        .catch(e => {
+            console.error(e);
+          }
+        );
       })
       .catch(e => {
-          console.error(e);
-        }
-      );
-    })
-    .catch(e => {
-      console.error(e);
-    });
+        console.error(e);
+      });
+      return _;
+    }(), 1000 * 60);
+    return () => clearInterval(getData);
   }, []);
   
   return (
@@ -132,7 +140,7 @@ export const Farm = () => {
           { id: 'temperature', scaleType: 'linear', label: 'Temperature' },
           { id: 'soil_moisture', scaleType: 'linear', label: 'Soil Moisture'},
           { id: 'water_level', scaleType: 'linear' },
-          { id: 'watering_duration', scaleType: 'linear' }
+          // { id: 'watering_duration', scaleType: 'linear' }
         ]}
         series={chartData.series}
         leftAxis="temperature"
@@ -143,4 +151,4 @@ export const Farm = () => {
   );
 }
 
-export default Farm;
+export default FarmChart;

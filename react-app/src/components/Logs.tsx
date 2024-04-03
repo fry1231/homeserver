@@ -135,6 +135,7 @@ export default function Logs() {
   
   useEffect(() => {
     if (incomingMessage) {
+      console.log('incoming message', incomingMessage)
       const data = JSON.parse(incomingMessage);
       if ("log_records" in data) {
         dispatch(logsRefreshed(data));

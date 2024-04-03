@@ -3,14 +3,15 @@ import {useAuth} from "../misc/authProvider.jsx";
 import {ProtectedRoute} from "./ProtectedRoute";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
+import Farm from "../pages/Farm";
+import Statistics from "../pages/Statistics";
 import Profile from "../components/Profile";
 import SignIn from "../components/SignIn";
 import Topbar from "../components/global/Topbar";
 import BusArrivals from "../components/BusArrivals";
 import StateView from "../components/views/StateView";
 import Logs from "../components/Logs";
-import Statistics from "../components/Statistics";
-import Farm from "../components/Farm";
+
 import DraggableContainer from "../components/global/DraggableContainer";
 
 
@@ -59,7 +60,10 @@ const Routes = () => {
                     path: "/farm",
                     element: <Farm />,
                 },
-
+                {
+                    path: "/statistics",
+                    element: <Statistics />,
+                },
             ],
         },
     ];

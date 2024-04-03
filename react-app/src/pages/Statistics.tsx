@@ -1,6 +1,6 @@
 import {Typography} from "@mui/material";
 
-export const Statistics = () => {
+const Statistics = () => {
   return (
     <>
       <Typography variant="h3">Today</Typography>
@@ -9,3 +9,5 @@ export const Statistics = () => {
     </>
   );
 };
+
+export default Statistics;
