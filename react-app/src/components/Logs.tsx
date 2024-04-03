@@ -193,7 +193,7 @@ export default function Logs() {
             ? <Box><Radio color="success" checked={true}/>Connected</Box>
             : <Box><Radio color="error" checked={true}/>Disconnected</Box>
       }
-      <Paper ref={scrollable} onScroll={handleScroll} style={{overflowY: 'scroll', maxHeight: '400px'}}>
+      <Paper ref={scrollable} onScroll={handleScroll} style={{overflowY: 'scroll', maxHeight: 1/4, maxWidth: 0.85}}>
         <Grid container direction="column">
         {logs.map((logRecord: string, i) => {
           const {timeString, logLevel, message, location} = logRecord;

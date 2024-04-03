@@ -127,12 +127,10 @@ async def websocket_authorized(
         session: Annotated[str | None, Cookie()] = None,
         token: Annotated[str | None, Query()] = None,
 ):
-    logger.debug("Websocket authorization")
     if session is None and token is None:
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     if token:
         authorized = await user_authorized(token)
         if not authorized:
             raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    logger.debug("Websocket authorized")
     return True
