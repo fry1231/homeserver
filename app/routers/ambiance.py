@@ -31,8 +31,8 @@ class AmbianceResponse(BaseModel):
 
 
 @router.get('/', response_model=List[AmbianceResponse])
-async def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000),
-                            endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000),
+async def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
+                            endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
                             influxdb_client=Depends(home_client)):
     items = get_influx_data(client=influxdb_client,
                             measurement='ambiance',

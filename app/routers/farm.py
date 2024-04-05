@@ -41,8 +41,8 @@ async def submit_farm_data(data: FarmData, influxdb_client=Depends(farm_client))
 
 
 @router.get('/sensors/data', response_model=List[FarmResponseItem])
-async def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000),
-                        endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000),
+async def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
+                        endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
                         influxdb_client=Depends(farm_client)):
     return get_influx_data(client=influxdb_client,
                            measurement='farm',
@@ -61,8 +61,8 @@ async def submit_watering(data: WateringData, influxdb_client=Depends(farm_clien
 
 
 @router.get('/watering/data', response_model=List[WateringResponseItem])
-async def get_watering_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000),
-                            endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000),
+async def get_watering_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
+                            endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
                             influxdb_client=Depends(farm_client)):
     return get_influx_data(client=influxdb_client,
                            measurement='watering',
@@ -73,12 +73,13 @@ async def get_watering_data(startTS: int = int((datetime.datetime.now().timestam
 
 @router.get('/watering/last')
 async def get_last_watering_time(influxdb_client=Depends(farm_client)):
-    data: list[WateringResponseItem] = get_influx_data(client=influxdb_client,
-                                                       measurement='watering',
-                                                       ResponseClass=WateringResponseItem,
-                                                       start_timestamp=int(
-                                                           datetime.datetime.now().timestamp() - 3600 * 24 * 2),  # 2 days
-                                                       end_timestamp=int(datetime.datetime.now().timestamp() * 1_000_000))
+    data: list[WateringResponseItem] = get_influx_data(
+        client=influxdb_client,
+        measurement='watering',
+        ResponseClass=WateringResponseItem,
+        start_timestamp=int((datetime.datetime.now().timestamp() - 3600 * 24 * 2) * 1_000_000_000),  # 2 days
+        end_timestamp=int(datetime.datetime.now().timestamp() * 1_000_000_000)\
+    )
     if len(data) == 0:
         return 0
     time_str = data[-1].time    # "2024-04-01T18:34:45.743561Z"
