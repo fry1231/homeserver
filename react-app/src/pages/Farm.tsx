@@ -8,7 +8,7 @@ import DateRangePicker from "../components/DateRangePicker";
 
 export default function Farm() {
   const [wateringNeeded, setWateringNeeded] = useState(false);
-  const [selectedDateRange, setSelectedDateRange] = useState({startDate: new Date(), endDate: new Date()});
+  const [selectedDateRange, setSelectedDateRange] = useState([new Date(), new Date()]);
   
   const requestWatering = () => {
     axios.post(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/set-needed`, null, {

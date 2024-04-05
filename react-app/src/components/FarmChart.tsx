@@ -6,6 +6,8 @@ import {Box} from "@mui/material";
 import {useAuth} from "../misc/authProvider.jsx";
 import {timeoutAbortSignal} from "../misc/utils";
 import Plot from 'react-plotly.js';
+import {Simulate} from "react-dom/test-utils";
+import select = Simulate.select;
 
 
 interface SensorsDataPoint {
@@ -63,10 +65,6 @@ const combinedChart = (sensorsData: SensorsDataPoint[], wateringData: WateringDa
     //   wateringSeries.push(null);
     // }
   });
-  console.log('timeSeries', timeSeries)
-  console.log('first observation', timeSeries[0]);
-  console.log('last observation', timeSeries[timeSeries.length - 1]);
-  console.log('-2 observation', timeSeries[timeSeries.length - 2]);
   return {
     // timeline: timeSeries.map((time) => time.getTime()),
     timeline: timeSeries,
@@ -78,6 +76,7 @@ const combinedChart = (sensorsData: SensorsDataPoint[], wateringData: WateringDa
 }
 
 export const FarmChart = ({selectedDateRange}) => {
+  const [prevEndDate, setPrevEndDate] = useState(new Date());
   const {token} = useAuth();
   const [chartData, setChartData] = useState({
     timeline: [],
@@ -88,18 +87,30 @@ export const FarmChart = ({selectedDateRange}) => {
   });
   useEffect(() => {
     // Get start of the day in unix time in the users timezone
-    const {startDate, endDate} = selectedDateRange;
+    const [startDate, endDate] = selectedDateRange;
+    if (!startDate || !endDate) {
+      return;
+    }
+    
     startDate.setHours(0, 0, 0, 0);
     endDate.setHours(23, 59, 59, 999);
-    const startDayTS = Math.floor(startDate.getTime() / 1000);
-    const endDayTS = Math.floor(endDate.getTime() / 1000);
-    
+    const startDayTS = startDate.getTime() * 1000000;   // ns precision in influx
+    const endDayTS = endDate.getTime() * 1000000;
     // Get chart data every minute
     const getData = setInterval(function _() {
       axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data?startTS=${startDayTS}&endTS=${endDayTS}`, {
         signal: timeoutAbortSignal(5000)
       })
       .then(r => {
+        const thisDayEnd = new Date();
+        thisDayEnd.setHours(23, 59, 59, 999);
+        if (
+          prevEndDate == endDate    // dateRange has not changed
+          && prevEndDate != thisDayEnd   // but the next day has already started
+        ) {
+          selectedDateRange[1] = thisDayEnd;
+        }
+        
         const sensorsData: SensorsDataPoint[] = r.data;
         axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/data?startTS=${startDayTS}&endTS=${endDayTS}`)
         .then(r => {
@@ -118,6 +129,7 @@ export const FarmChart = ({selectedDateRange}) => {
       });
       return _;
     }(), 1000 * 60);
+    setPrevEndDate(endDate);
     return () => clearInterval(getData);
   }, [selectedDateRange]);
   
