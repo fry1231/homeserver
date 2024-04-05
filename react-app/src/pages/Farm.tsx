@@ -1,12 +1,14 @@
-import FarmChart from "../components/FarmChart";
 import axios from "axios";
 import {timeoutAbortSignal} from "../misc/utils";
 import {useEffect, useState} from "react";
 import {Button} from "@mui/material";
+import FarmChart from "../components/FarmChart";
+import DateRangePicker from "../components/DateRangePicker";
 
 
 export default function Farm() {
   const [wateringNeeded, setWateringNeeded] = useState(false);
+  const [selectedDateRange, setSelectedDateRange] = useState({startDate: new Date(), endDate: new Date()});
   
   const requestWatering = () => {
     axios.post(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/set-needed`, null, {
@@ -42,7 +44,8 @@ export default function Farm() {
   
   return (
     <>
-      <FarmChart />
+      <DateRangePicker onChange={setSelectedDateRange}/>
+      <FarmChart selectedDateRange={selectedDateRange} />
       <Button onClick={requestWatering}
               variant="contained"
               color={wateringNeeded ? 'error' : 'success'}

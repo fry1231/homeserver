@@ -9,13 +9,13 @@ from config import logger
 def get_influx_data(client: InfluxDBClient,
                     measurement: str,
                     ResponseClass: type(BaseModel),
-                    days: int,
-                    offset: int) -> list[type(BaseModel)]:
+                    start_timestamp: int,
+                    end_timestamp: int) -> list[type(BaseModel)]:
     try:
         data = client.query(
             f'SELECT * FROM "{measurement}" '
-            f'WHERE time > now() - {days}d - {offset}d '
-            f'AND time <= now() - {offset}d')
+            f'WHERE time >= {start_timestamp} '
+            f'AND time <= {end_timestamp}')
     except:
         logger.error("Error while getting data from influx:\n", traceback.format_exc())
         raise HTTPException(status_code=503, detail=f"Cannot read data from InfluxDB")

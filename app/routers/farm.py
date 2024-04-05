@@ -2,9 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Response
 from pydantic import BaseModel
 from typing import List
 import datetime
-import pytz
 
-from config import logger
 from dependencies import is_admin, farm_client, get_redis_conn
 from db.influx import get_influx_data, write_influx_data
 
@@ -43,12 +41,14 @@ async def submit_farm_data(data: FarmData, influxdb_client=Depends(farm_client))
 
 
 @router.get('/sensors/data', response_model=List[FarmResponseItem])
-async def get_farm_data(days: int = 1, offset: int = 0, influxdb_client=Depends(farm_client)):
+async def get_farm_data(startTS: int = int(datetime.datetime.now().timestamp() - 3600 * 24),
+                        endTS: int = int(datetime.datetime.now().timestamp()),
+                        influxdb_client=Depends(farm_client)):
     return get_influx_data(client=influxdb_client,
                            measurement='farm',
                            ResponseClass=FarmResponseItem,
-                           days=days,
-                           offset=offset)
+                           start_timestamp=startTS,
+                           end_timestamp=endTS)
 
 
 # Submit and get data about watering pump on/off
@@ -61,12 +61,14 @@ async def submit_watering(data: WateringData, influxdb_client=Depends(farm_clien
 
 
 @router.get('/watering/data', response_model=List[WateringResponseItem])
-async def get_watering_data(days: int = 14, offset: int = 0, influxdb_client=Depends(farm_client)):
+async def get_watering_data(startTS: int = int(datetime.datetime.now().timestamp() - 3600 * 24),
+                            endTS: int = int(datetime.datetime.now().timestamp()),
+                            influxdb_client=Depends(farm_client)):
     return get_influx_data(client=influxdb_client,
                            measurement='watering',
                            ResponseClass=WateringResponseItem,
-                           days=days,
-                           offset=offset)
+                           start_timestamp=startTS,
+                           end_timestamp=endTS)
 
 
 @router.get('/watering/last')
@@ -74,10 +76,11 @@ async def get_last_watering_time(influxdb_client=Depends(farm_client)):
     data: list[WateringResponseItem] = get_influx_data(client=influxdb_client,
                                                        measurement='watering',
                                                        ResponseClass=WateringResponseItem,
-                                                       days=1,
-                                                       offset=0)
+                                                       start_timestamp=int(
+                                                           datetime.datetime.now().timestamp() - 3600 * 24),
+                                                       end_timestamp=int(datetime.datetime.now().timestamp()))
     if len(data) == 0:
-        raise HTTPException(status_code=404, detail='No watering data found')
+        return 0
     time_str = data[-1].time    # "2024-04-01T18:34:45.743561Z"
     time = datetime.datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S.%fZ')
     return str(int(time.timestamp()))

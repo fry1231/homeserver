@@ -6,6 +6,15 @@ import {useAuth} from "../misc/authProvider.jsx";
 import {tokens} from "../theme";
 import {useTheme} from "@mui/material/styles";
 
+// Parse date in 30.04.2024_19:04:56 format to Date object in local time
+const localizedTime = (timeString: string) => {
+  const [datePart, timePart] = timeString.split('_');
+  const [day, month, year] = datePart.split('.');
+  const [hours, minutes, seconds] = timePart.split(':');
+  const normalizedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+  const parsedDate = new Date(normalizedDate);
+  return parsedDate.toLocaleString();
+}
 
 export default function Logs() {
   const dispatch = useDispatch();
@@ -135,7 +144,6 @@ export default function Logs() {
   
   useEffect(() => {
     if (incomingMessage) {
-      console.log('incoming message', incomingMessage)
       const data = JSON.parse(incomingMessage);
       if ("log_records" in data) {
         dispatch(logsRefreshed(data));
@@ -193,7 +201,7 @@ export default function Logs() {
             ? <Box><Radio color="success" checked={true}/>Connected</Box>
             : <Box><Radio color="error" checked={true}/>Disconnected</Box>
       }
-      <Paper ref={scrollable} onScroll={handleScroll} style={{overflowY: 'scroll', maxHeight: 1/4, maxWidth: 0.85}}>
+      <Paper ref={scrollable} onScroll={handleScroll} style={{overflowY: 'scroll', height: '50vh', width: '70vw'}}>
         <Grid container direction="column">
         {logs.map((logRecord: string, i) => {
           const {timeString, logLevel, message, location} = logRecord;
@@ -206,14 +214,14 @@ export default function Logs() {
                 : colors.grey[300];
           return (
             <Grid container justifyContent="space-between" key={i}>
-              <Grid item>
+              <Grid item xs zeroMinWidth>
                 <Grid container direction="row">
-                    <div style={{visibility: 'hidden', position: 'absolute'}} ref={logLevelRefs.current[i]}>
-                      <Typography variant="h7" mr={1} >{logLevel}</Typography>
-                    </div>
-                  <Typography variant="h7" mr={1} color={colors.blueAccent[200]} key={i}>{timeString} </Typography>
+                  <div style={{visibility: 'hidden', position: 'absolute'}} ref={logLevelRefs.current[i]}>
+                    <Typography variant="h7" mr={1} >{logLevel}</Typography>
+                  </div>
+                  <Typography variant="h7" mr={1} color={colors.blueAccent[200]} key={i}>{localizedTime(timeString)} </Typography>
                   <Typography variant="h7" mr={1} color={color} style={{width: maxWidth}} align="center">{logLevel}</Typography>
-                  <Typography variant="h7" mr={1} color={colors.grey[300]}>{message}</Typography>
+                  <Typography variant="h7" mr={1} color={colors.grey[300]} style={{overflowWrap: 'break-word'}}>{message}</Typography>
                 </Grid>
               </Grid>
               <Typography variant="h7" color={colors.grey[500]}>{location}</Typography>
