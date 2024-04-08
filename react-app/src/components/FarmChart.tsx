@@ -1,13 +1,12 @@
-import {BarChart, BarPlot} from '@mui/x-charts/BarChart'
 import axios from "axios";
-import {ChartContainer, ChartsLegend, ChartsXAxis, ChartsYAxis, LineChart, LinePlot} from "@mui/x-charts";
 import {useEffect, useState} from "react";
-import {Box} from "@mui/material";
+import {useTheme} from "@mui/material";
 import {useAuth} from "../misc/authProvider.jsx";
 import {timeoutAbortSignal} from "../misc/utils";
 import Plot from 'react-plotly.js';
-import {Simulate} from "react-dom/test-utils";
-import select = Simulate.select;
+import {tokens} from "../theme";
+import {useDispatch, useSelector} from "react-redux";
+import {changeDateRange} from "../reducers/dates";
 
 
 interface SensorsDataPoint {
@@ -75,9 +74,16 @@ const combinedChart = (sensorsData: SensorsDataPoint[], wateringData: WateringDa
   }
 }
 
-export const FarmChart = ({selectedDateRange}) => {
-  const [prevEndDate, setPrevEndDate] = useState(new Date());
-  const {token} = useAuth();
+export const FarmChart = () => {
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+  
+  const dispatch = useDispatch();
+  const stateLocal = useSelector((state) => state.dates);
+  const {startDateTS, endDateTS} = stateLocal;
+  const startDate = new Date(startDateTS);
+  const endDate = new Date(endDateTS);
+  const [prevEndDate, setPrevEndDate] = useState(endDate);
   const [chartData, setChartData] = useState({
     timeline: [],
     temperatureSeries: [],
@@ -87,32 +93,31 @@ export const FarmChart = ({selectedDateRange}) => {
   });
   useEffect(() => {
     // Get start of the day in unix time in the users timezone
-    const [startDate, endDate] = selectedDateRange;
-    if (!startDate || !endDate) {
+    if (!startDate || !endDate) {//|| (prevEndDate === endDate)) {
       return;
     }
-    
     startDate.setHours(0, 0, 0, 0);
     endDate.setHours(23, 59, 59, 999);
-    const startDayTS = startDate.getTime() * 1000000;   // ns precision in influx
-    const endDayTS = endDate.getTime() * 1000000;
+    const startDayTS_ = startDate.getTime() * 1000000;   // ns precision in influx
+    const endDayTS_ = endDate.getTime() * 1000000;
     // Get chart data every minute
     const getData = setInterval(function _() {
-      axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data?startTS=${startDayTS}&endTS=${endDayTS}`, {
+      axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data?startTS=${startDayTS_}&endTS=${endDayTS_}`, {
         signal: timeoutAbortSignal(5000)
       })
       .then(r => {
         const thisDayEnd = new Date();
         thisDayEnd.setHours(23, 59, 59, 999);
         if (
-          prevEndDate == endDate    // dateRange has not changed
-          && prevEndDate != thisDayEnd   // but the next day has already started
+          prevEndDate === endDate    // dateRange has not changed
+          && prevEndDate !== thisDayEnd   // but the next day has already started
         ) {
-          selectedDateRange[1] = thisDayEnd;
+          dispatch(changeDateRange({startDateTS: startDate.getTime(), endDateTS: thisDayEnd.getTime()}));
+          console.log('Date range updated to', startDate, thisDayEnd);
         }
         
         const sensorsData: SensorsDataPoint[] = r.data;
-        axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/data?startTS=${startDayTS}&endTS=${endDayTS}`)
+        axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/data?startTS=${startDayTS_}&endTS=${endDayTS_}`)
         .then(r => {
           const wateringData: WateringDataPoint[] = r.data;
           wateringData.length = 0;    // ==============================================
@@ -131,7 +136,18 @@ export const FarmChart = ({selectedDateRange}) => {
     }(), 1000 * 60);
     setPrevEndDate(endDate);
     return () => clearInterval(getData);
-  }, [selectedDateRange]);
+  }, [startDateTS, endDateTS]);
+  
+  const commonAxisLayout = {
+    tickfont: {
+      color: colors.grey[300]
+    },
+    gridcolor: colors.grey[800],
+    zerolinecolor: colors.grey[700],
+    titlefont: {
+      color: theme.palette.text.primary
+    }
+  }
   
   const layout = {
     width: "100%",
@@ -152,12 +168,14 @@ export const FarmChart = ({selectedDateRange}) => {
         }
       }),
       tickmode: 'auto',
+      ...commonAxisLayout
     },
     yaxis: {
       title: 'Temperature',
       side: 'left',
       position: 0,
       fixedrange: true,
+      ...commonAxisLayout,
     },
     yaxis2: {
       title: 'Soil Moisture',
@@ -165,6 +183,9 @@ export const FarmChart = ({selectedDateRange}) => {
       overlaying: 'y',
       position: 1,
       fixedrange: true,
+      range: [0, null],
+      ...commonAxisLayout,
+      gridcolor: colors.grey[200],
     },
     yaxis3: {
       title: 'Water Level',
@@ -180,6 +201,8 @@ export const FarmChart = ({selectedDateRange}) => {
     },
     hovermode: 'x unified',
     scrollZoom: true,
+    plot_bgcolor: theme.palette.background.default,
+    paper_bgcolor: theme.palette.background.default,
   };
   
   return (
@@ -215,22 +238,6 @@ export const FarmChart = ({selectedDateRange}) => {
       ]}
       layout={layout}
     />
-    // <Box sx={{ width: 500, height: 400 }}>
-    //   <LineChart
-    //     xAxis={[{ id: 'time', data: chartData.timeline, scaleType: 'linear',
-    //       valueFormatter: (v) => new Date(v).toLocaleString()}]}
-    //     yAxis={[
-    //       { id: 'temperature', scaleType: 'linear', label: 'Temperature' },
-    //       { id: 'soil_moisture', scaleType: 'linear', label: 'Soil Moisture'},
-    //       { id: 'water_level', scaleType: 'linear' },
-    //       // { id: 'watering_duration', scaleType: 'linear' }
-    //     ]}
-    //     series={chartData.series}
-    //     leftAxis="temperature"
-    //     rightAxis="soil_moisture"
-    //     height={400}
-    //     />
-    // </Box>
   );
 }
 

@@ -31,7 +31,7 @@ class AmbianceResponse(BaseModel):
 
 
 @router.get('/', response_model=List[AmbianceResponse])
-async def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
+def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
                             endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
                             influxdb_client=Depends(home_client)):
     items = get_influx_data(client=influxdb_client,
@@ -44,7 +44,7 @@ async def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestam
 
 
 @router.post('/submit')
-async def submit_ambiance_point(data: AmbianceData, influxdb_client=Depends(home_client)):
+def submit_ambiance_point(data: AmbianceData, influxdb_client=Depends(home_client)):
     write_influx_data(client=influxdb_client,
                       measurement='ambiance',
                       fields=data.model_dump())

@@ -1,15 +1,21 @@
 from passlib.context import CryptContext
 import datetime
 import pytz
-
-import dependencies
+from strawberry.permission import BasePermission
+from strawberry.types import Info
 from jose import JWTError, jwt
+from pydantic import BaseModel
+from uuid import UUID
+import typing
+import asyncio
+
+import orjson
+import dependencies
 from db.sql.models import User
 from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel
 from config import SECRET
-import orjson
-from uuid import UUID
+
+
 
 
 ALGORITHM = "HS256"
@@ -74,3 +80,17 @@ def create_access_token(uuid: UUID, is_admin: bool, expire_minutes: int = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+# Auth for GraphQL
+class IsAuthenticated(BasePermission):
+    message = "User is not Authenticated"
+
+    async def has_permission(self, source: typing.Any, info: Info, **kwargs) -> bool:
+        request = info.context["request"]
+        # Access headers authentication
+        authentication = request.headers["authentication"]
+        if authentication:
+            token = authentication.split("Bearer ")[-1]
+            return await user_authorized(token, check_if_admin=True)
+        return False

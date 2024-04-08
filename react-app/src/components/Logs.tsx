@@ -13,7 +13,7 @@ const localizedTime = (timeString: string) => {
   const [hours, minutes, seconds] = timePart.split(':');
   const normalizedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
   const parsedDate = new Date(normalizedDate);
-  return parsedDate.toLocaleString();
+  return parsedDate.toLocaleString("ru-RU");
 }
 
 export default function Logs() {
@@ -42,7 +42,6 @@ export default function Logs() {
     if (end === lastLogsEnd) {
       return;
     }
-    console.log('asking for more logs from', start, 'to', start + 50, '...')
     setLastLogsEnd(end);
     try {
       clientRef.current.send(`getlogs_${start}_${end}`);
@@ -64,7 +63,6 @@ export default function Logs() {
     // console.log('scrollpos', currentScrollPos);
     const bottom = target.scrollHeight - target.scrollTop === target.clientHeight;
     if (bottom) {
-      console.log('bottom');
       askMoreLogs();
       target.scrollTo(0, currentScrollPos-1);
     }

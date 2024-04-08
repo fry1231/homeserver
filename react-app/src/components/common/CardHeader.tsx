@@ -1,4 +1,4 @@
-import {windowClosed} from "../../reducers/positions";
+import {closeWindow} from "../../reducers/draggables";
 import {tokens} from "../../theme";
 import {Divider, useTheme} from "@mui/material";
 import {Grid, IconButton, Typography} from "@mui/material";
@@ -23,7 +23,7 @@ export const CardHeader = ({entityName, left, center}) => {
         </Typography>
       </Grid>
       <Grid item>
-        <IconButton onClick={() => dispatch(windowClosed(entityName))}>
+        <IconButton onClick={() => dispatch(closeWindow(entityName))}>
           <CloseIcon/>
         </IconButton>
       </Grid>

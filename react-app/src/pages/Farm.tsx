@@ -1,7 +1,7 @@
 import axios from "axios";
 import {timeoutAbortSignal} from "../misc/utils";
 import {useEffect, useState} from "react";
-import {Button} from "@mui/material";
+import {Button, Grid} from "@mui/material";
 import FarmChart from "../components/FarmChart";
 import DateRangePicker from "../components/DateRangePicker";
 
@@ -43,13 +43,23 @@ export default function Farm() {
   
   
   return (
-    <>
-      <DateRangePicker onChange={setSelectedDateRange}/>
-      <FarmChart selectedDateRange={selectedDateRange} />
-      <Button onClick={requestWatering}
-              variant="contained"
-              color={wateringNeeded ? 'error' : 'success'}
-              disabled={wateringNeeded}>Request watering</Button>
-    </>
+    <Grid container direction="column" alignItems="center" spacing={3}>
+      <Grid item>
+        <DateRangePicker />
+      </Grid>
+      <Grid item>
+        <FarmChart />
+      </Grid>
+      <Grid item>
+        <Button
+          onClick={requestWatering}
+          variant="contained"
+          color={wateringNeeded ? 'error' : 'success'}
+          disabled={wateringNeeded}
+        >
+          Request Watering
+        </Button>
+      </Grid>
+    </Grid>
   );
 };

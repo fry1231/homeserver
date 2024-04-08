@@ -4,6 +4,11 @@ import {useDispatch, useSelector} from "react-redux";
 import {statesRefreshed, stateUpdateRecieved} from "../../reducers/states";
 import stateInstance from "../../reducers/states";
 import {useAuth} from "../../misc/authProvider.jsx";
+import {addWindow} from "../../reducers/draggables";
+import {ListViewProps} from "./ListView";
+import {UserProps} from "./UserView";
+import {useQuery} from '@apollo/client';
+import {GET_USERS} from '../../misc/gqlQueries';
 
 
 export default function StateView() {
@@ -84,7 +89,6 @@ export default function StateView() {
   
   useEffect(() => {
     if (incomingMessage) {
-      console.log(incomingMessage);
       const data = JSON.parse(incomingMessage);
       if ("states" in data) {
         dispatch(statesRefreshed(data));
@@ -129,6 +133,17 @@ export default function StateView() {
     });
   }
   
+  const onNumberClick = (userIds: number[]) => {
+    const {loading, error, data} = useQuery(GET_USERS, {
+      variables: {telegram_ids: userIds}
+    });
+    const userList: ListViewProps = {entities: data.users};
+    
+    if (loading) return null;
+    if (error) dispatch(addWindow({entities: ["Error fetching user data"]}));
+    
+    dispatch(addWindow(userList));
+  }
   
   return (
     <>
@@ -162,9 +177,7 @@ export default function StateView() {
                         <Typography variant="h6"
                           color={state.user_ids.length > 0 ? 'error' : 'textPrimary'}
                           style={{backgroundColor: state.user_ids.length > 0 ? 'error' : 'textPrimary'}}
-                          onClick={() => {
-                            alert(state.user_ids);
-                          }}
+                          onClick={() => onNumberClick(state.user_ids)}
                         >{state.user_ids.length}</Typography>
                       </Box>
                     );

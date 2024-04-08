@@ -3,7 +3,7 @@ import Weather from "../components/Weather";
 import {Button, Typography} from "@mui/material";
 import {useEffect} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {windowAdded} from "../reducers/positions";
+import {addWindow} from "../reducers/draggables";
 import {PressureProps} from "../components/views/PressureView";
 import {DruguseProps} from "../components/views/DruguseView";
 import {PaincaseProps} from "../components/views/PaincaseView";
@@ -83,27 +83,27 @@ export default function Home() {
     <>
       <Button variant="contained"
               onClick={() => {
-                dispatch(windowAdded(paincase));
+                dispatch(addWindow(paincase));
               }}
       style={{zIndex: 1}}>Add Paincase</Button>
       <Button variant="contained"
               onClick={() => {
-                dispatch(windowAdded(pressure));
+                dispatch(addWindow(pressure));
               }}
       style={{zIndex: 1}}>Add Pressure</Button>
       <Button variant="contained"
               onClick={() => {
-                dispatch(windowAdded(user));
+                dispatch(addWindow(user));
               }}
               style={{zIndex: 1}}>Add User</Button>
       <Button variant="contained"
               onClick={() => {
-                dispatch(windowAdded(druguse));
+                dispatch(addWindow(druguse));
               }}
       style={{zIndex: 1}}>Add Druguse</Button>
       <Button variant="contained"
               onClick={() => {
-                dispatch(windowAdded(list));
+                dispatch(addWindow(list));
               }}
               style={{zIndex: 1}}>Add List</Button>
     </>

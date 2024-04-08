@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import {Link} from "react-router-dom";
 import HomeIcon from '@mui/icons-material/Home';
 import {useDispatch} from "react-redux";
-import {closeAllWindows} from "../../reducers/positions";
+import {closeAllWindows} from "../../reducers/draggables";
 
 
 const Topbar = () => {

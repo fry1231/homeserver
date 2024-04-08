@@ -12,9 +12,9 @@ import {
   useTheme
 } from "@mui/material";
 import {useDispatch, useSelector} from "react-redux";
-import {windowPosChanged, windowAdded, windowClosed} from "../../reducers/positions";
+import {changeWindowPos, addWindow, closeWindow} from "../../reducers/draggables";
 import {DruguseProps} from "./DruguseView";
-import {DraggableEntity} from "../../reducers/positions";
+import {DraggableEntity} from "../../reducers/draggables";
 import {tokens} from "../../theme";
 import Draggable from 'react-draggable';
 import CloseIcon from '@mui/icons-material/Close';
@@ -48,7 +48,7 @@ export function PaincaseView({entity, short=false}) {
     return (
       <>
         <Typography variant="body2"
-                    onClick={() => dispatch(windowAdded(entity))}>
+                    onClick={() => dispatch(addWindow(entity))}>
           Paincase {entity.date}
         </Typography>
       </>
@@ -61,10 +61,10 @@ export function PaincaseView({entity, short=false}) {
                // enableUserSelectHack={false}
                position={{x: pos.x, y: pos.y}}
                onStop={(event, data) => {
-                 dispatch(windowPosChanged({name, pos: {x: data.x, y: data.y}}))
+                 dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
                }}
                onStart={(event, data) => {
-                 dispatch(windowPosChanged({name, pos: {x: data.x, y: data.y}}))
+                 dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
                }}
                 handle=".handle"
     >

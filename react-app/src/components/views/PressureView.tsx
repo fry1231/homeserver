@@ -1,6 +1,6 @@
 import {Box, Card, CardContent, Divider, Grid, IconButton, Paper, Radio, Typography, useTheme} from "@mui/material";
 import {useDispatch, useSelector} from "react-redux";
-import {windowAdded, windowClosed, windowPosChanged} from "../../reducers/positions";
+import {addWindow, closeWindow, changeWindowPos} from "../../reducers/draggables";
 import Draggable from "react-draggable";
 import {tokens} from "../../theme";
 import CloseIcon from '@mui/icons-material/Close';
@@ -28,7 +28,7 @@ export function PressureView({entity, short=false}) {
     return (
       <>
         <Typography variant="body2"
-                    onClick={() => dispatch(windowAdded(entity))}>
+                    onClick={() => dispatch(addWindow(entity))}>
           Pressure {entity.datetime}
         </Typography>
       </>
@@ -40,10 +40,10 @@ export function PressureView({entity, short=false}) {
       // enableUserSelectHack={false}
       position={{x: pos.x, y: pos.y}}
       onStop={(event, data) => {
-        dispatch(windowPosChanged({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
       }}
       onStart={(event, data) => {
-        dispatch(windowPosChanged({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
       }}
       handle=".handle"
     >

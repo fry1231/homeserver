@@ -34,7 +34,7 @@ const slice = createSlice({
   initialState,
   reducers: {
     
-    windowPosChanged(state, action) {
+    changeWindowPos(state, action) {
       const payload: payloadPosChanged = action.payload;
       const windowIndex = state.entities.findIndex((w) => w.name === payload.name);
       const newZ = state.maxZ + 1;
@@ -46,8 +46,12 @@ const slice = createSlice({
       }
     },
     
-    windowAdded(state, action) {
-      const payload: PaincaseProps | DruguseProps | PressureProps = action.payload;
+    addWindow(state, action) {
+      const payload: PaincaseProps
+        | DruguseProps
+        | PressureProps
+        | UserProps
+        | ListViewProps = action.payload;
       const entityName =
         isPaincaseProps(payload)
           ? 'Paincase'
@@ -75,7 +79,7 @@ const slice = createSlice({
       state.entities.push(newEntity);
     },
     
-    windowClosed(state, action) {
+    closeWindow(state, action) {
       const name: string = action.payload;
       state.entities = state.entities.filter((w) => w.name !== name);
       if (state.entities.length === 0) {
@@ -84,6 +88,7 @@ const slice = createSlice({
         state.maxZ = 2;
       }
     },
+    
     closeAllWindows(state) {
       state.entities = [];
       state.lastPosition = {x: 0, y: 0, z: 2};
@@ -93,6 +98,6 @@ const slice = createSlice({
   }
 });
 
-export const {windowPosChanged, windowAdded, windowClosed, closeAllWindows} = slice.actions;
+export const {changeWindowPos, addWindow, closeWindow, closeAllWindows} = slice.actions;
 
 export default slice.reducer;

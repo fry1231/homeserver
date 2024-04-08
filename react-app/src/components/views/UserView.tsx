@@ -17,7 +17,7 @@ import {statesRefreshed, stateUpdateRecieved} from "../../reducers/states";
 import stateInstance from "../../reducers/states";
 import {useAuth} from "../../misc/authProvider.jsx";
 import {tokens} from "../../theme";
-import {windowAdded, windowClosed, windowPosChanged} from "../../reducers/positions";
+import {addWindow, closeWindow, changeWindowPos} from "../../reducers/draggables";
 import Draggable from "react-draggable";
 import CloseIcon from "@mui/icons-material/Close";
 import {CardHeader} from "../common/CardHeader";
@@ -50,13 +50,6 @@ export interface UserProps {
   pressures: PressureProps[];
 }
 
-export interface ShortUserProps {
-  telegram_id: string | number;
-  first_name: string | null;
-  last_name: string | null;
-  user_name: string | null;
-}
-
 export function UserView({entity, short=false}) {
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -82,7 +75,7 @@ export function UserView({entity, short=false}) {
     return (
       <>
         <Typography variant="body2"
-                    onClick={() => dispatch(windowAdded(entity))}>
+                    onClick={() => dispatch(addWindow(entity))}>
           User {entity.first_name} {entity.last_name} (@{entity.user_name})
         </Typography>
       </>
@@ -94,10 +87,10 @@ export function UserView({entity, short=false}) {
       // enableUserSelectHack={false}
       position={{x: pos.x, y: pos.y}}
       onStop={(event, data) => {
-        dispatch(windowPosChanged({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
       }}
       onStart={(event, data) => {
-        dispatch(windowPosChanged({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
       }}
       handle=".handle"
     >

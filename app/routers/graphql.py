@@ -3,8 +3,8 @@ from strawberry.fastapi import GraphQLRouter
 from strawberry.types import Info
 import datetime
 from typing import List, Union
-from config import logger
 
+from misc.security import IsAuthenticated
 from db.sql.models import (
     OrmarMigraineUser,
     OrmarDrugUse,
@@ -207,18 +207,21 @@ class Statistics:
 
 @strawberry.type
 class Query:
-    @strawberry.field
+    @strawberry.field(permission_classes=[IsAuthenticated])
     async def user(self, telegram_id: int) -> User:
         user = await OrmarMigraineUser.objects.get(telegram_id=telegram_id)
         return User.from_orm(user)
 
-    @strawberry.field
+    @strawberry.field(permission_classes=[IsAuthenticated])
     async def users(self,
+                    telegram_ids: List[int] | None = None,
                     has_coordinates: bool | None = None,
                     language: str | None = None,
                     timezone: str | None = None
                     ) -> List[User]:
         query_set = []
+        if telegram_ids:
+            query_set.append(OrmarMigraineUser.telegram_id.in_(telegram_ids))
         if has_coordinates is not None:
             query_set.append(OrmarMigraineUser.latitude.isnull(not has_coordinates))
         if language:
@@ -228,7 +231,7 @@ class Query:
         users = await OrmarMigraineUser.objects.filter(*query_set).all()
         return [User.from_orm(user) for user in users]
 
-    @strawberry.field
+    @strawberry.field(permission_classes=[IsAuthenticated])
     async def statistics(self, after_date: datetime.date, before_date: datetime.date) -> List[Statistics]:
         statistics = await OrmarStatistics.objects.filter(
             date__gte=after_date,
@@ -236,12 +239,12 @@ class Query:
         ).all()
         return [Statistics.from_orm(stat) for stat in statistics]
 
-    @strawberry.field
+    @strawberry.field(permission_classes=[IsAuthenticated])
     async def todays_paincases(self) -> list[PainCase]:
         paincases = await OrmarPainCase.objects.filter(date=datetime.date.today()).all()
         return [PainCase.from_orm(paincase) for paincase in paincases]
 
-    @strawberry.field
+    @strawberry.field(permission_classes=[IsAuthenticated])
     async def todays_druguses(self) -> list[DrugUse]:
         druguses = await OrmarDrugUse.objects.filter(date=datetime.date.today()).all()
         return [DrugUse.from_orm(druguse) for druguse in druguses]

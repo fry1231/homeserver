@@ -1,5 +1,5 @@
 import {useDispatch, useSelector} from "react-redux";
-import {windowPosChanged, windowAdded, DraggableEntity} from "../../reducers/positions";
+import {changeWindowPos, addWindow, DraggableEntity} from "../../reducers/draggables";
 import {PaincaseProps, PaincaseView} from "../views/PaincaseView";
 import {DruguseProps, DruguseView} from "../views/DruguseView";
 import {PressureProps, PressureView} from "../views/PressureView";
@@ -23,7 +23,6 @@ export function isPressureProps(obj: any): obj is PressureProps {
 export function isUserProps(obj: any): obj is UserProps {
   return 'joined' in obj;
 }
-
 
 export default function DraggableContainer() {
   const statePositions = useSelector((state) => state.positions);

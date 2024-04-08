@@ -21,8 +21,8 @@ from dependencies import get_redis_conn
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    database_ = app.state.database
+async def lifespan(app_: FastAPI):
+    database_ = app_.state.database
     if not database_.is_connected:
         await database_.connect()
     if not migraine_database.is_connected:
@@ -69,6 +69,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
+    # allow_origins=origins,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
@@ -106,32 +107,6 @@ async def index(request: Request):
                                           {'request': request, 'events': get_events()})
     except:
         logger.error(traceback.format_exc())
-
-
-# @app.post("/trigger_tasks_update", status_code=200)
-# async def trigger():
-#     await ws_manager.broadcast()
-
-
-# @app.on_event("startup")
-# async def startup():
-#     try:
-#         pass
-#         # if not database.is_connected:
-#         #     await database.connect()
-#
-#         # tasks_ = await Task.objects.all()
-#         # tasks_ = []
-#         # data = redis_connection.get('data')
-#         # if data is None:
-#         #     tasks_jsonified = [task.dict() for task in tasks_]
-#         #     redis_connection.set('data', orjson.dumps(RefreshResponse(buses=None, tasks=tasks_jsonified).dict()))
-#         #     logger.info('Initial data set on redis')
-#         #
-#         # loop = asyncio.get_event_loop()
-#         # loop.create_task(buses.retrieve_arrivals())
-#     except:
-#         logger.error(traceback.format_exc())
 
 
 if __name__ == "__main__":
