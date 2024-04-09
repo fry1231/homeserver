@@ -133,10 +133,14 @@ export default function StateView() {
     });
   }
   
-  const onNumberClick = (userIds: number[]) => {
+  const getUsers = (userIds: number[]) => {
     const {loading, error, data} = useQuery(GET_USERS, {
       variables: {telegram_ids: userIds}
     });
+  }
+  
+  const onNumberClick = (userIds: number[]) => {
+
     const userList: ListViewProps = {entities: data.users};
     
     if (loading) return null;
