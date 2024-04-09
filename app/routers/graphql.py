@@ -106,7 +106,8 @@ class PainCase:
             provocateurs=orm_pain.provocateurs,
             symptoms=orm_pain.symptoms,
             description=orm_pain.description,
-            owner_id=orm_pain.owner_id
+            owner_id=orm_pain.owner_id,
+            medecine_taken=orm_pain.medecine_taken
         )
 
 
