@@ -233,18 +233,18 @@ class Query:
         return [User.from_orm(user) for user in users]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def paincases(self, id_: int) -> PainCase:
-        paincase = await OrmarPainCase.objects.filter(id=id_).first()
+    async def paincases(self, id: int) -> PainCase:
+        paincase = await OrmarPainCase.objects.filter(id=id).first()
         return PainCase.from_orm(paincase)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def pressures(self, id_: int) -> Pressure:
-        pressure = await OrmarPressure.objects.filter(id=id_).first()
+    async def pressures(self, id: int) -> Pressure:
+        pressure = await OrmarPressure.objects.filter(id=id).first()
         return Pressure.from_orm(pressure)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def druguses(self, id_: int) -> DrugUse:
-        druguse = await OrmarDrugUse.objects.filter(id=id_).first()
+    async def druguses(self, id: int) -> DrugUse:
+        druguse = await OrmarDrugUse.objects.filter(id=id).first()
         return DrugUse.from_orm(druguse)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
