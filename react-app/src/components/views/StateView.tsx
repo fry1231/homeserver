@@ -133,16 +133,6 @@ export default function StateView() {
     });
   }
   
-  const getUsers = (userIds: number[]) => {
-    const {loading, error, data} = useQuery(GET_USERS, {
-      variables: {telegram_ids: userIds}
-    });
-  }
-  
-  const onNumberClick = (userIds: number[]) => {
-    dispatch(addWindow(userList));
-  }
-  
   return (
     <>
       {
@@ -175,7 +165,7 @@ export default function StateView() {
                         <Typography variant="h6"
                           color={state.user_ids.length > 0 ? 'error' : 'textPrimary'}
                           style={{backgroundColor: state.user_ids.length > 0 ? 'error' : 'textPrimary'}}
-                          onClick={() => onNumberClick(state.user_ids)}
+                          onClick={() => console.log(state.user_ids)}
                         >{state.user_ids.length}</Typography>
                       </Box>
                     );

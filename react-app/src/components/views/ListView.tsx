@@ -2,19 +2,17 @@ import {PaincaseProps, PaincaseView} from "./PaincaseView";
 import {DruguseProps, DruguseView} from "./DruguseView";
 import {PressureProps, PressureView} from "./PressureView";
 import {UserProps, UserView} from "./UserView";
-import {Card, CardContent, Divider, Grid, IconButton, List, Typography} from "@mui/material";
+import {Card, CardContent, Divider, List, Typography} from "@mui/material";
 import {isPaincaseProps, isUserProps, isDruguseProps, isPressureProps} from "../global/DraggableContainer";
 import Draggable from "react-draggable";
-import {closeWindow, changeWindowPos} from "../../reducers/draggables";
+import {changeWindowPos} from "../../reducers/draggables";
 import {useDispatch} from "react-redux";
 import {tokens} from "../../theme";
 import {useTheme} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import {CardHeader} from "../common/CardHeader";
 
-
 export interface ListViewProps {
-  entities: (PaincaseProps | DruguseProps | PressureProps | UserProps)[];
+  entities: (PaincaseProps | DruguseProps | PressureProps | UserProps | string)[];
 }
 
 export const ListView = ({entity}) => {
@@ -25,7 +23,13 @@ export const ListView = ({entity}) => {
   const name = entity.name;
   const props = entity.props;
   const pos = entity.pos;
-  const listEntities = props.entities;
+  let listEntities = props.entities;
+  
+  // if all listEntites are strings:
+  const allStrings = listEntities.every((entity) => typeof entity === "string");
+  if (allStrings) {   // fetch entities with gql
+  
+  }
   
   return (
     <Draggable
@@ -41,7 +45,7 @@ export const ListView = ({entity}) => {
     >
       <Card style={{position: "absolute", zIndex: pos.z}}>
         <CardContent>
-          <CardHeader entityName={name} left="Results"/>
+          <CardHeader entityName={name} left={name}/>
           <Divider/>
           <List>
           {

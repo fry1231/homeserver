@@ -4,14 +4,20 @@ import {DruguseProps} from "../components/views/DruguseView";
 import {PressureProps} from "../components/views/PressureView";
 import {UserProps} from "../components/views/UserView";
 import {ListViewProps} from "../components/views/ListView";
-import {isPaincaseProps, isDruguseProps, isPressureProps, isUserProps} from "../components/global/DraggableContainer";
+import {
+  isPaincaseProps,
+  isDruguseProps,
+  isPressureProps,
+  isUserProps,
+  isListViewProps
+} from "../components/global/DraggableContainer";
 
 
+// Object that represents a draggable window with content
 export interface DraggableEntity {
   name: string;
-  id: number;
-  pos: {x: number, y: number};
-  props: PaincaseProps | DruguseProps | PressureProps | UserProps | ListViewProps;
+  pos: {x: number, y: number, z: number};
+  props: PaincaseProps | DruguseProps | PressureProps | UserProps | ListViewProps | string;
 }
 
 interface payloadPosChanged {
@@ -48,11 +54,11 @@ const slice = createSlice({
     },
     
     addWindow(state, action) {
-      const payload: PaincaseProps
-        | DruguseProps
-        | PressureProps
-        | UserProps
-        | ListViewProps = action.payload;
+      const payload: PaincaseProps | DruguseProps
+                                   | PressureProps
+                                   | UserProps
+                                   | ListViewProps
+                                   | string = action.payload;
       const entityName =
         isPaincaseProps(payload)
           ? 'Paincase'
@@ -62,7 +68,9 @@ const slice = createSlice({
               ? 'Pressure'
               : isUserProps(payload)
                 ? 'User'
-                : 'List';
+                : isListViewProps(payload)
+                  ? 'List'
+                  : 'Custom';
       const lastPosition = state.lastPosition;
       const lastN = state.n;
       const maxZ = state.maxZ;
@@ -80,7 +88,6 @@ const slice = createSlice({
             : newN;
       const newEntity: DraggableEntity = {
         name: entityName,
-        id: entityID,
         pos: newPosition,
         props: payload
       }

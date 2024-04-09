@@ -43,6 +43,11 @@ async def get_user_druguses(root, info: Info) -> List["DrugUse"] | int:
     return [DrugUse.from_orm(druguse) for druguse in druguses]
 
 
+async def get_paincase_druguses(root) -> List["DrugUse"]:
+    druguses = await OrmarDrugUse.objects.filter(paincase_id=root.id).all()
+    return [DrugUse.from_orm(druguse) for druguse in druguses]
+
+
 async def get_user_paincases(root, info: Info) -> List["PainCase"]:
     """Get all paincases for a user OR a count of paincases if the field is n_paincases."""
     if 'n_' in info.python_name:
@@ -93,7 +98,7 @@ class PainCase:
     symptoms: str | None
     description: str | None
     owner_id: "User"
-    medecine_taken: List[DrugUse]
+    medecine_taken: List[DrugUse] | None = strawberry.field(resolver=get_paincase_druguses)
 
     @classmethod
     def from_orm(cls, orm_pain):
@@ -106,8 +111,7 @@ class PainCase:
             provocateurs=orm_pain.provocateurs,
             symptoms=orm_pain.symptoms,
             description=orm_pain.description,
-            owner_id=orm_pain.owner_id,
-            medecine_taken=orm_pain.medecine_taken
+            owner_id=orm_pain.owner_id
         )
 
 
@@ -227,6 +231,21 @@ class Query:
             query_set.append(OrmarMigraineUser.timezone == timezone)
         users = await OrmarMigraineUser.objects.filter(*query_set).all()
         return [User.from_orm(user) for user in users]
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    async def paincases(self, id_: int) -> PainCase:
+        paincase = await OrmarPainCase.objects.filter(id=id_).first()
+        return PainCase.from_orm(paincase)
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    async def pressures(self, id_: int) -> Pressure:
+        pressure = await OrmarPressure.objects.filter(id=id_).first()
+        return Pressure.from_orm(pressure)
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    async def druguses(self, id_: int) -> DrugUse:
+        druguse = await OrmarDrugUse.objects.filter(id=id_).first()
+        return DrugUse.from_orm(druguse)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def statistics(self, after_date: datetime.date, before_date: datetime.date) -> List[Statistics]:

@@ -22,6 +22,7 @@ export function DruguseView({entity, short=false}) {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const name = entity.name;
+  const id = entity.id;
   const props = entity.props;
   const pos = entity.pos;
   
@@ -41,10 +42,10 @@ export function DruguseView({entity, short=false}) {
       // enableUserSelectHack={false}
       position={{x: pos.x, y: pos.y}}
       onStop={(event, data) => {
-        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
       }}
       onStart={(event, data) => {
-        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
       }}
       handle=".handle"
     >
