@@ -24,9 +24,15 @@ export function isUserProps(obj: any): obj is UserProps {
   return 'joined' in obj;
 }
 
+export function isListViewProps(obj: any): obj is ListViewProps {
+  return 'entities' in obj;
+}
+
+
 export default function DraggableContainer() {
   const statePositions = useSelector((state) => state.positions);
   const entities = statePositions.entities;
+  
   return (
     <div style={{position: "relative"}}>
       {entities.map((entity: DraggableEntity) => {
@@ -45,8 +51,7 @@ export default function DraggableContainer() {
           )} else {
           return (
             <ListView entity={entity} key={entity.name}/>
-          )
-        }
+          )}
         })
       }
     </div>

@@ -52,7 +52,6 @@ export function PaincaseView({entity, short=false}) {
           Paincase {entity.date}
         </Typography>
       </>
-      
     )
   }
   

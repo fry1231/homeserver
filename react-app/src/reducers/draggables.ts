@@ -71,8 +71,14 @@ const slice = createSlice({
       state.lastPosition = newPosition;
       state.n = newN;
       state.maxZ = newZ;
+      const entityID =
+        isPaincaseProps(payload) || isDruguseProps(payload) || isPressureProps(payload)
+          ? payload.id
+          : isUserProps(payload)
+            ? payload.telegram_id
+            : newN;
       const newEntity: DraggableEntity = {
-        name: entityName + newN.toString(),
+        name: entityName + '_' + entityID,
         pos: newPosition,
         props: payload
       }

@@ -88,8 +88,7 @@ class IsAuthenticated(BasePermission):
 
     async def has_permission(self, source: typing.Any, info: Info, **kwargs) -> bool:
         request = info.context["request"]
-        # Access headers authentication
-        authentication = request.headers["authentication"]
+        authentication = request.headers["Authorization"]
         if authentication:
             token = authentication.split("Bearer ")[-1]
             return await user_authorized(token, check_if_admin=True)

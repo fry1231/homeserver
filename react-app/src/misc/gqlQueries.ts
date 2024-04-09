@@ -1,11 +1,9 @@
 import { gql } from '@apollo/client';
 
-export const GET_USERS = gql`
-  query {
+export const GET_USERS = ({properties}) => gql`
+  query Users ($telegram_ids: [Int!])
     users (telegram_ids: $telegram_ids) {
-      first_name
-      last_name
-      user_name
+      ${properties.join(' ')}
     }
   }
 `;

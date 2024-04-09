@@ -3,7 +3,7 @@ import {DruguseProps, DruguseView} from "./DruguseView";
 import {PressureProps, PressureView} from "./PressureView";
 import {UserProps, UserView} from "./UserView";
 import {Card, CardContent, Divider, Grid, IconButton, List, Typography} from "@mui/material";
-import {isPaincaseProps, isUserProps, isDruguseProps, isPressureProps, isShortUserProps} from "../global/DraggableContainer";
+import {isPaincaseProps, isUserProps, isDruguseProps, isPressureProps} from "../global/DraggableContainer";
 import Draggable from "react-draggable";
 import {closeWindow, changeWindowPos} from "../../reducers/draggables";
 import {useDispatch} from "react-redux";

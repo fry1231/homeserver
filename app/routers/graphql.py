@@ -2,7 +2,7 @@ import strawberry
 from strawberry.fastapi import GraphQLRouter
 from strawberry.types import Info
 import datetime
-from typing import List, Union
+from typing import List, Union, ForwardRef
 
 from misc.security import IsAuthenticated
 from db.sql.models import (
@@ -22,6 +22,7 @@ BigInt = strawberry.scalar(
 )
 
 
+# For determining the start and end times for the current day between daily reports
 def get_start_end_datetimes():
     now = datetime.datetime.now()
     if now.time() < datetime.time(21, 30):
@@ -96,7 +97,7 @@ class PainCase:
     provocateurs: str | None
     symptoms: str | None
     description: str | None
-    owner_id: int
+    owner_id: "User"
     medecine_taken: List[DrugUse] | None = strawberry.field(resolver=get_paincase_druguses)
 
     @classmethod

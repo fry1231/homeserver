@@ -17,7 +17,7 @@ import {useAuth} from "../misc/authProvider.jsx";
 import {useNavigate} from "react-router-dom";
 
 
-export default function SignIn() {
+export default function LogIn() {
   const {setToken} = useAuth();
   const navigate = useNavigate();
   
@@ -65,6 +65,7 @@ export default function SignIn() {
               name="username"
               autoComplete="username"
               autoFocus
+              enterKeyHint="next"
             />
             <TextField
               margin="normal"
@@ -75,6 +76,7 @@ export default function SignIn() {
               type="password"
               id="password"
               autoComplete="current-password"
+              enterKeyHint="go"
             />
             {/*<FormControlLabel*/}
             {/*  control={<Checkbox value="remember" color="primary"/>}*/}

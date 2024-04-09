@@ -48,7 +48,6 @@ const DateRangePicker = () => {
     dispatch(changeDateRange({startDateTS: startDate.getTime(), endDateTS: endDate.getTime()}));
     setStart(startDate);
     setEnd(endDate);
-    console.log(startDate, endDate);
   };
 
   return (

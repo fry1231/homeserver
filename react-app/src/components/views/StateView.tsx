@@ -140,12 +140,6 @@ export default function StateView() {
   }
   
   const onNumberClick = (userIds: number[]) => {
-
-    const userList: ListViewProps = {entities: data.users};
-    
-    if (loading) return null;
-    if (error) dispatch(addWindow({entities: ["Error fetching user data"]}));
-    
     dispatch(addWindow(userList));
   }
   

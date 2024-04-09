@@ -6,7 +6,7 @@ import NotFound from "../pages/NotFound";
 import Farm from "../pages/Farm";
 import Statistics from "../pages/Statistics";
 import Profile from "../components/Profile";
-import SignIn from "../components/SignIn";
+import LogIn from "../components/LogIn";
 import Topbar from "../components/global/Topbar";
 import BusArrivals from "../components/BusArrivals";
 import StateView from "../components/views/StateView";
@@ -72,7 +72,7 @@ const Routes = () => {
     const routesForNotAuthenticatedOnly = [
         {
             path: "/login",
-            element: <SignIn />,
+            element: <LogIn />,
         },
     ];
 
