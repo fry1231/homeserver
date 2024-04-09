@@ -229,6 +229,8 @@ class Query:
             query_set.append(OrmarMigraineUser.language == language)
         if timezone:
             query_set.append(OrmarMigraineUser.timezone == timezone)
+        if len(query_set) == 0:
+            return []
         users = await OrmarMigraineUser.objects.filter(*query_set).all()
         return [User.from_orm(user) for user in users]
 
