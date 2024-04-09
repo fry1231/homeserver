@@ -9,6 +9,7 @@ import {isPaincaseProps, isDruguseProps, isPressureProps, isUserProps} from "../
 
 export interface DraggableEntity {
   name: string;
+  id: number;
   pos: {x: number, y: number};
   props: PaincaseProps | DruguseProps | PressureProps | UserProps | ListViewProps;
 }
@@ -78,7 +79,8 @@ const slice = createSlice({
             ? payload.telegram_id
             : newN;
       const newEntity: DraggableEntity = {
-        name: entityName + '_' + entityID,
+        name: entityName,
+        id: entityID,
         pos: newPosition,
         props: payload
       }

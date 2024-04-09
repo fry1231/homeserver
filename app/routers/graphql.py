@@ -43,11 +43,6 @@ async def get_user_druguses(root, info: Info) -> List["DrugUse"] | int:
     return [DrugUse.from_orm(druguse) for druguse in druguses]
 
 
-async def get_paincase_druguses(root) -> List["DrugUse"]:
-    druguses = await OrmarDrugUse.objects.filter(paincase_id=root.id).all()
-    return [DrugUse.from_orm(druguse) for druguse in druguses]
-
-
 async def get_user_paincases(root, info: Info) -> List["PainCase"]:
     """Get all paincases for a user OR a count of paincases if the field is n_paincases."""
     if 'n_' in info.python_name:
@@ -98,7 +93,7 @@ class PainCase:
     symptoms: str | None
     description: str | None
     owner_id: "User"
-    medecine_taken: List[DrugUse] | None = strawberry.field(resolver=get_paincase_druguses)
+    medecine_taken: List[DrugUse]
 
     @classmethod
     def from_orm(cls, orm_pain):
