@@ -144,7 +144,7 @@ class User:
     first_name: str | None
     last_name: str | None
     user_name: str | None
-    joined: datetime.date
+    joined: datetime.date | None    # None for old users
     timezone: str
     language: str
     utc_notify_at: datetime.time

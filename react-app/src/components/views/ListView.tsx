@@ -25,6 +25,7 @@ export const ListView = ({entity}) => {
   const colors = tokens(theme.palette.mode);
   
   const name = entity.name;
+  const id = entity.id;
   const pos = entity.pos;
   const requiredEntities = entity.nestedContent;
   const userIds = [];
@@ -57,24 +58,52 @@ export const ListView = ({entity}) => {
   });
   console.log(data);
   
+  const names = ["User", "Paincase", "Druguse", "Pressure"];
+  if (data) {
+    names.forEach((name) => {
+      let key;
+      name === "User"
+        ? key = "users"
+        : name === "Paincase"
+          ? key = "paincases"
+          : name === "Druguse"
+            ? key = "druguses"
+            : key = "pressures";
+      let id;
+      name === "User"
+        ? id = "telegramId"
+        : id = "id";
+      if (data[key]) {
+        data[key].forEach((item) => {
+          const entity: DraggableEntity = {
+            name,
+            id: item[id],
+            shortViewData: item,
+          }
+          listEntities.push(entity);
+        });
+      }
+    });
+  }
+  
   // Display loading state while fetching data
   // const [loadingState, setLoadingState] = useState("");
   // if (loading) setLoadingState("Loading...");
   // if (error) setLoadingState("Error loading data")
   // if (!data) setLoadingState("No data")
   console.log("Error", error);
-  if (data) listEntities.push(...data.users, ...data.paincases, ...data.druguses, ...data.pressures);
-  
+  // if (data) listEntities.push(...data.users, ...data.paincases, ...data.druguses, ...data.pressures);
+  console.log("List entities", listEntities)
   
   return (
     <Draggable
       // enableUserSelectHack={false}
       position={{x: pos.x, y: pos.y}}
       onStop={(event, data) => {
-        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
       }}
       onStart={(event, data) => {
-        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
       }}
       handle=".handle"
     >

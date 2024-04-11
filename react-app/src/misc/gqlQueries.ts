@@ -42,7 +42,7 @@ import {DruguseProps} from "../components/views/DruguseView";
 // PRESSURE: id, datetime
 
 export const GET_LIST_ITEMS_SHORT = gql`
-    query GetListEntities {
+    query GetListEntities ($userIds: [Int!]!, $painIds: [Int!]!, $druguseIds: [Int!]!, $pressureIds: [Int!]!) {
       users(telegramIds: $userIds) {
         telegramId
         firstName
@@ -65,18 +65,18 @@ export const GET_LIST_ITEMS_SHORT = gql`
   `;
 
 export const GET_USER_BY_ID = gql`
-  query GetUserById($id: ID!) {
+  query GetUserById($id: Int!) {
     user(telegramId: $id) {
-      telegram_id
-      last_notified
-      notify_every
-      first_name
-      last_name
-      user_name
+      telegramId
+      lastNotified
+      notifyEvery
+      firstName
+      lastName
+      userName
       joined
       timezone
       language
-      utc_notify_at
+      utcNotifyAt
       latitude
       longitude
      

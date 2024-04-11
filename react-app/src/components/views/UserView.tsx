@@ -36,7 +36,7 @@ export interface UserProps {
   firstName: string | null;
   lastName: string | null;
   userName: string | null;
-  joined: string;
+  joined: string | null;
   timezone: string;
   language: string;
   utcNotifyAt: string;
@@ -82,7 +82,7 @@ export function UserView({entity, short=false}) {
     return (
       <>
         <Typography variant="body2"
-                    onClick={dispatch(addWindow({name: "User", id: shortViewData.telegramId}))}>
+                    onClick={() => dispatch(addWindow({name: "User", id: shortViewData.telegramId}))}>
           User {shortViewData.firstName} {shortViewData.lastName} (@{shortViewData.userName})
         </Typography>
       </>
@@ -90,14 +90,34 @@ export function UserView({entity, short=false}) {
   }
   
   // If not shortView, fetch data
-  const {loading, error, props} = useQuery(GET_USER_BY_ID, {
+  const {loading, error, data} = useQuery(GET_USER_BY_ID, {
     variables: {id},
   });
   
-  const [loadingState, setLoadingState] = useState("");
-  if (loading) setLoadingState("Loading...");
-  if (error) setLoadingState("Error loading data")
-  if (!props) setLoadingState("No data")
+  console.log(data);
+  console.log(error);
+  // const [loadingState, setLoadingState] = useState("");
+  // if (loading) setLoadingState("Loading...");
+  // if (error) setLoadingState("Error loading data")
+  // if (!props) setLoadingState("No data")
+  
+  const props: UserProps = data ? data.user : {
+    telegramId: "Loading...",
+    lastNotified: "Loading...",
+    notifyEvery: "Loading...",
+    firstName: "Loading...",
+    lastName: "Loading...",
+    userName: "Loading...",
+    joined: "Loading...",
+    timezone: "Loading...",
+    language: "Loading...",
+    utcNotifyAt: "Loading...",
+    latitude: null,
+    longitude: null,
+    paincases: [],
+    druguses: [],
+    pressures: []
+  };
   
   return (
     <Draggable
@@ -116,7 +136,7 @@ export function UserView({entity, short=false}) {
           
           <CardHeader entityName={name} left={`User ID${props.telegramId}`}/>
           <Divider/>
-          {loadingState ? <Typography>{loadingState}</Typography> : null}
+          {/*{loadingState ? <Typography>{loadingState}</Typography> : null}*/}
           
           <Typography display="inline" color={colors.orangeAccent[500]} variant="body2" component="p">
             {props.firstName ? props.firstName : ""} {props.lastName ? props.lastName : null}

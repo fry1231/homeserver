@@ -5,9 +5,9 @@ import {createSlice} from "@reduxjs/toolkit";
 export interface DraggableEntity {
   name: string;   // "Paincase", "Druguse", "Pressure", "User", "List", "Custom"
   id: number;  // id of the DB entry | telegramId for User | n for List & Custom
-  pos: {x: number, y: number, z: number} | null;   // null if new window
-  nestedContent: DraggableEntity[] | null;    // Used for List
-  shortViewData: any | null;
+  pos?: {x: number, y: number, z: number};   // null if new window
+  nestedContent?: DraggableEntity[];    // Used for List
+  shortViewData?: any;
 }
 
 interface payloadPosChanged {
