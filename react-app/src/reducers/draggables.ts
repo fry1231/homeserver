@@ -1,27 +1,18 @@
 import {createSlice} from "@reduxjs/toolkit";
-import {PaincaseProps} from "../components/views/PaincaseView";
-import {DruguseProps} from "../components/views/DruguseView";
-import {PressureProps} from "../components/views/PressureView";
-import {UserProps} from "../components/views/UserView";
-import {ListViewProps} from "../components/views/ListView";
-import {
-  isPaincaseProps,
-  isDruguseProps,
-  isPressureProps,
-  isUserProps,
-  isListViewProps
-} from "../components/global/DraggableContainer";
 
 
 // Object that represents a draggable window with content
 export interface DraggableEntity {
-  name: string;
-  pos: {x: number, y: number, z: number};
-  props: PaincaseProps | DruguseProps | PressureProps | UserProps | ListViewProps | string;
+  name: string;   // "Paincase", "Druguse", "Pressure", "User", "List", "Custom"
+  id: number;  // id of the DB entry | telegramId for User | n for List & Custom
+  pos: {x: number, y: number, z: number} | null;   // null if new window
+  nestedContent: DraggableEntity[] | null;    // Used for List
+  shortViewData: any | null;
 }
 
 interface payloadPosChanged {
   name: string;
+  id: number;
   pos: {x: number, y: number};
 }
 
@@ -43,7 +34,7 @@ const slice = createSlice({
     
     changeWindowPos(state, action) {
       const payload: payloadPosChanged = action.payload;
-      const windowIndex = state.entities.findIndex((w) => w.name === payload.name);
+      const windowIndex = state.entities.findIndex((w) => w.name === payload.name && w.id === payload.id);
       const newZ = state.maxZ + 1;
       const newPos = {...payload.pos, z: newZ};
       if (windowIndex !== -1) {
@@ -54,49 +45,20 @@ const slice = createSlice({
     },
     
     addWindow(state, action) {
-      const payload: PaincaseProps | DruguseProps
-                                   | PressureProps
-                                   | UserProps
-                                   | ListViewProps
-                                   | string = action.payload;
-      const entityName =
-        isPaincaseProps(payload)
-          ? 'Paincase'
-          : isDruguseProps(payload)
-            ? 'Druguse'
-            : isPressureProps(payload)
-              ? 'Pressure'
-              : isUserProps(payload)
-                ? 'User'
-                : isListViewProps(payload)
-                  ? 'List'
-                  : 'Custom';
-      const lastPosition = state.lastPosition;
-      const lastN = state.n;
-      const maxZ = state.maxZ;
-      const newZ = maxZ + 1;
-      const newPosition = {x: lastPosition.x + 30, y: lastPosition.y + 30, z: newZ};
-      const newN = lastN + 1;
-      state.lastPosition = newPosition;
-      state.n = newN;
-      state.maxZ = newZ;
-      const entityID =
-        isPaincaseProps(payload) || isDruguseProps(payload) || isPressureProps(payload)
-          ? payload.id
-          : isUserProps(payload)
-            ? payload.telegram_id
-            : newN;
-      const newEntity: DraggableEntity = {
-        name: entityName,
-        pos: newPosition,
-        props: payload
-      }
-      state.entities.push(newEntity);
+      const newEntity: DraggableEntity = action.payload;
+      state.lastPosition = {
+        x: state.lastPosition.x + 30,
+        y: state.lastPosition.y + 30,
+        z: state.maxZ + 1
+      };
+      state.n += 1;
+      state.maxZ += 1;
+      state.entities.push({...newEntity, pos: state.lastPosition});
     },
     
     closeWindow(state, action) {
       const name: string = action.payload;
-      state.entities = state.entities.filter((w) => w.name !== name);
+      state.entities = state.entities.filter((w) => w.name !== name && w.id !== action.payload.id);
       if (state.entities.length === 0) {
         state.lastPosition = {x: 0, y: 0, z: 2};
         state.n = 0;

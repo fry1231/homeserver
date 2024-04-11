@@ -5,10 +5,9 @@ import {statesRefreshed, stateUpdateRecieved} from "../../reducers/states";
 import stateInstance from "../../reducers/states";
 import {useAuth} from "../../misc/authProvider.jsx";
 import {addWindow} from "../../reducers/draggables";
-import {ListViewProps} from "./ListView";
 import {UserProps} from "./UserView";
-import {useQuery} from '@apollo/client';
-import {GET_USERS} from '../../misc/gqlQueries';
+import {gql, useQuery} from '@apollo/client';
+import {DraggableEntity} from "../../reducers/draggables";
 
 
 export default function StateView() {
@@ -165,7 +164,14 @@ export default function StateView() {
                         <Typography variant="h6"
                           color={state.user_ids.length > 0 ? 'error' : 'textPrimary'}
                           style={{backgroundColor: state.user_ids.length > 0 ? 'error' : 'textPrimary'}}
-                          onClick={() => console.log(state.user_ids)}
+                          onClick={() => {
+                            const id = new Date().getTime() + new Date().getMilliseconds() + Math.floor(Math.random() * 1000);
+                            const userEntities: DraggableEntity[] = [];
+                            state.user_ids.map((userId) => {
+                              userEntities.push({name: "User", id: userId});
+                            });
+                            dispatch(addWindow({name: "List", id, nestedContent: userEntities}))
+                          }}
                         >{state.user_ids.length}</Typography>
                       </Box>
                     );

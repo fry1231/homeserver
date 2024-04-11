@@ -17,7 +17,7 @@ import {statesRefreshed, stateUpdateRecieved} from "../../reducers/states";
 import stateInstance from "../../reducers/states";
 import {useAuth} from "../../misc/authProvider.jsx";
 import {tokens} from "../../theme";
-import {addWindow, closeWindow, changeWindowPos} from "../../reducers/draggables";
+import {addWindow, closeWindow, changeWindowPos, DraggableEntity} from "../../reducers/draggables";
 import Draggable from "react-draggable";
 import CloseIcon from "@mui/icons-material/Close";
 import {CardHeader} from "../common/CardHeader";
@@ -25,29 +25,27 @@ import {CardRow} from "../common/CardRow";
 import {PaincaseProps} from "./PaincaseView";
 import {DruguseProps} from "./DruguseView";
 import {PressureProps} from "./PressureView";
+import {gql, useQuery} from "@apollo/client";
+import {GET_USER_BY_ID} from "../../misc/gqlQueries";
 
 
 export interface UserProps {
-  telegram_id: string | number;
-  last_notified: string;
-  notify_every: string | number;
-  first_name: string | null;
-  last_name: string | null;
-  user_name: string | null;
+  telegramId: string | number;
+  lastNotified: string;
+  notifyEvery: string | number;
+  firstName: string | null;
+  lastName: string | null;
+  userName: string | null;
   joined: string;
   timezone: string;
   language: string;
-  utc_notify_at: string;
+  utcNotifyAt: string;
   latitude: number | null;
   longitude: number | null;
   
-  n_paincases: number;
-  n_druguses: number;
-  n_pressures: number;
-  
-  paincases: PaincaseProps[];
-  druguses: DruguseProps[];
-  pressures: PressureProps[];
+  paincases: number[];   // IDs
+  druguses: number[];
+  pressures: number[];
 }
 
 export function UserView({entity, short=false}) {
@@ -55,8 +53,12 @@ export function UserView({entity, short=false}) {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const name = entity.name;
-  const props = entity.props;
+  if (name !== "User") {
+    console.log("Wrong component used for entity", entity)
+  }
+  const id = entity.id;
   const pos = entity.pos;
+  const shortViewData = entity.shortViewData;
   
   const showMap = () => {
     console.log("show map");
@@ -72,15 +74,30 @@ export function UserView({entity, short=false}) {
   }
   
   if (short) {
+    // telegramId, firstName, lastName, userName    are required
+    if (!shortViewData) {
+      console.log("No shortViewData for entity", entity);
+      return;
+    }
     return (
       <>
         <Typography variant="body2"
-                    onClick={() => dispatch(addWindow(entity))}>
-          User {entity.first_name} {entity.last_name} (@{entity.user_name})
+                    onClick={dispatch(addWindow({name: "User", id: shortViewData.telegramId}))}>
+          User {shortViewData.firstName} {shortViewData.lastName} (@{shortViewData.userName})
         </Typography>
       </>
     )
   }
+  
+  // If not shortView, fetch data
+  const {loading, error, props} = useQuery(GET_USER_BY_ID, {
+    variables: {id},
+  });
+  
+  const [loadingState, setLoadingState] = useState("");
+  if (loading) setLoadingState("Loading...");
+  if (error) setLoadingState("Error loading data")
+  if (!props) setLoadingState("No data")
   
   return (
     <Draggable
@@ -97,22 +114,23 @@ export function UserView({entity, short=false}) {
       <Card style={{position: "absolute", zIndex: pos.z}}>
         <CardContent>
           
-          <CardHeader entityName={name} left={`User ID${props.telegram_id}`}/>
+          <CardHeader entityName={name} left={`User ID${props.telegramId}`}/>
           <Divider/>
+          {loadingState ? <Typography>{loadingState}</Typography> : null}
           
           <Typography display="inline" color={colors.orangeAccent[500]} variant="body2" component="p">
-            {props.first_name ? props.first_name : ""} {props.last_name ? props.last_name : null}
+            {props.firstName ? props.firstName : ""} {props.lastName ? props.lastName : null}
           </Typography><Typography ml={1} display="inline" color={colors.orangeAccent[500]} variant="body2"
                                    component="p">({props.language})</Typography>
-          {props.user_name
-            ? <Link ml={2} href={`https://t.me/${props.user_name}`} color={colors.orangeAccent[500]} variant="body2">@{props.user_name}</Link>
+          {props.userName
+            ? <Link ml={2} href={`https://t.me/${props.userName}`} color={colors.orangeAccent[500]} variant="body2">@{props.userName}</Link>
             : null}
           <br/>
           
           <CardRow left="Joined" right={props.joined}/>
           <CardRow left="Timezone" right={props.timezone}/>
-          <CardRow left="Notify every" right={props.notify_every}/>
-          <CardRow left="Notify at" right={props.utc_notify_at}/>
+          <CardRow left="Notify every" right={props.notifyEvery}/>
+          <CardRow left="Notify at" right={props.utcNotifyAt}/>
           
           {props.latitude && props.longitude ?
             <>
@@ -126,17 +144,17 @@ export function UserView({entity, short=false}) {
           <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
             Paincases:
             </Typography> <Link component="button" variant="body2" color="inherit" onClick={showPaincases}>
-          {props.n_paincases}
+          {props.paincases.length}
           </Link><br/>
           <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
             Druguses:
             </Typography> <Link component="button" variant="body2" color="inherit" onClick={showDruguses}>
-          {props.n_druguses}
+          {props.druguses.length}
           </Link><br/>
           <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
             Pressures:
             </Typography> <Link component="button" variant="body2" color="inherit" onClick={showPressures}>
-          {props.n_pressures}
+          {props.pressures.length}
           </Link><br/>
           
         </CardContent>

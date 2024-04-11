@@ -72,7 +72,7 @@ class DrugUse:
     date: datetime.date
     amount: str
     drugname: str
-    owner_id: int
+    owner_id: "User"
     paincase_id: int | None
 
     @classmethod
@@ -122,7 +122,7 @@ class Pressure:
     systolic: int
     diastolic: int
     pulse: int
-    owner_id: int
+    owner_id: "User"
 
     @classmethod
     def from_orm(cls, orm_pressure):

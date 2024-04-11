@@ -5,6 +5,7 @@ import datetime
 
 from dependencies import is_admin, farm_client, get_redis_conn
 from db.influx import get_influx_data, write_influx_data
+from misc.data_handling import downsample
 
 
 router = APIRouter(
@@ -44,11 +45,12 @@ def submit_farm_data(data: FarmData, influxdb_client=Depends(farm_client)):
 def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
                         endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
                         influxdb_client=Depends(farm_client)):
-    return get_influx_data(client=influxdb_client,
+    data = get_influx_data(client=influxdb_client,
                            measurement='farm',
                            ResponseClass=FarmResponseItem,
                            start_timestamp=startTS,
                            end_timestamp=endTS)
+    return downsample(data)
 
 
 # Submit and get data about watering pump on/off

@@ -48,7 +48,7 @@ export function PaincaseView({entity, short=false}) {
     return (
       <>
         <Typography variant="body2"
-                    onClick={() => dispatch(addWindow(entity))}>
+                    onClick={() => dispatch(addWindow({name: "Paincase", id: entity.id}))}>
           Paincase {entity.date}
         </Typography>
       </>
