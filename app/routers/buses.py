@@ -67,6 +67,11 @@ async def arrivals(redis_conn=Depends(get_redis_conn)):
     return StreamingResponse(reader(redis_conn), media_type="text/event-stream")
 
 
+@router.get("/arrivals_v2")
+async def arrivals_v2(redis_conn=Depends(get_redis_conn)):
+    return StreamingResponse(reader_v2(redis_conn), media_type="text/event-stream")
+
+
 @injectable
 async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
     """
@@ -130,7 +135,7 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
         await asyncio.sleep(int(sleep_seconds))
 
 
-async def reader(redis_conn=Depends(get_redis_conn)):
+async def reader(redis_conn):
     channel = redis_conn.pubsub()
     await channel.subscribe("channel:buses")
     while True:
@@ -143,7 +148,7 @@ async def reader(redis_conn=Depends(get_redis_conn)):
             pass
 
 
-async def reader_v2(redis_conn=Depends(get_redis_conn)):
+async def reader_v2(redis_conn):
     while True:
         try:
             async with async_timeout.timeout(1):
