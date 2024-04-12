@@ -25,13 +25,14 @@ export function DruguseView({entity, short=false}) {
   const id = entity.id;
   const props = entity.props;
   const pos = entity.pos;
+  const shortViewData = entity.shortViewData;
   
   if (short) {
     return (
       <>
         <Typography variant="body2"
-                    onClick={() => dispatch(addWindow(entity))}>
-          Druguse {entity.date}
+                    onClick={() => dispatch(addWindow({name, id}))}>
+          Druguse {shortViewData.date}
         </Typography>
       </>
     )

@@ -12,12 +12,7 @@ import {CardHeader} from "../common/CardHeader";
 import {DraggableEntity} from "../../reducers/draggables";
 import {GET_LIST_ITEMS_SHORT} from "../../misc/gqlQueries";
 import {useQuery} from "@apollo/client";
-import {useState} from "react";
 
-
-// export interface ListViewProps {
-//   entities: (PaincaseProps | DruguseProps | PressureProps | UserProps)[];
-// }
 
 export const ListView = ({entity}) => {
   const dispatch = useDispatch();
@@ -35,13 +30,13 @@ export const ListView = ({entity}) => {
   const listEntities = [];
   if (requiredEntities) {
     requiredEntities.forEach((entity) => {
-      if (entity.name === "User") {
+      if (entity.name.includes("User")) {
         userIds.push(entity.id);
-      } else if (entity.name === "Paincase") {
+      } else if (entity.name.includes("Paincase")) {
         painIds.push(entity.id);
-      } else if (entity.name === "Druguse") {
+      } else if (entity.name.includes("Druguse")) {
         druguseIds.push(entity.id);
-      } else if (entity.name === "Pressure") {
+      } else if (entity.name.includes("Pressure")) {
         pressureIds.push(entity.id);
       } else {
         listEntities.push(entity);
@@ -56,8 +51,8 @@ export const ListView = ({entity}) => {
       pressureIds
     }
   });
-  console.log(data);
   
+  // Fill listEntities with data, taking into account the entity type
   const names = ["User", "Paincase", "Druguse", "Pressure"];
   if (data) {
     names.forEach((name) => {
@@ -91,9 +86,7 @@ export const ListView = ({entity}) => {
   // if (loading) setLoadingState("Loading...");
   // if (error) setLoadingState("Error loading data")
   // if (!data) setLoadingState("No data")
-  console.log("Error", error);
   // if (data) listEntities.push(...data.users, ...data.paincases, ...data.druguses, ...data.pressures);
-  console.log("List entities", listEntities)
   
   return (
     <Draggable
@@ -115,19 +108,19 @@ export const ListView = ({entity}) => {
           <List>
           {
             listEntities.map((entity: DraggableEntity, i) => {
-                if (entity.name === "Paincase") {
+                if (entity.name.includes("Paincase")) {
                   return (
                     <PaincaseView entity={entity} short={true} key={`PC_${entity.id}`}/>
-                  )} else if (entity.name === "Druguse") {
+                  )} else if (entity.name.includes("Druguse")) {
                   return (
                     <DruguseView entity={entity} short={true} key={`DU_${entity.id}`}/>
-                  )} else if (entity.name === "Pressure") {
+                  )} else if (entity.name.includes("Pressure")) {
                   return (
                     <PressureView entity={entity} short={true} key={`P_${entity.id}`}/>
-                  )} else if (entity.name === "User") {
+                  )} else if (entity.name.includes("User")) {
                   return (
                     <UserView entity={entity} short={true} key={entity.id}/>
-                  )} else if (entity.name === "List") {
+                  )} else if (entity.name.includes("List")) {
                   return (
                     <ListView entity={entity} key={entity.id}/>
                   )} else {

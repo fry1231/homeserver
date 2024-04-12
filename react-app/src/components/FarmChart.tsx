@@ -37,6 +37,7 @@ const combinedChart = (sensorsData: SensorsDataPoint[], wateringData: WateringDa
   const temperatureSeries = [];
   const soilMoistureSeries = [];
   const waterLevelSeries = [];
+  const soilMoistureNormalized = [];
   // const wateringSeries = [];
   let skipFlag = false;
   timeSeries.map((time, i) => {
@@ -45,10 +46,15 @@ const combinedChart = (sensorsData: SensorsDataPoint[], wateringData: WateringDa
       temperatureSeries.push(dataPoint.temperature);
       soilMoistureSeries.push(dataPoint.soil_moisture);
       waterLevelSeries.push(dataPoint.water_level);
+      if (dataPoint.water_level <= 50)
+        soilMoistureNormalized.push(dataPoint.soil_moisture);
+      else
+        soilMoistureNormalized.push(dataPoint.soil_moisture / dataPoint.water_level * 100);
     } else {
       temperatureSeries.push(null);
       soilMoistureSeries.push(null);
       waterLevelSeries.push(null);
+      soilMoistureNormalized.push(null);
     }
     
     if (skipFlag) {
@@ -70,6 +76,7 @@ const combinedChart = (sensorsData: SensorsDataPoint[], wateringData: WateringDa
     temperatureSeries,
     soilMoistureSeries,
     waterLevelSeries,
+    soilMoistureNormalized: soilMoistureNormalized,
     // wateringSeries,
   }
 }
@@ -89,6 +96,7 @@ export const FarmChart = () => {
     temperatureSeries: [],
     soilMoistureSeries: [],
     waterLevelSeries: [],
+    soilMoistureNormalized: [],
     // wateringSeries: []
   });
   useEffect(() => {
@@ -191,9 +199,17 @@ export const FarmChart = () => {
       title: 'Water Level',
       side: 'right',
       overlaying: 'y',
-      position: 0.85,
+      position: 1,
       visible: false,
+      fixedrange: true,
       range: [0, 400],
+    },
+    yaxis4: {
+      title: 'Soil Moisture %',
+      side: 'right',
+      overlaying: 'y',
+      position: 1,
+      visible: false,
     },
     legend: {
       x: 1.2,
@@ -224,7 +240,7 @@ export const FarmChart = () => {
           mode: 'lines',
           name: 'Soil Moisture',
           yaxis: 'y2',
-          line: {color: 'green'},
+          line: {color: `rgba(0, 255, 0, 0.2)`},
         },
         {
           x: chartData.timeline,
@@ -235,6 +251,15 @@ export const FarmChart = () => {
           yaxis: 'y3',
           line: {color: 'blue'},
         },
+        {
+          x: chartData.timeline,
+          y: chartData.soilMoistureNormalized,
+          type: 'scatter',
+          mode: 'lines',
+          name: 'Soil Moisture Normalized',
+          yaxis: 'y4',
+          line: {color: 'green'},
+        }
       ]}
       layout={layout}
     />

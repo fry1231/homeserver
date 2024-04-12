@@ -34,6 +34,24 @@ import {DruguseProps} from "../components/views/DruguseView";
 //   medecine_taken: DruguseProps[] | null;
 // }
 
+// export interface DruguseProps {
+//   id: number;
+//   date: string;
+//   amount: string;
+//   drugname: string;
+//   owner_id: number;
+//   paincase_id: number | null;
+// }
+
+// export interface PressureProps {
+//   id: number;
+//   datetime: string;
+//   systolic: number;
+//   diastolic: number;
+//   pulse: number;
+//   owner_id: number;
+// }
+
 
 //          Short views data:
 // USER: telegramId, firstName, lastName, userName
@@ -89,6 +107,38 @@ export const GET_USER_BY_ID = gql`
       pressures {
         id
       }
+    }
+  }
+`;
+
+export const GET_PAINCASE_BY_ID = gql`
+  query GetPaincaseById($id: Int!) {
+    paincases(ids: $ids) {
+      id
+      date
+      durability
+      intensity
+      aura
+      provocateurs
+      symptoms
+      description
+      ownerId
+      medecineTaken {
+        id
+      }
+    }
+  }
+`;
+
+export const GET_DRUGUSE_BY_ID = gql`
+  query GetDruguseById($id: Int!) {
+    druguses(ids: $ids) {
+      id
+      date
+      amount
+      drugname
+      ownerId
+      paincaseId
     }
   }
 `;

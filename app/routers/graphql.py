@@ -66,13 +66,36 @@ async def get_user_pressures(root, info: Info) -> List["Pressure"]:
     return [Pressure.from_orm(pressure) for pressure in pressures]
 
 
+async def get_owner(root, info: Info) -> "User":
+    """Get the owner of a paincase, druguse or pressure."""
+    owner = await OrmarMigraineUser.objects.get(telegram_id=root.owner_id)
+    return User.from_orm(owner)
+
+
+async def get_todays_paincases(root) -> List["PainCase"]:
+    paincases = await OrmarPainCase.objects.filter(date=root.date).all()
+    return [PainCase.from_orm(paincase) for paincase in paincases]
+
+
+async def get_todays_druguses(root) -> List["DrugUse"]:
+    druguses = await OrmarDrugUse.objects.filter(date=root.date).all()
+    return [DrugUse.from_orm(druguse) for druguse in druguses]
+
+
+async def get_todays_pressures(root) -> List["Pressure"]:
+    start_datetime = datetime.datetime.combine(root.date, datetime.datetime.min.time())
+    end_datetime = start_datetime + datetime.timedelta(days=1)
+    pressures = await OrmarPressure.objects.filter(datetime__gte=start_datetime, datetime__lt=end_datetime).all()
+    return [Pressure.from_orm(pressure) for pressure in pressures]
+
+
 @strawberry.type
 class DrugUse:
     id: int
     date: datetime.date
     amount: str
     drugname: str
-    owner_id: "User"
+    owner_id: "User" = strawberry.field(resolver=get_owner)
     paincase_id: int | None
 
     @classmethod
@@ -97,7 +120,7 @@ class PainCase:
     provocateurs: str | None
     symptoms: str | None
     description: str | None
-    owner_id: "User"
+    owner_id: "User" = strawberry.field(resolver=get_owner)
     medecine_taken: List[DrugUse] | None = strawberry.field(resolver=get_paincase_druguses)
 
     @classmethod
@@ -122,7 +145,7 @@ class Pressure:
     systolic: int
     diastolic: int
     pulse: int
-    owner_id: "User"
+    owner_id: "User" = strawberry.field(resolver=get_owner)
 
     @classmethod
     def from_orm(cls, orm_pressure):
@@ -186,9 +209,9 @@ class Statistics:
     active_users: int
     super_active_users: int
     paincases: int
-    druguses: int
-    pressures: int
-    medications: int
+    druguses: int = strawberry.field(resolver=get_todays_druguses)
+    pressures: int = strawberry.field(resolver=get_todays_pressures)
+    medications: int = strawberry.field(resolver=get_todays_paincases)
 
     @classmethod
     def from_orm(cls, orm_stat):
@@ -250,22 +273,12 @@ class Query:
         return [Pressure.from_orm(pressure) for pressure in pressures]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def statistics(self, after_date: datetime.date, before_date: datetime.date) -> List[Statistics]:
+    async def statistics(self, after_date_included: datetime.date, before_date: datetime.date) -> List[Statistics]:
         statistics = await OrmarStatistics.objects.filter(
-            date__gte=after_date,
-            date__lte=before_date
+            date__gte=after_date_included,
+            date__lt=before_date
         ).all()
         return [Statistics.from_orm(stat) for stat in statistics]
-
-    @strawberry.field(permission_classes=[IsAuthenticated])
-    async def todays_paincases(self) -> list[PainCase]:
-        paincases = await OrmarPainCase.objects.filter(date=datetime.date.today()).all()
-        return [PainCase.from_orm(paincase) for paincase in paincases]
-
-    @strawberry.field(permission_classes=[IsAuthenticated])
-    async def todays_druguses(self) -> list[DrugUse]:
-        druguses = await OrmarDrugUse.objects.filter(date=datetime.date.today()).all()
-        return [DrugUse.from_orm(druguse) for druguse in druguses]
 
 
 schema = strawberry.Schema(Query)

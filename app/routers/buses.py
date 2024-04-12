@@ -130,7 +130,7 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
         await asyncio.sleep(int(sleep_seconds))
 
 
-async def reader(redis_conn):
+async def reader(redis_conn=Depends(get_redis_conn)):
     channel = redis_conn.pubsub()
     await channel.subscribe("channel:buses")
     while True:
@@ -138,6 +138,26 @@ async def reader(redis_conn):
             async with async_timeout.timeout(1):
                 message = await channel.get_message(ignore_subscribe_messages=True)
                 yield message['data']
+            await asyncio.sleep(0.1)
+        except asyncio.TimeoutError:
+            pass
+
+
+async def reader_v2(redis_conn=Depends(get_redis_conn)):
+    while True:
+        try:
+            async with async_timeout.timeout(1):
+                data = await redis_conn.get('data')
+                to_defense = data['to_defense']
+                to_rer = data['to_rer']
+                buses_to_defense = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in to_defense]
+                buses_to_rer = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in to_rer]
+                yield orjson.dumps({
+                    "bus_data": [
+                        {"destinationName": "Defense", "buses": buses_to_defense},
+                        {"destinationName": "RER", "buses": buses_to_rer}
+                    ]
+                }).decode('utf8')
             await asyncio.sleep(0.1)
         except asyncio.TimeoutError:
             pass

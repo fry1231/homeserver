@@ -21,19 +21,21 @@ export function PressureView({entity, short=false}) {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const name = entity.name;
-  const props = entity.props;
-  const pos = entity.pos;
+  const id = entity.id;
+  const shortViewData = entity.shortViewData;
   
   if (short) {
     return (
       <>
         <Typography variant="body2"
-                    onClick={() => dispatch(addWindow(entity))}>
-          Pressure {entity.datetime}
+                    onClick={() => dispatch(addWindow({name, id}))}>
+          Pressure {shortViewData.datetime}
         </Typography>
       </>
     )
   }
+  
+  
   
   return (
     <Draggable

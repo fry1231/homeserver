@@ -7,11 +7,20 @@ import axios from "axios";
 import {useAuth} from "../misc/authProvider.jsx";
 
 
+interface BusResponse {
+  busData: Destination[];
+}
+
+interface Destination {
+  destinationName: string;
+  buses: BusArrival[];
+}
+
 interface BusArrival {
-    busNum: number;
-    eta: string;
-    destination: string;
-    secondsToBus: number;
+  busNum: number;
+  eta: string;
+  destination: string;
+  secondsToBus?: number;
 }
 
 
@@ -26,7 +35,6 @@ export default function BusArrivals() {
   
   useEffect(() => {
     let previousBytes = 0;
-    console.log('Fetching bus data')
     const response = axios.get(
       `/buses/arrivals`, {
         headers: {
@@ -39,15 +47,16 @@ export default function BusArrivals() {
           previousBytes = progressEvent.loaded;
           // Access the new chunk of data
           const newChunk = progressEvent.event.currentTarget.response.slice(-newBytes+1);
-          const data = JSON.parse(
+          const data: BusResponse = JSON.parse(
             newChunk
-            )['bus_data'];
-          data.map((destination) => {
+            );
+          const busData = data.busData;
+          busData.map((destination) => {
             destination.buses.map((bus) => {
               bus.secondsToBus = Math.floor((new Date(bus.eta).getTime() - Date.now()) / 1000);
             });
           });
-          dispatch(busDataUpdated(data));
+          dispatch(busDataUpdated(busData));
           if (progressEvent.loaded > 1000 * 1000) {
             source.cancel("Request cancelled on limit reached");
             setLimitReached(true);

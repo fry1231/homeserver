@@ -11,6 +11,11 @@ export const ApolloWrapper = ({children}) => {
       cache: new InMemoryCache(),
       headers: {
         Authorization: `Bearer ${token}`
+      },
+      defaultOptions: {
+        query: {
+          fetchPolicy: 'no-cache',
+        },
       }
     });
     setClient(client);

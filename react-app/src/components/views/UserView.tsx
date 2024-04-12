@@ -1,31 +1,12 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  Link,
-  IconButton,
-  Paper,
-  Radio,
-  Typography,
-  useTheme, Divider
-} from "@mui/material";
+import {Card, CardContent, Link, Typography, useTheme, Divider} from "@mui/material";
 import {useEffect, useState, useRef} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import {statesRefreshed, stateUpdateRecieved} from "../../reducers/states";
-import stateInstance from "../../reducers/states";
-import {useAuth} from "../../misc/authProvider.jsx";
+import {useDispatch} from "react-redux";
 import {tokens} from "../../theme";
 import {addWindow, closeWindow, changeWindowPos, DraggableEntity} from "../../reducers/draggables";
 import Draggable from "react-draggable";
-import CloseIcon from "@mui/icons-material/Close";
 import {CardHeader} from "../common/CardHeader";
 import {CardRow} from "../common/CardRow";
-import {PaincaseProps} from "./PaincaseView";
-import {DruguseProps} from "./DruguseView";
-import {PressureProps} from "./PressureView";
-import {gql, useQuery} from "@apollo/client";
+import {useQuery} from "@apollo/client";
 import {GET_USER_BY_ID} from "../../misc/gqlQueries";
 
 
@@ -53,10 +34,13 @@ export function UserView({entity, short=false}) {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const name = entity.name;
-  if (name !== "User") {
-    console.log("Wrong component used for entity", entity)
+  if (!name.includes("User")) {
+    console.error("Wrong component used for entity", entity)
   }
-  const id = entity.id;
+  const [id, setId] = useState();
+  useEffect(() => {
+    setId(entity.id);
+  }, [entity.id]);
   const pos = entity.pos;
   const shortViewData = entity.shortViewData;
   
@@ -76,13 +60,13 @@ export function UserView({entity, short=false}) {
   if (short) {
     // telegramId, firstName, lastName, userName    are required
     if (!shortViewData) {
-      console.log("No shortViewData for entity", entity);
+      console.error("No shortViewData for entity!", entity);
       return;
     }
     return (
       <>
         <Typography variant="body2"
-                    onClick={() => dispatch(addWindow({name: "User", id: shortViewData.telegramId}))}>
+                    onClick={() => dispatch(addWindow({name, id}))}>
           User {shortViewData.firstName} {shortViewData.lastName} (@{shortViewData.userName})
         </Typography>
       </>
@@ -91,17 +75,12 @@ export function UserView({entity, short=false}) {
   
   // If not shortView, fetch data
   const {loading, error, data} = useQuery(GET_USER_BY_ID, {
-    variables: {id},
+    variables: {id}
   });
   
-  console.log(data);
-  console.log(error);
-  // const [loadingState, setLoadingState] = useState("");
-  // if (loading) setLoadingState("Loading...");
-  // if (error) setLoadingState("Error loading data")
-  // if (!props) setLoadingState("No data")
-  
-  const props: UserProps = data ? data.user : {
+  const props: UserProps = data
+    ? data.user
+    : {
     telegramId: "Loading...",
     lastNotified: "Loading...",
     notifyEvery: "Loading...",
@@ -124,10 +103,10 @@ export function UserView({entity, short=false}) {
       // enableUserSelectHack={false}
       position={{x: pos.x, y: pos.y}}
       onStop={(event, data) => {
-        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
       }}
       onStart={(event, data) => {
-        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
+        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
       }}
       handle=".handle"
     >
