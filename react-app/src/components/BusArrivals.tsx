@@ -35,8 +35,8 @@ export default function BusArrivals() {
   
   useEffect(() => {
     let previousBytes = 0;
-    const response = axios.get(
-      `/buses/arrivals`, {
+    axios.get(
+      `/buses/arrivals_v2`, {
         headers: {
           'Authorization': `Bearer ${token}`
         },
@@ -50,6 +50,7 @@ export default function BusArrivals() {
           const data: BusResponse = JSON.parse(
             newChunk
             );
+          console.log(data);
           const busData = data.busData;
           busData.map((destination) => {
             destination.buses.map((bus) => {
@@ -140,10 +141,10 @@ const BusRow = (props: BusArrival) => {
   const seconds = props.secondsToBus % 60;
   const timeToBus = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   let busColor;
-  if (props.busNum === 258) {
+  if (props.busNum == 258) {
         busColor = colors.redAccent[400];
   }
-    else if (props.busNum === 259) {
+    else if (props.busNum == 259) {
         busColor = colors.blueAccent[500]
   }
     else {

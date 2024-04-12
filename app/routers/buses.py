@@ -67,9 +67,9 @@ async def arrivals(redis_conn=Depends(get_redis_conn)):
     return StreamingResponse(reader(redis_conn), media_type="text/event-stream")
 
 
-@router.get("/arrivals_v2")
+@router.get("/arrivals-mocked")
 async def arrivals_v2(redis_conn=Depends(get_redis_conn)):
-    return StreamingResponse(reader_v2(redis_conn), media_type="text/event-stream")
+    return StreamingResponse(generate_sse_events(), media_type="text/event-stream")
 
 
 @injectable
