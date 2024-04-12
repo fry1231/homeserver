@@ -8,7 +8,7 @@ import {useAuth} from "../misc/authProvider.jsx";
 
 
 interface BusResponse {
-  busData: Destination[];
+  bus_data: Destination[];
 }
 
 interface Destination {
@@ -36,7 +36,7 @@ export default function BusArrivals() {
   useEffect(() => {
     let previousBytes = 0;
     axios.get(
-      `/buses/arrivals_v2`, {
+      `/buses/arrivals-mocked`, {
         headers: {
           'Authorization': `Bearer ${token}`
         },
@@ -51,7 +51,7 @@ export default function BusArrivals() {
             newChunk
             );
           console.log(data);
-          const busData = data.busData;
+          const busData = data.bus_data;
           busData.map((destination) => {
             destination.buses.map((bus) => {
               bus.secondsToBus = Math.floor((new Date(bus.eta).getTime() - Date.now()) / 1000);

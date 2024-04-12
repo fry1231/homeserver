@@ -67,11 +67,6 @@ async def arrivals(redis_conn=Depends(get_redis_conn)):
     return StreamingResponse(reader(redis_conn), media_type="text/event-stream")
 
 
-@router.get("/arrivals-mocked")
-async def arrivals_v2(redis_conn=Depends(get_redis_conn)):
-    return StreamingResponse(generate_sse_events(), media_type="text/event-stream")
-
-
 @injectable
 async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
     """
@@ -138,24 +133,20 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
 async def reader(redis_conn):
     channel = redis_conn.pubsub()
     await channel.subscribe("channel:buses")
+
+    # Fetch the current data
+    current_data = await redis_conn.get('data')
+    if current_data is not None:
+        yield current_data
     while True:
         try:
             async with async_timeout.timeout(1):
                 message = await channel.get_message(ignore_subscribe_messages=True)
-                yield message['data']
-            await asyncio.sleep(0.1)
-        except asyncio.TimeoutError:
-            pass
-
-
-async def reader_v2(redis_conn):
-    while True:
-        try:
-            async with async_timeout.timeout(1):
-                data = await redis_conn.get('data')
+                data = message['data']
                 to_defense = data['to_defense']
                 to_rer = data['to_rer']
-                buses_to_defense = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in to_defense]
+                buses_to_defense = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in
+                                    to_defense]
                 buses_to_rer = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in to_rer]
                 yield orjson.dumps({
                     "bus_data": [
