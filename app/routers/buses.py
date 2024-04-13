@@ -137,23 +137,28 @@ async def reader(redis_conn):
     # Fetch the current data
     current_data = await redis_conn.get('data')
     if current_data is not None:
-        yield current_data
+        data = orjson.loads(current_data)['buses']
+        yield reformat_bus_data(data)
     while True:
         try:
             async with async_timeout.timeout(1):
                 message = await channel.get_message(ignore_subscribe_messages=True)
                 data = message['data']
-                to_defense = data['to_defense']
-                to_rer = data['to_rer']
-                buses_to_defense = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in
-                                    to_defense]
-                buses_to_rer = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in to_rer]
-                yield orjson.dumps({
-                    "bus_data": [
-                        {"destinationName": "Defense", "buses": buses_to_defense},
-                        {"destinationName": "RER", "buses": buses_to_rer}
-                    ]
-                }).decode('utf8')
+                yield reformat_bus_data(orjson.loads(data)['buses'])
             await asyncio.sleep(0.1)
         except asyncio.TimeoutError:
             pass
+
+
+def reformat_bus_data(data):
+    to_defense = data['to_defense']
+    to_rer = data['to_rer']
+    buses_to_defense = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in
+                        to_defense]
+    buses_to_rer = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in to_rer]
+    return orjson.dumps({
+        "bus_data": [
+            {"destinationName": "Defense", "buses": buses_to_defense},
+            {"destinationName": "RER", "buses": buses_to_rer}
+        ]
+    }).decode('utf8')

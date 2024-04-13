@@ -36,7 +36,7 @@ export default function BusArrivals() {
   useEffect(() => {
     let previousBytes = 0;
     axios.get(
-      `/buses/arrivals-mocked`, {
+      `/buses/arrivals`, {
         headers: {
           'Authorization': `Bearer ${token}`
         },
