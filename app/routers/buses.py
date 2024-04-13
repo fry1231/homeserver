@@ -143,8 +143,9 @@ async def reader(redis_conn):
         try:
             async with async_timeout.timeout(1):
                 message = await channel.get_message(ignore_subscribe_messages=True)
-                data = message['data']
-                yield reformat_bus_data(orjson.loads(data)['buses'])
+                if message is not None:
+                    data = message['data']
+                    yield reformat_bus_data(orjson.loads(data)['buses'])
             await asyncio.sleep(0.1)
         except asyncio.TimeoutError:
             pass
