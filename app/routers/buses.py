@@ -131,24 +131,28 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
 
 
 async def reader(redis_conn):
-    channel = redis_conn.pubsub()
-    await channel.subscribe("channel:buses")
+    try:
+        channel = redis_conn.pubsub()
+        await channel.subscribe("channel:buses")
 
-    # Fetch the current data
-    current_data = await redis_conn.get('data')
-    if current_data is not None:
-        data = orjson.loads(current_data)['buses']
-        yield reformat_bus_data(data)
-    while True:
-        try:
-            async with async_timeout.timeout(1):
-                message = await channel.get_message(ignore_subscribe_messages=True)
-                if message is not None:
-                    data = message['data']
-                    yield reformat_bus_data(orjson.loads(data)['buses'])
-            await asyncio.sleep(0.1)
-        except asyncio.TimeoutError:
-            pass
+        # Fetch the current data
+        current_data = await redis_conn.get('data')
+        if current_data is not None:
+            data = orjson.loads(current_data)['buses']
+            yield reformat_bus_data(data)
+        while True:
+            try:
+                async with async_timeout.timeout(1):
+                    message = await channel.get_message(ignore_subscribe_messages=True)
+                    if message is not None:
+                        data = message['data']
+                        yield reformat_bus_data(orjson.loads(data)['buses'])
+                await asyncio.sleep(0.1)
+            except asyncio.TimeoutError:
+                pass
+    except Exception:
+        logger.error(traceback.format_exc())
+        raise
 
 
 def reformat_bus_data(data):

@@ -42,12 +42,18 @@ const DateRangePicker = () => {
   
   const [start, setStart] = useState(startDate);
   const [end, setEnd] = useState(endDate);
+  const [secondClick, setSecondClick] = useState(false);
   
   const handleDateChange = (dates) => {
     const {startDate, endDate} = dates;
-    dispatch(changeDateRange({startDateTS: startDate.getTime(), endDateTS: endDate.getTime()}));
     setStart(startDate);
     setEnd(endDate);
+    if (secondClick) {
+      setSecondClick(false);
+      dispatch(changeDateRange({startDateTS: startDate.getTime(), endDateTS: endDate.getTime()}));
+    } else {
+      setSecondClick(true);
+    }
   };
 
   return (

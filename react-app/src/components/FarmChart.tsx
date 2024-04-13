@@ -191,7 +191,7 @@ export const FarmChart = () => {
       overlaying: 'y',
       position: 1,
       fixedrange: true,
-      range: [0, null],
+      range: [0, 400],
       ...commonAxisLayout,
       gridcolor: colors.grey[200],
     },
