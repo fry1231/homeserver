@@ -8,7 +8,7 @@ import {useAuth} from "../misc/authProvider.jsx";
 
 
 interface BusResponse {
-  bus_data: Destination[];
+  busData: Destination[];
 }
 
 interface Destination {
@@ -51,7 +51,7 @@ export default function BusArrivals() {
             newChunk
             );
           console.log(data);
-          const busData = data.bus_data;
+          const busData = data.busData;
           busData.map((destination) => {
             destination.buses.map((bus) => {
               bus.secondsToBus = Math.floor((new Date(bus.eta).getTime() - Date.now()) / 1000);

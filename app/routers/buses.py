@@ -158,11 +158,11 @@ async def reader(redis_conn):
 def reformat_bus_data(data):
     to_defense = data['to_defense']
     to_rer = data['to_rer']
-    buses_to_defense = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in
-                        to_defense]
-    buses_to_rer = [{"busNum": bus.route, "eta": bus.etd, "destination": bus.destination} for bus in to_rer]
+    logger.debug(to_defense[0])
+    buses_to_defense = [{"busNum": bus['route'], "eta": bus['etd'], "destination": bus['destination']} for bus in to_defense]
+    buses_to_rer = [{"busNum": bus['route'], "eta": bus['etd'], "destination": bus['destination']} for bus in to_rer]
     return orjson.dumps({
-        "bus_data": [
+        "busData": [
             {"destinationName": "Defense", "buses": buses_to_defense},
             {"destinationName": "RER", "buses": buses_to_rer}
         ]
