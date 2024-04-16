@@ -304,7 +304,7 @@ class Query:
                         before_date: datetime.date | None = None) -> list[Pressure]:
         query_set = []
         if ids:
-            query_set.append(OrmarPressure.id in ids)
+            query_set.append(OrmarPressure.id.in_(ids))
         if after_date:
             query_set.append(OrmarPressure.datetime >= after_date)
         if before_date:
