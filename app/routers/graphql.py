@@ -327,9 +327,9 @@ class Query:
         ).sum(["new_users", "deleted_users", "active_users", "super_active_users", "paincases", "druguses", "pressures"])
         new_users = deleted_users = super_active_users = paincases = druguses = pressures = []
         if not only_summarized:
-            paincases = await OrmarPainCase.objects.filter(date__gte=after_date, date__lte=before_date).all()
-            druguses = await OrmarDrugUse.objects.filter(date__gte=after_date, date__lte=before_date).all()
-            pressures = await OrmarPressure.objects.filter(datetime__gte=after_date, datetime__lte=before_date).all()
+            paincases = await OrmarPainCase.objects.filter(date__gte=after_date, date__lte=before_date)
+            druguses = await OrmarDrugUse.objects.filter(date__gte=after_date, date__lte=before_date)
+            pressures = await OrmarPressure.objects.filter(datetime__gte=after_date, datetime__lte=before_date)
 
             new_users = await OrmarMigraineUser.objects.filter(joined__gte=after_date, joined__lte=before_date).all()
             deleted_users = await OrmarSavedUser.objects.filter(deleted__gte=after_date, deleted__lte=before_date).all()
@@ -338,6 +338,10 @@ class Query:
                 OrmarMigraineUser.telegram_id.in_(druguses.values('owner_id')) |
                 OrmarMigraineUser.telegram_id.in_(pressures.values('owner_id'))
             ).all()
+
+            paincases = [PainCase.from_orm(paincase) for paincase in paincases.all()]
+            druguses = [DrugUse.from_orm(druguse) for druguse in druguses.all()]
+            pressures = [Pressure.from_orm(pressure) for pressure in pressures.all()]
         return Statistics(
             after_date=after_date,
             before_date=before_date,
