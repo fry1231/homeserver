@@ -80,6 +80,7 @@ class DrugUse:
     date: datetime.date
     amount: str
     drugname: str
+    owner_id: BigInt
     owner: "User" = strawberry.field(resolver=get_owner)
     paincase_id: int | None
 
@@ -90,7 +91,7 @@ class DrugUse:
             date=orm_drug.date,
             amount=orm_drug.amount,
             drugname=orm_drug.drugname,
-            # owner_id=orm_drug.owner_id,
+            owner_id=orm_drug.owner_id,
             paincase_id=orm_drug.paincase_id
         )
 
@@ -105,6 +106,7 @@ class PainCase:
     provocateurs: str | None
     symptoms: str | None
     description: str | None
+    owner_id: BigInt
     owner: "User" = strawberry.field(resolver=get_owner)
     medecine_taken: List[DrugUse] | None = strawberry.field(resolver=get_paincase_druguses)
 
@@ -119,7 +121,7 @@ class PainCase:
             provocateurs=orm_pain.provocateurs,
             symptoms=orm_pain.symptoms,
             description=orm_pain.description,
-            # owner_id=orm_pain.owner_id
+            owner_id=orm_pain.owner_id
         )
 
 
@@ -130,6 +132,7 @@ class Pressure:
     systolic: int
     diastolic: int
     pulse: int
+    owner_id: BigInt
     owner: "User" = strawberry.field(resolver=get_owner)
 
     @classmethod
@@ -140,7 +143,7 @@ class Pressure:
             systolic=orm_pressure.systolic,
             diastolic=orm_pressure.diastolic,
             pulse=orm_pressure.pulse,
-            # owner_id=orm_pressure.owner_id
+            owner_id=orm_pressure.owner_id
         )
 
 
