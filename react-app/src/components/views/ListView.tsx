@@ -52,6 +52,8 @@ export const ListView = ({entity}) => {
     }
   });
   
+  error && console.error(error);
+  
   // Fill listEntities with data, taking into account the entity type
   const names = ["User", "Paincase", "Druguse", "Pressure"];
   if (data) {

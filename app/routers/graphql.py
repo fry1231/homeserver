@@ -224,9 +224,9 @@ class Query:
                     ) -> List[User]:
         query_set = []
         if telegram_ids:
-            query_set.append(OrmarMigraineUser.objects.filter(telegram_id__in=telegram_ids))
+            query_set.append(OrmarMigraineUser.telegram_id.in_(telegram_ids))
         if has_coordinates is not None:
-            query_set.append(OrmarMigraineUser.objects.filter(latitude__isnull=not has_coordinates))
+            query_set.append(OrmarMigraineUser.latitude.isnull(not has_coordinates))
         if language:
             query_set.append(OrmarMigraineUser.language == language)
         if timezone:
