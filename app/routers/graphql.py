@@ -334,9 +334,9 @@ class Query:
             new_users = await OrmarMigraineUser.objects.filter(joined__gte=after_date, joined__lte=before_date).all()
             deleted_users = await OrmarSavedUser.objects.filter(deleted__gte=after_date, deleted__lte=before_date).all()
             super_active_users = await OrmarMigraineUser.objects.filter(
-                OrmarMigraineUser.telegram_id.in_([el.owner_id for el in paincases]) |
-                OrmarMigraineUser.telegram_id.in_([el.owner_id for el in druguses]) |
-                OrmarMigraineUser.telegram_id.in_([el.owner_id for el in pressures])
+                OrmarMigraineUser.telegram_id.in_([el.owner_id for el in paincases] +
+                                                  [el.owner_id for el in druguses] +
+                                                  [el.owner_id for el in pressures])
             ).all()
 
             paincases: list[PainCase] = [PainCase.from_orm(paincase) for paincase in paincases]
