@@ -207,13 +207,13 @@ class Statistics:
 @strawberry.type
 class Query:
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def user(self, telegram_id: int) -> User:
+    async def user(self, telegram_id: BigInt) -> User:
         user = await OrmarMigraineUser.objects.get(telegram_id=telegram_id)
         return User.from_orm(user)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def users(self,
-                    telegram_ids: List[int] | None = None,
+                    telegram_ids: List[BigInt] | None = None,
                     has_coordinates: bool | None = None,
                     language: str | None = None,
                     timezone: str | None = None,
