@@ -38,8 +38,8 @@ export const ApolloWrapper = ({children}) => {
     const client = new ApolloClient({
       uri: `https://${import.meta.env.VITE_REACT_APP_HOST}/graphql`,
       cache: new InMemoryCache(),
-      typeDefs,
-      resolvers: resolverFunctions,
+      // typeDefs,
+      // resolvers: resolverFunctions,
       headers: {
         Authorization: `Bearer ${token}`
       },

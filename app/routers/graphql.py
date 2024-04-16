@@ -18,8 +18,8 @@ from db.sql.models import (
 BigInt = strawberry.scalar(
     # Union[int, str],
     NewType("BigInt", Union[int, str]),
-    serialize=lambda v: int(v),
-    parse_value=lambda v: str(v),
+    serialize=lambda v: str(v),
+    parse_value=lambda v: int(v),
     description="BigInt field",
 )
 
