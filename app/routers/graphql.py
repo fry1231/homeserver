@@ -80,7 +80,7 @@ class DrugUse:
     date: datetime.date
     amount: str
     drugname: str
-    owner_id: "User" = strawberry.field(resolver=get_owner)
+    owner: "User" = strawberry.field(resolver=get_owner)
     paincase_id: int | None
 
     @classmethod
@@ -105,7 +105,7 @@ class PainCase:
     provocateurs: str | None
     symptoms: str | None
     description: str | None
-    owner_id: "User" = strawberry.field(resolver=get_owner)
+    owner: "User" = strawberry.field(resolver=get_owner)
     medecine_taken: List[DrugUse] | None = strawberry.field(resolver=get_paincase_druguses)
 
     @classmethod
@@ -130,7 +130,7 @@ class Pressure:
     systolic: int
     diastolic: int
     pulse: int
-    owner_id: "User" = strawberry.field(resolver=get_owner)
+    owner: "User" = strawberry.field(resolver=get_owner)
 
     @classmethod
     def from_orm(cls, orm_pressure):

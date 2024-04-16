@@ -122,8 +122,11 @@ export const GET_PAINCASE_BY_ID = gql`
       provocateurs
       symptoms
       description
-      ownerId {
+      owner {
         telegramId
+        firstName
+        lastName
+        userName
       }
       medecineTaken {
         id
@@ -139,24 +142,30 @@ export const GET_DRUGUSE_BY_ID = gql`
       date
       amount
       drugname
-      ownerId {
+      owner {
         telegramId
+        firstName
+        lastName
+        userName
       }
       paincaseId
     }
   }
 `;
 
-export const GET_PRESSURE_BY_ID = gql`
-  query GetPressureById($id: Int!) {
-    pressures(ids: [$id]) {
+export const GET_PRESSURES_BY_ID = gql`
+  query GetPressuresById($ids: [Int!]!) {
+    pressures(ids: $ids) {
       id
       datetime
       systolic
       diastolic
       pulse
-      ownerId {
+      owner {
         telegramId
+        firstName
+        lastName
+        userName
       }
     }
   }

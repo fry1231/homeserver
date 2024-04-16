@@ -6,7 +6,7 @@ import {tokens} from "../../theme";
 import CloseIcon from '@mui/icons-material/Close';
 import {CardHeader} from "../common/CardHeader";
 import {useQuery} from "@apollo/client";
-import {GET_PRESSURE_BY_ID} from "../../misc/gqlQueries";
+import {GET_PRESSURES_BY_ID} from "../../misc/gqlQueries";
 import {CardRow} from "../common/CardRow";
 
 
@@ -16,7 +16,12 @@ export interface PressureProps {
   systolic: number;
   diastolic: number;
   pulse: number;
-  owner: number;
+  owner: {
+    telegramId: number,
+    firstName?: string,
+    lastName?: string,
+    userName?: string
+  };
 }
 
 export function PressureView({entity, short=false}) {
@@ -39,30 +44,34 @@ export function PressureView({entity, short=false}) {
     )
   }
   
-  const {loading, error, data} = useQuery(GET_PRESSURE_BY_ID, {
-    variables: {id}
+  const {loading, error, data} = useQuery(GET_PRESSURES_BY_ID, {
+    variables: {ids: [id]}
   });
   error && console.error(error);
   
+  
   const props: PressureProps = data
-    ? data.pressure
+    ? data.pressures[0]
     : {
       id: "Loading...",
       datetime: "Loading...",
       systolic: 0,
       diastolic: 0,
       pulse: 0,
-      owner: 0
+      owner: {telegramId: 0, firstName: "Loading..."}
     };
   
-  
+  const ownerStr = ''
+    + (props.owner.firstName ? props.owner.firstName + ' ' : '')
+    + (props.owner.lastName ? props.owner.lastName + ' ' : '')
+    + (props.owner.userName ? '(@' + props.owner.userName + ')' : '');
   return (
     <>
       <Typography display="inline" variant="body2" component="p">
         {props.systolic}/{props.diastolic} mmHg, {props.pulse} bpm
       </Typography>
-      <CardRow left="Owner" right={props.owner}
-               onClickHandler={() => dispatch(addWindow({name: "User", id: props.owner}))}/>
+      <CardRow left="Owner" right={ownerStr}
+               onClickHandler={() => dispatch(addWindow({name: "User", id: props.owner.telegramId}))}/>
     </>
 
 );

@@ -1,7 +1,6 @@
 import {ApolloProvider, ApolloClient, InMemoryCache, gql} from '@apollo/client';
 import {useAuth} from "./authProvider.jsx";
 import {useEffect, useState} from "react";
-import {GraphQLScalarType} from "graphql/type";
 
 
 export const ApolloWrapper = ({children}) => {
@@ -11,8 +10,6 @@ export const ApolloWrapper = ({children}) => {
     const client = new ApolloClient({
       uri: `https://${import.meta.env.VITE_REACT_APP_HOST}/graphql`,
       cache: new InMemoryCache(),
-      // typeDefs,
-      // resolvers: resolverFunctions,
       headers: {
         Authorization: `Bearer ${token}`
       },
