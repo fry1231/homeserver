@@ -113,7 +113,7 @@ export const GET_USER_BY_ID = gql`
 
 export const GET_PAINCASE_BY_ID = gql`
   query GetPaincaseById($id: Int!) {
-    paincases(ids: $ids) {
+    paincases(ids: [$id]) {
       id
       date
       durability
@@ -122,7 +122,9 @@ export const GET_PAINCASE_BY_ID = gql`
       provocateurs
       symptoms
       description
-      ownerId
+      ownerId {
+        telegramId
+      }
       medecineTaken {
         id
       }
@@ -132,12 +134,14 @@ export const GET_PAINCASE_BY_ID = gql`
 
 export const GET_DRUGUSE_BY_ID = gql`
   query GetDruguseById($id: Int!) {
-    druguses(ids: $ids) {
+    druguses(ids: [$id]) {
       id
       date
       amount
       drugname
-      ownerId
+      ownerId {
+        telegramId
+      }
       paincaseId
     }
   }
@@ -145,13 +149,15 @@ export const GET_DRUGUSE_BY_ID = gql`
 
 export const GET_PRESSURE_BY_ID = gql`
   query GetPressureById($id: Int!) {
-    pressures(ids: $ids) {
+    pressures(ids: [$id]) {
       id
       datetime
       systolic
       diastolic
       pulse
-      ownerId
+      ownerId {
+        telegramId
+      }
     }
   }
 `;

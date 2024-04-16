@@ -1,18 +1,26 @@
 import {tokens} from "../../theme";
-import {Typography, useTheme} from "@mui/material";
+import {Link, Typography, useTheme} from "@mui/material";
 
-export const CardRow = ({left, right}) => {
+
+export const CardRow = ({left, right, onClickHandler}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   
   return (
     <>
-      <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
+      <Typography mr={1} color={colors.grey[300]} display="inline" variant="body2" component="p">
         {left}:
       </Typography>
-      <Typography ml={1} display="inline" variant="body2" component="p">
-        {right}
-      </Typography>
+      {
+      onClickHandler
+        ? <Link component="button" variant="body2" color="inherit"
+                onClick={onClickHandler}>
+          {right}
+          </Link>
+        : <Typography display="inline" variant="body2" component="p">
+          {right}
+          </Typography>
+      }
       <br />
     </>
   );

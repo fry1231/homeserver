@@ -9,7 +9,7 @@ import Profile from "../components/Profile";
 import LogIn from "../components/LogIn";
 import Topbar from "../components/global/Topbar";
 import BusArrivals from "../components/BusArrivals";
-import StateView from "../components/views/StateView";
+import States from "../pages/States";
 import Logs from "../components/Logs";
 
 import DraggableContainer from "../components/global/DraggableContainer";
@@ -50,7 +50,7 @@ const Routes = () => {
                 },
                 {
                     path: "/states",
-                    element: <StateView />,
+                    element: <States />,
                 },
                 {
                     path: "/logs",

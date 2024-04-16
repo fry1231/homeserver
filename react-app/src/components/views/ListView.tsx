@@ -15,13 +15,6 @@ import {useQuery} from "@apollo/client";
 
 
 export const ListView = ({entity}) => {
-  const dispatch = useDispatch();
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
-  
-  const name = entity.name;
-  const id = entity.id;
-  const pos = entity.pos;
   const requiredEntities = entity.nestedContent;
   const userIds = [];
   const painIds = [];
@@ -89,22 +82,7 @@ export const ListView = ({entity}) => {
   }
   
   return (
-    <Draggable
-      // enableUserSelectHack={false}
-      position={{x: pos.x, y: pos.y}}
-      onStop={(event, data) => {
-        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
-      }}
-      onStart={(event, data) => {
-        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
-      }}
-      handle=".handle"
-    >
-      <Card style={{position: "absolute", zIndex: pos.z}}>
-        <CardContent>
-          <CardHeader entityName={name} entityId={id} left={name}/>
-          <Divider/>
-          {/*{loadingState ? <Typography>{loadingState}</Typography> : null}*/}
+
           <List>
           {
             listEntities.map((entity: DraggableEntity, i) => {
@@ -132,8 +110,5 @@ export const ListView = ({entity}) => {
             )
           }
           </List>
-        </CardContent>
-      </Card>
-    </Draggable>
   );
 };

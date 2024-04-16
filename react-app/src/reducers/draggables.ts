@@ -46,6 +46,7 @@ const slice = createSlice({
     
     addWindow(state, action) {
       const newEntity: DraggableEntity = action.payload;
+      state.entities = state.entities.filter((w) => w.name !== action.payload.name || w.id !== action.payload.id);
       state.lastPosition = {
         x: state.lastPosition.x + 30,
         y: state.lastPosition.y + 30,
@@ -66,7 +67,7 @@ const slice = createSlice({
         state.n = 0;
         state.maxZ = 2;
       }
-      console.log("closed window", name, id)
+      // console.log("closed window", name, id)
     },
     
     closeAllWindows(state) {

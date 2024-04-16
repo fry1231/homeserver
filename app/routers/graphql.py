@@ -304,11 +304,11 @@ class Query:
                         before_date: datetime.date | None = None) -> list[Pressure]:
         query_set = []
         if ids:
-            query_set.append(OrmarPressure.objects.filter(id__in=ids))
+            query_set.append(OrmarPressure.id in ids)
         if after_date:
-            query_set.append(OrmarPressure.objects.filter(datetime__gte=after_date))
+            query_set.append(OrmarPressure.datetime >= after_date)
         if before_date:
-            query_set.append(OrmarPressure.objects.filter(datetime__lte=before_date))
+            query_set.append(OrmarPressure.datetime <= before_date)
         if len(query_set) == 0:
             return []
         pressures = await OrmarPressure.objects.filter(*query_set).all()

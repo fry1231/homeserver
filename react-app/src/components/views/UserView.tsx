@@ -45,8 +45,8 @@ export function UserView({entity, short=false}) {
   const pos = entity.pos;
   const shortViewData = entity.shortViewData;
   
-  const showMap = () => {
-    console.log("show map");
+  const showMap = (lat, lon) => {
+    console.log("show map" + lat + lon);
   }
   const showPaincases = () => {
   
@@ -101,65 +101,55 @@ export function UserView({entity, short=false}) {
   };
   
   return (
-    <Draggable
-      // enableUserSelectHack={false}
-      position={{x: pos.x, y: pos.y}}
-      onStop={(event, data) => {
-        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
-      }}
-      onStart={(event, data) => {
-        dispatch(changeWindowPos({name, id, pos: {x: data.x, y: data.y}}))
-      }}
-      handle=".handle"
-    >
-      <Card style={{position: "absolute", zIndex: pos.z}}>
-        <CardContent>
-          
-          <CardHeader entityName={name} entityId={id} left={`User ID${props.telegramId}`}/>
-          <Divider/>
-          {/*{loadingState ? <Typography>{loadingState}</Typography> : null}*/}
-          
-          <Typography display="inline" color={colors.orangeAccent[500]} variant="body2" component="p">
-            {props.firstName ? props.firstName : ""} {props.lastName ? props.lastName : null}
-          </Typography><Typography ml={1} display="inline" color={colors.orangeAccent[500]} variant="body2"
-                                   component="p">({props.language})</Typography>
-          {props.userName
-            ? <Link ml={2} href={`https://t.me/${props.userName}`} color={colors.orangeAccent[500]} variant="body2">@{props.userName}</Link>
-            : null}
-          <br/>
-          
-          <CardRow left="Joined" right={props.joined}/>
-          <CardRow left="Timezone" right={props.timezone}/>
-          <CardRow left="Notify every" right={props.notifyEvery}/>
-          <CardRow left="Notify at" right={props.utcNotifyAt}/>
-          
-          {props.latitude && props.longitude ?
-            <>
-              <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
-                Location:
-              </Typography>
-              <Link ml={1} component="button" variant="body2" color="inherit" onClick={showMap}>{props.latitude}, {props.longitude}</Link>
-              <br/>
-            </>
-          : null}
-          <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
-            Paincases:
-            </Typography> <Link component="button" variant="body2" color="inherit" onClick={showPaincases}>
-          {props.paincases.length}
-          </Link><br/>
-          <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
-            Druguses:
-            </Typography> <Link component="button" variant="body2" color="inherit" onClick={showDruguses}>
-          {props.druguses.length}
-          </Link><br/>
-          <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
-            Pressures:
-            </Typography> <Link component="button" variant="body2" color="inherit" onClick={showPressures}>
-          {props.pressures.length}
-          </Link><br/>
-          
-        </CardContent>
-      </Card>
-    </Draggable>
+    <>
+      <Typography display="inline" color={colors.orangeAccent[500]} variant="body2" component="p">
+        {props.firstName ? props.firstName : ""} {props.lastName ? props.lastName : null}
+      </Typography><Typography ml={1} display="inline" color={colors.orangeAccent[500]} variant="body2"
+                               component="p">({props.language})</Typography>
+      {props.userName
+        ? <Link ml={2} href={`https://t.me/${props.userName}`} color={colors.orangeAccent[500]} variant="body2">@{props.userName}</Link>
+        : null}
+      <br/>
+      
+      {/*General info*/}
+      <CardRow left="Joined" right={props.joined}/>
+      <CardRow left="Timezone" right={props.timezone}/>
+      <CardRow left="Notify every" right={props.notifyEvery}/>
+      <CardRow left="Notify at" right={props.utcNotifyAt}/>
+      
+      {/*Location*/}
+      {props.latitude && props.longitude
+        ? <CardRow left="Location" right={`${Math.round(props.latitude * 100) / 100}, ${Math.round(props.longitude * 100) / 100}`}
+                   onClickHandler={() => showMap(props.latitude, props.longitude)}/>
+        // <>
+        //   <Typography mr={1} color={colors.grey[300]} display="inline" variant="body2" component="p">
+        //     Location:
+        //   </Typography>
+        //   <Link component="button" variant="body2" color="inherit" onClick={() => showMap(props.latitude, props.longitude)}>
+        //     {Math.round(props.latitude * 100) / 100}, {Math.round(props.longitude * 100) / 100}
+        //   </Link>
+        //   <br/>
+        // </>
+      : null}
+      
+      {/*Paincases, Druguses, Pressures*/}
+      <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
+        Paincases:
+        </Typography> <Link component="button" variant="body2" color="inherit" onClick={showPaincases}>
+      {props.paincases.length}
+      </Link><br/>
+      
+      <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
+        Druguses:
+        </Typography> <Link component="button" variant="body2" color="inherit" onClick={showDruguses}>
+      {props.druguses.length}
+      </Link><br/>
+      
+      <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
+        Pressures:
+        </Typography> <Link component="button" variant="body2" color="inherit" onClick={showPressures}>
+      {props.pressures.length}
+      </Link><br/>
+    </>
   );
 }

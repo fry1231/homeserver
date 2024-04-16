@@ -5,6 +5,9 @@ import Draggable from "react-draggable";
 import {tokens} from "../../theme";
 import CloseIcon from '@mui/icons-material/Close';
 import {CardHeader} from "../common/CardHeader";
+import {useQuery} from "@apollo/client";
+import {GET_PRESSURE_BY_ID} from "../../misc/gqlQueries";
+import {CardRow} from "../common/CardRow";
 
 
 export interface PressureProps {
@@ -13,18 +16,19 @@ export interface PressureProps {
   systolic: number;
   diastolic: number;
   pulse: number;
-  owner_id: number;
+  owner: number;
 }
 
 export function PressureView({entity, short=false}) {
   const dispatch = useDispatch();
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
   const name = entity.name;
   const id = entity.id;
   const shortViewData = entity.shortViewData;
   
   if (short) {
+    if (!shortViewData) {
+      console.error("No shortViewData for entity", entity);
+    }
     return (
       <>
         <Typography variant="body2"
@@ -35,32 +39,31 @@ export function PressureView({entity, short=false}) {
     )
   }
   
+  const {loading, error, data} = useQuery(GET_PRESSURE_BY_ID, {
+    variables: {id}
+  });
+  error && console.error(error);
+  
+  const props: PressureProps = data
+    ? data.pressure
+    : {
+      id: "Loading...",
+      datetime: "Loading...",
+      systolic: 0,
+      diastolic: 0,
+      pulse: 0,
+      owner: 0
+    };
   
   
   return (
-    <Draggable
-      // enableUserSelectHack={false}
-      position={{x: pos.x, y: pos.y}}
-      onStop={(event, data) => {
-        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
-      }}
-      onStart={(event, data) => {
-        dispatch(changeWindowPos({name, pos: {x: data.x, y: data.y}}))
-      }}
-      handle=".handle"
-    >
-      <Card style={{position: "absolute", zIndex: pos.z}}>
-        <CardContent>
-          
-          <CardHeader entityName={name} entityId={id} left={`Pressure #${props.id}`} center={props.datetime}/>
-          <Divider/>
-          
-          <Typography display="inline" variant="body2" component="p">
-            {props.systolic}/{props.diastolic} mmHg, {props.pulse} bpm
-          </Typography>
-          
-        </CardContent>
-      </Card>
-    </Draggable>
-  );
+    <>
+      <Typography display="inline" variant="body2" component="p">
+        {props.systolic}/{props.diastolic} mmHg, {props.pulse} bpm
+      </Typography>
+      <CardRow left="Owner" right={props.owner}
+               onClickHandler={() => dispatch(addWindow({name: "User", id: props.owner}))}/>
+    </>
+
+);
 }

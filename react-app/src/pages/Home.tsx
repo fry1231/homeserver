@@ -8,8 +8,6 @@ import {PressureProps} from "../components/views/PressureView";
 import {DruguseProps} from "../components/views/DruguseView";
 import {PaincaseProps} from "../components/views/PaincaseView";
 import {UserProps} from "../components/views/UserView";
-import {ListViewProps} from "../components/views/ListView";
-
 
 export default function Home() {
   const paincase: PaincaseProps = {
@@ -93,7 +91,7 @@ export default function Home() {
       style={{zIndex: 1}}>Add Pressure</Button>
       <Button variant="contained"
               onClick={() => {
-                dispatch(addWindow(user));
+                dispatch(addWindow({name: "Pressure", id: 1}));
               }}
               style={{zIndex: 1}}>Add User</Button>
       <Button variant="contained"

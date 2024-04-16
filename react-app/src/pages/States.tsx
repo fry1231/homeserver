@@ -1,16 +1,14 @@
-import {Box, Grid, Paper, Radio, Typography} from "@mui/material";
+import {Box, Paper, Radio, Typography} from "@mui/material";
 import {useEffect, useState, useRef} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {statesRefreshed, stateUpdateRecieved} from "../../reducers/states";
-import stateInstance from "../../reducers/states";
-import {useAuth} from "../../misc/authProvider.jsx";
-import {addWindow} from "../../reducers/draggables";
-import {UserProps} from "./UserView";
-import {gql, useQuery} from '@apollo/client';
-import {DraggableEntity} from "../../reducers/draggables";
+import {statesRefreshed, stateUpdateRecieved} from "../reducers/states";
+import stateInstance from "../reducers/states";
+import {useAuth} from "../misc/authProvider.jsx";
+import {addWindow} from "../reducers/draggables";
+import {DraggableEntity} from "../reducers/draggables";
 
 
-export default function StateView() {
+export default function States() {
   
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.states);
@@ -170,8 +168,6 @@ export default function StateView() {
                             state.user_ids.map((userId) => {
                               userEntities.push({name: "User", id: userId});
                             });
-                            console.log("state", statePositions);
-                            console.log("userEntities", userEntities);
                             dispatch(addWindow({name: "List", id: statePositions.n, nestedContent: userEntities}))
                           }}
                         >{state.user_ids.length}</Typography>
