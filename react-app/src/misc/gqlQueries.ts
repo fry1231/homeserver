@@ -60,7 +60,7 @@ import {DruguseProps} from "../components/views/DruguseView";
 // PRESSURE: id, datetime
 
 export const GET_LIST_ITEMS_SHORT = gql`
-    query GetListEntities ($userIds: [Int!]!, $painIds: [Int!]!, $druguseIds: [Int!]!, $pressureIds: [Int!]!) {
+    query GetListEntities ($userIds: [BigInt!]!, $painIds: [Int!]!, $druguseIds: [Int!]!, $pressureIds: [Int!]!) {
       users(telegramIds: $userIds) {
         telegramId
         firstName
@@ -83,7 +83,7 @@ export const GET_LIST_ITEMS_SHORT = gql`
   `;
 
 export const GET_USER_BY_ID = gql`
-  query GetUserById($id: Int!) {
+  query GetUserById($id: BigInt!) {
     user(telegramId: $id) {
       telegramId
       lastNotified

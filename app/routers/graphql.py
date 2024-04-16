@@ -350,6 +350,6 @@ class Query:
         )
 
 
-schema = strawberry.Schema(Query)
+schema = strawberry.Schema(Query, types=[BigInt])
 
 graphql_app = GraphQLRouter(schema)

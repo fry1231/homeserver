@@ -52,6 +52,7 @@ export const ListView = ({entity}) => {
     }
   });
   error && console.error(error);
+  // 5015185924 bigint check
   
   // Fill listEntities with data, taking into account the entity type
   const names = ["User", "Paincase", "Druguse", "Pressure"];
