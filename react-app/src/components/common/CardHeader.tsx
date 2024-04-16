@@ -5,7 +5,7 @@ import {Grid, IconButton, Typography} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import {useDispatch} from "react-redux";
 
-export const CardHeader = ({entityName, left, center}) => {
+export const CardHeader = ({entityName, entityId, left, center}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const dispatch = useDispatch();
@@ -23,7 +23,7 @@ export const CardHeader = ({entityName, left, center}) => {
         </Typography>
       </Grid>
       <Grid item>
-        <IconButton onClick={() => dispatch(closeWindow(entityName))}>
+        <IconButton onClick={() => dispatch(closeWindow({name: entityName, id: entityId}))}>
           <CloseIcon/>
         </IconButton>
       </Grid>

@@ -53,7 +53,7 @@ export function DruguseView({entity, short=false}) {
       <Card style={{position: "absolute", zIndex: pos.z}}>
         <CardContent>
           
-          <CardHeader entityName={name} left={`Druguse #${props.id}`} center={props.date}/>
+          <CardHeader entityName={name} entityId={id} left={`Druguse #${props.id}`} center={props.date}/>
           <Divider/>
           
           <Typography ml={2} variant="body2" component="p">

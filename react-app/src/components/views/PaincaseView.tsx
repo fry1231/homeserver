@@ -70,7 +70,7 @@ export function PaincaseView({entity, short=false}) {
       <Card style={{ position: "absolute", zIndex: pos.z }}>
         <CardContent>
           
-          <CardHeader entityName={name} left={`Paincase #${props.id}`} center={props.date} />
+          <CardHeader entityName={name} entityId={id} left={`Paincase #${props.id}`} center={props.date} />
           <Divider />
           <CardRow left="Durability" right={props.durability} />
           <CardRow left="Intensity" right={props.intensity} />

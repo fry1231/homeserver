@@ -114,7 +114,7 @@ export function UserView({entity, short=false}) {
       <Card style={{position: "absolute", zIndex: pos.z}}>
         <CardContent>
           
-          <CardHeader entityName={name} left={`User ID${props.telegramId}`}/>
+          <CardHeader entityName={name} entityId={id} left={`User ID${props.telegramId}`}/>
           <Divider/>
           {/*{loadingState ? <Typography>{loadingState}</Typography> : null}*/}
           

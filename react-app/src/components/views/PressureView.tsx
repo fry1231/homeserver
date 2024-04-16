@@ -52,7 +52,7 @@ export function PressureView({entity, short=false}) {
       <Card style={{position: "absolute", zIndex: pos.z}}>
         <CardContent>
           
-          <CardHeader entityName={name} left={`Pressure #${props.id}`} center={props.datetime}/>
+          <CardHeader entityName={name} entityId={id} left={`Pressure #${props.id}`} center={props.datetime}/>
           <Divider/>
           
           <Typography display="inline" variant="body2" component="p">

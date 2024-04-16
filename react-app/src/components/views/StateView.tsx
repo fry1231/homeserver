@@ -14,7 +14,7 @@ export default function StateView() {
   
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.states);
-  const state = useSelector((state) => state.positions);
+  const statePositions = useSelector((state) => state.positions);
   let protocol: string;
   import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? protocol = "wss" : protocol = "ws";
   
@@ -170,7 +170,9 @@ export default function StateView() {
                             state.user_ids.map((userId) => {
                               userEntities.push({name: "User", id: userId});
                             });
-                            dispatch(addWindow({name: "List", id: state.n, nestedContent: userEntities}))
+                            console.log("state", statePositions);
+                            console.log("userEntities", userEntities);
+                            dispatch(addWindow({name: "List", id: statePositions.n, nestedContent: userEntities}))
                           }}
                         >{state.user_ids.length}</Typography>
                       </Box>

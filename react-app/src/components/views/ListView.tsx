@@ -27,7 +27,7 @@ export const ListView = ({entity}) => {
   const painIds = [];
   const druguseIds = [];
   const pressureIds = [];
-  const listEntities = [];
+  let listEntities = [];
   if (requiredEntities) {
     requiredEntities.forEach((entity) => {
       if (entity.name.includes("User")) {
@@ -55,6 +55,7 @@ export const ListView = ({entity}) => {
   // Fill listEntities with data, taking into account the entity type
   const names = ["User", "Paincase", "Druguse", "Pressure"];
   if (data) {
+    listEntities = [];
     names.forEach((name) => {
       let key;
       name === "User"
@@ -81,12 +82,9 @@ export const ListView = ({entity}) => {
     });
   }
   
-  // Display loading state while fetching data
-  // const [loadingState, setLoadingState] = useState("");
-  // if (loading) setLoadingState("Loading...");
-  // if (error) setLoadingState("Error loading data")
-  // if (!data) setLoadingState("No data")
-  // if (data) listEntities.push(...data.users, ...data.paincases, ...data.druguses, ...data.pressures);
+  if (!data) {
+    listEntities.push({name: "", id: 0})
+  }
   
   return (
     <Draggable
@@ -102,7 +100,7 @@ export const ListView = ({entity}) => {
     >
       <Card style={{position: "absolute", zIndex: pos.z}}>
         <CardContent>
-          <CardHeader entityName={name} left={name}/>
+          <CardHeader entityName={name} entityId={id} left={name}/>
           <Divider/>
           {/*{loadingState ? <Typography>{loadingState}</Typography> : null}*/}
           <List>
@@ -125,7 +123,7 @@ export const ListView = ({entity}) => {
                     <ListView entity={entity} key={entity.id}/>
                   )} else {
                   return (
-                    <Typography key={`unknown_${i}`}>entity</Typography>
+                    <Typography key={`unknown_${i}`}>Loading...</Typography>
                   )
                 }
               }

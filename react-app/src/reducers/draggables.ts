@@ -54,20 +54,23 @@ const slice = createSlice({
       state.n += 1;
       state.maxZ += 1;
       state.entities.push({...newEntity, pos: state.lastPosition});
+      console.log("added window", newEntity.name, newEntity.id);
     },
     
     closeWindow(state, action) {
-      const name: string = action.payload;
-      state.entities = state.entities.filter((w) => w.name !== name && w.id !== action.payload.id);
+      const name = action.payload.name;
+      const id = action.payload.id;
+      state.entities = state.entities.filter((w) => w.name !== name || w.id !== id);
       if (state.entities.length === 0) {
         state.lastPosition = {x: 0, y: 0, z: 2};
         state.n = 0;
         state.maxZ = 2;
       }
+      console.log("closed window", name, id)
     },
     
     closeAllWindows(state) {
-      state.entities = [];
+      state.entities.clear();
       state.lastPosition = {x: 0, y: 0, z: 2};
       state.n = 0;
       state.maxZ = 2;

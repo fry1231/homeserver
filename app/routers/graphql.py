@@ -266,9 +266,9 @@ class Query:
         return [User.from_orm(user) for user in users]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def paincases(self, ids: list[int] = None,
-                        after_date: datetime.date = None,
-                        before_date: datetime.date = None) -> list[PainCase]:
+    async def paincases(self, ids: list[int] | None = None,
+                        after_date: datetime.date | None = None,
+                        before_date: datetime.date | None = None) -> list[PainCase]:
         query_set = []
         if ids:
             query_set.append(OrmarPainCase.objects.filter(id__in=ids))
@@ -282,9 +282,9 @@ class Query:
         return [PainCase.from_orm(paincase) for paincase in paincases]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def druguses(self, ids: list[int] = None,
-                       after_date: datetime.date = None,
-                       before_date: datetime.date = None) -> list[DrugUse]:
+    async def druguses(self, ids: list[int] | None = None,
+                       after_date: datetime.date | None = None,
+                       before_date: datetime.date | None = None) -> list[DrugUse]:
         query_set = []
         if ids:
             query_set.append(OrmarDrugUse.objects.filter(id__in=ids))
@@ -298,9 +298,9 @@ class Query:
         return [DrugUse.from_orm(druguse) for druguse in druguses]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def pressures(self, ids: list[int] = None,
-                        after_date: datetime.date = None,
-                        before_date: datetime.date = None) -> list[Pressure]:
+    async def pressures(self, ids: list[int] | None = None,
+                        after_date: datetime.date | None = None,
+                        before_date: datetime.date | None = None) -> list[Pressure]:
         query_set = []
         if ids:
             query_set.append(OrmarPressure.objects.filter(id__in=ids))
