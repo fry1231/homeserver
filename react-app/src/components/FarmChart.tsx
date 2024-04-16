@@ -121,7 +121,6 @@ export const FarmChart = () => {
           && prevEndDate !== thisDayEnd   // but the next day has already started
         ) {
           dispatch(changeDateRange({startDateTS: startDate.getTime(), endDateTS: thisDayEnd.getTime()}));
-          console.log('Date range updated to', startDate, thisDayEnd);
         }
         
         const sensorsData: SensorsDataPoint[] = r.data;

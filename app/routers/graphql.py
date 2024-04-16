@@ -329,8 +329,11 @@ class Query:
         if not only_summarized:
             new_users = await OrmarMigraineUser.objects.filter(joined__gte=after_date, joined__lte=before_date).all()
             deleted_users = await OrmarSavedUser.objects.filter(deleted__gte=after_date, deleted__lte=before_date).all()
-            super_active_users = await self.users(active=True,
-                                                  active_after_dt=after_date, active_before_dt=before_date)
+            super_active_users = await OrmarMigraineUser.objects.filter(
+                OrmarMigraineUser.id.in_(OrmarPainCase.objects.filter(date__gte=after_date, date__lte=before_date).values('owner_id')) |
+                OrmarMigraineUser.id.in_(OrmarDrugUse.objects.filter(date__gte=after_date, date__lte=before_date).values('owner_id')) |
+                OrmarMigraineUser.id.in_(OrmarPressure.objects.filter(datetime__gte=after_date, datetime__lte=before_date).values('owner_id'))
+            ).all()
             paincases = await OrmarPainCase.objects.filter(date__gte=after_date, date__lte=before_date).all()
             druguses = await OrmarDrugUse.objects.filter(date__gte=after_date, date__lte=before_date).all()
             pressures = await OrmarPressure.objects.filter(datetime__gte=after_date, datetime__lte=before_date).all()
