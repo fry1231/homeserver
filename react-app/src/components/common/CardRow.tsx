@@ -9,7 +9,7 @@ export const CardRow = ({left, right, onClickHandler}) => {
   return (
     <>
       <Typography mr={1} color={colors.grey[300]} display="inline" variant="body2" component="p">
-        {left}:
+        {left}{(left === "") || (right === "") ? "" : ":"}
       </Typography>
       {
       onClickHandler

@@ -67,9 +67,7 @@ export function PressureView({entity, short=false}) {
     + (props.owner.userName ? '(@' + props.owner.userName + ')' : '');
   return (
     <>
-      <Typography display="inline" variant="body2" component="p">
-        {props.systolic}/{props.diastolic} mmHg, {props.pulse} bpm
-      </Typography>
+      <CardRow left="" right={`${props.systolic}/${props.diastolic} mmHg, ${props.pulse} bpm`}/>
       <CardRow left="Owner" right={ownerStr}
                onClickHandler={() => dispatch(addWindow({name: "User", id: props.owner.telegramId}))}/>
     </>

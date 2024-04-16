@@ -275,11 +275,11 @@ class Query:
                         before_date: datetime.date | None = None) -> list[PainCase]:
         query_set = []
         if ids:
-            query_set.append(OrmarPainCase.objects.filter(id__in=ids))
+            query_set.append(OrmarPainCase.id.in_(ids))
         if after_date:
-            query_set.append(OrmarPainCase.objects.filter(date__gte=after_date))
+            query_set.append(OrmarPainCase.date >= after_date)
         if before_date:
-            query_set.append(OrmarPainCase.objects.filter(date__lte=before_date))
+            query_set.append(OrmarPainCase.date <= before_date)
         if len(query_set) == 0:
             return []
         paincases = await OrmarPainCase.objects.filter(*query_set).all()
@@ -291,11 +291,11 @@ class Query:
                        before_date: datetime.date | None = None) -> list[DrugUse]:
         query_set = []
         if ids:
-            query_set.append(OrmarDrugUse.objects.filter(id__in=ids))
+            query_set.append(OrmarDrugUse.id.in_(ids))
         if after_date:
-            query_set.append(OrmarDrugUse.objects.filter(date__gte=after_date))
+            query_set.append(OrmarDrugUse.date >= after_date)
         if before_date:
-            query_set.append(OrmarDrugUse.objects.filter(date__lte=before_date))
+            query_set.append(OrmarDrugUse.date <= before_date)
         if len(query_set) == 0:
             return []
         druguses = await OrmarDrugUse.objects.filter(*query_set).all()
@@ -331,10 +331,9 @@ class Query:
             deleted_users = await OrmarSavedUser.objects.filter(deleted__gte=after_date, deleted__lte=before_date).all()
             super_active_users = await self.users(active=True,
                                                   active_after_dt=after_date, active_before_dt=before_date)
-            query = Query()
-            paincases = await query.paincases(after_date=after_date, before_date=before_date)
-            druguses = await query.druguses(after_date=after_date, before_date=before_date)
-            pressures = await query.pressures(after_date=after_date, before_date=before_date)
+            paincases = await OrmarPainCase.objects.filter(date__gte=after_date, date__lte=before_date).all()
+            druguses = await OrmarDrugUse.objects.filter(date__gte=after_date, date__lte=before_date).all()
+            pressures = await OrmarPressure.objects.filter(datetime__gte=after_date, datetime__lte=before_date).all()
         return Statistics(
             after_date=after_date,
             before_date=before_date,
