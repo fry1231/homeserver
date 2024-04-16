@@ -11,8 +11,10 @@ import async_timeout
 import datetime
 import pytz
 import traceback
+
 from dependencies import is_admin, get_redis_conn, injectable
 from config import IDF_TOKEN
+from misc.utils import delayed_action
 
 
 router = APIRouter(
@@ -30,36 +32,6 @@ class BusArrival(BaseModel):
 class BusResponse(BaseModel):
     to_defense: list[BusArrival]
     to_rer: list[BusArrival]
-
-
-async def generate_sse_events():
-    while True:
-        bus_data = [
-                {
-                    "destinationName": "Destination 1236",
-                    "buses": [
-                        {"busNum": 258,
-                         "eta": datetime.datetime.now() + datetime.timedelta(minutes=5),
-                         "destination": 'Saint-Germain-en-Laye'},
-                        {"busNum": 2,
-                         "eta": datetime.datetime.now() + datetime.timedelta(minutes=5, seconds=30),
-                         "destination": 'La Jonchère'},
-                    ]
-                },
-                {
-                    "destinationName": "Destination 454",
-                    "buses": [
-                        {"busNum": 3,
-                         "eta": datetime.datetime.now() + datetime.timedelta(minutes=2, seconds=36),
-                         "destination": 'Saint-Denis'},
-                        {"busNum": 259,
-                         "eta": datetime.datetime.now() + datetime.timedelta(minutes=7, seconds=1),
-                         "destination": 'Severodvinsk'},
-                    ]
-                }
-            ]
-        yield orjson.dumps({'bus_data': bus_data}).decode('utf8')
-        await asyncio.sleep(5)
 
 
 @router.get("/arrivals")
@@ -87,6 +59,7 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
                 }
             ]
         else:
+            # Fetch data from IDF API
             data = []
             try:
                 url = 'https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=STIF:StopArea:SP:50973:'
@@ -94,6 +67,7 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
                 response = requests.get(url=url, headers=headers)
                 data = response.json()
 
+                # Append each bus to the corresponding list for a destination
                 departures = data['Siri']['ServiceDelivery']['StopMonitoringDelivery'][0]['MonitoredStopVisit']
                 for departure in departures:
                     d = {}
@@ -109,7 +83,7 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
 
                 show_data_rer.sort(key=lambda el: datetime.datetime.strptime(el.etd, '%Y-%m-%dT%H:%M:%S.%fZ'))
                 show_data_defense.sort(key=lambda el: datetime.datetime.strptime(el.etd, '%Y-%m-%dT%H:%M:%S.%fZ'))
-            except:
+            except Exception:
                 logger.error(traceback.format_exc())
                 logger.error(f"IDF data is {data}")
         res = BusResponse(
@@ -118,16 +92,23 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
         )
         data = {'buses': res.model_dump()}
 
-        await redis_conn.set('data', orjson.dumps(data))   # for backward compatibility
+        await redis_conn.set('data', orjson.dumps(data))
         await redis_conn.publish('channel:buses', orjson.dumps(data))
 
         # Sleep time can be changed in Redis
-
         if (sleep_seconds := await redis_conn.get('BUSES_REFRESH_TIME')) is None:
             if (sleep_seconds := os.getenv("BUSES_REFRESH_TIME")) is None:
                 sleep_seconds = 90
             await redis_conn.set('BUSES_REFRESH_TIME', sleep_seconds)
         await asyncio.sleep(int(sleep_seconds))
+
+
+@router.post("/boost-refresh-rate")
+async def boost_refresh_rate(redis_conn=Depends(get_redis_conn)):
+    """Change the refresh rate to 30 seconds. Change it back to 90 seconds after 5 minutes."""
+    await redis_conn.set('BUSES_REFRESH_TIME', 30)
+    await delayed_action(300, redis_conn.set, 'BUSES_REFRESH_TIME', 90)
+    return Response(status_code=200)
 
 
 async def reader(redis_conn):
@@ -158,7 +139,6 @@ async def reader(redis_conn):
 def reformat_bus_data(data):
     to_defense = data['to_defense']
     to_rer = data['to_rer']
-    logger.debug(to_defense[0])
     buses_to_defense = [{"busNum": bus['route'], "eta": bus['etd'], "destination": bus['destination']} for bus in to_defense]
     buses_to_rer = [{"busNum": bus['route'], "eta": bus['etd'], "destination": bus['destination']} for bus in to_rer]
     return orjson.dumps({

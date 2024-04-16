@@ -14,6 +14,7 @@ export default function StateView() {
   
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.states);
+  const state = useSelector((state) => state.positions);
   let protocol: string;
   import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? protocol = "wss" : protocol = "ws";
   
@@ -165,12 +166,11 @@ export default function StateView() {
                           color={state.user_ids.length > 0 ? 'error' : 'textPrimary'}
                           style={{backgroundColor: state.user_ids.length > 0 ? 'error' : 'textPrimary'}}
                           onClick={() => {
-                            const id = new Date().getTime() + new Date().getMilliseconds() + Math.floor(Math.random() * 1000);
                             const userEntities: DraggableEntity[] = [];
                             state.user_ids.map((userId) => {
                               userEntities.push({name: "User", id: userId});
                             });
-                            dispatch(addWindow({name: "List", id, nestedContent: userEntities}))
+                            dispatch(addWindow({name: "List", id: state.n, nestedContent: userEntities}))
                           }}
                         >{state.user_ids.length}</Typography>
                       </Box>

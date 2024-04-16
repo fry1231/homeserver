@@ -122,6 +122,22 @@ class OrmarStatistics(ormar.Model):
     medications = Integer()
 
 
+class OrmarSavedUser(ormar.Model):
+    ormar_config = base_migraine_config.copy(tablename='saved_users')
+
+    id = Integer(primary_key=True, index=True)
+    telegram_id = BigInteger()
+    first_name = String(max_length=256)
+    last_name = String(max_length=256)
+    user_name = String(max_length=256)
+    joined = Date()
+    deleted = Date()
+    timezone = String(max_length=256)
+    language = String(max_length=2)
+    latitude = Float()
+    longitude = Float()
+
+
 OrmarMigraineUser.update_forward_refs()
 OrmarPainCase.update_forward_refs()
 

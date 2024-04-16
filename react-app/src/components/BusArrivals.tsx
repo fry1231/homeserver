@@ -46,7 +46,7 @@ export default function BusArrivals() {
           const newBytes = progressEvent.loaded - previousBytes;
           previousBytes = progressEvent.loaded;
           // Access the new chunk of data
-          const newChunk = progressEvent.event.currentTarget.response.slice(-newBytes+1);
+          const newChunk = progressEvent.event.currentTarget.response.slice(-newBytes);
           const data: BusResponse = JSON.parse(
             newChunk
             );

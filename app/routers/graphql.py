@@ -7,6 +7,7 @@ from typing import List, Union, ForwardRef
 from misc.security import IsAuthenticated
 from db.sql.models import (
     OrmarMigraineUser,
+    OrmarSavedUser,
     OrmarDrugUse,
     OrmarPainCase,
     OrmarPressure,
@@ -70,23 +71,6 @@ async def get_owner(root, info: Info) -> "User":
     """Get the owner of a paincase, druguse or pressure."""
     owner = await OrmarMigraineUser.objects.get(telegram_id=root.owner_id)
     return User.from_orm(owner)
-
-
-async def get_todays_paincases(root) -> List["PainCase"]:
-    paincases = await OrmarPainCase.objects.filter(date=root.date).all()
-    return [PainCase.from_orm(paincase) for paincase in paincases]
-
-
-async def get_todays_druguses(root) -> List["DrugUse"]:
-    druguses = await OrmarDrugUse.objects.filter(date=root.date).all()
-    return [DrugUse.from_orm(druguse) for druguse in druguses]
-
-
-async def get_todays_pressures(root) -> List["Pressure"]:
-    start_datetime = datetime.datetime.combine(root.date, datetime.datetime.min.time())
-    end_datetime = start_datetime + datetime.timedelta(days=1)
-    pressures = await OrmarPressure.objects.filter(datetime__gte=start_datetime, datetime__lt=end_datetime).all()
-    return [Pressure.from_orm(pressure) for pressure in pressures]
 
 
 @strawberry.type
@@ -202,31 +186,22 @@ class User:
 
 @strawberry.type
 class Statistics:
-    id: int
-    date: datetime.date
-    new_users: int
-    deleted_users: int
-    active_users: int
-    super_active_users: int
-    paincases: int
-    druguses: int = strawberry.field(resolver=get_todays_druguses)
-    pressures: int = strawberry.field(resolver=get_todays_pressures)
-    medications: int = strawberry.field(resolver=get_todays_paincases)
+    after_date: datetime.date
+    before_date: datetime.date
+    n_new_users: int
+    n_deleted_users: int
+    n_active_users: int
+    n_super_active_users: int
+    n_paincases: int
+    n_druguses: int
+    n_pressures: int
 
-    @classmethod
-    def from_orm(cls, orm_stat):
-        return cls(
-            id=orm_stat.id,
-            date=orm_stat.date,
-            new_users=orm_stat.new_users,
-            deleted_users=orm_stat.deleted_users,
-            active_users=orm_stat.active_users,
-            super_active_users=orm_stat.super_active_users,
-            paincases=orm_stat.paincases,
-            druguses=orm_stat.druguses,
-            pressures=orm_stat.pressures,
-            medications=orm_stat.medications
-        )
+    new_users: List[User]
+    deleted_users: List[User]
+    super_active_users: List[User]
+    paincases: List[PainCase]
+    druguses: List[DrugUse]
+    pressures: List[Pressure]
 
 
 @strawberry.type
@@ -241,44 +216,137 @@ class Query:
                     telegram_ids: List[int] | None = None,
                     has_coordinates: bool | None = None,
                     language: str | None = None,
-                    timezone: str | None = None
+                    timezone: str | None = None,
+                    active: bool | None = None,
+                    super_active: bool | None = None,
+                    active_after_dt: datetime.date | None = None,
+                    active_before_dt: datetime.date | None = None
                     ) -> List[User]:
         query_set = []
         if telegram_ids:
-            query_set.append(OrmarMigraineUser.telegram_id.in_(telegram_ids))
+            query_set.append(OrmarMigraineUser.objects.filter(telegram_id__in=telegram_ids))
         if has_coordinates is not None:
-            query_set.append(OrmarMigraineUser.latitude.isnull(not has_coordinates))
+            query_set.append(OrmarMigraineUser.objects.filter(latitude__isnull=not has_coordinates))
         if language:
             query_set.append(OrmarMigraineUser.language == language)
         if timezone:
             query_set.append(OrmarMigraineUser.timezone == timezone)
+        if active is not None:
+            # Has at least 1 submitted paincase, druguse or pressure in all time or notify every != -1
+            query_set.append(
+                OrmarMigraineUser.objects.filter(
+                    OrmarMigraineUser.id.in_(OrmarPainCase.objects.values('owner_id')) |
+                    OrmarMigraineUser.id.in_(OrmarDrugUse.objects.values('owner_id')) |
+                    OrmarMigraineUser.id.in_(OrmarPressure.objects.values('owner_id')) |
+                    OrmarMigraineUser.notify_every != -1
+                )
+            )
+        if super_active is not None:
+            # Has at least 1 submitted paincase, druguse or pressure in the last month or notify every != -1
+            before_datetime = datetime.datetime.now()
+            after_datetime = before_datetime - datetime.timedelta(days=30)
+            if active_after_dt:
+                after_datetime = active_after_dt
+            if active_before_dt:
+                before_datetime = active_before_dt
+            query_set.append(
+                OrmarMigraineUser.objects.filter(
+                    OrmarMigraineUser.id.in_(OrmarPainCase.objects.filter(date__gte=after_datetime,
+                                                                          date__lte=before_datetime).values('owner_id')) |
+                    OrmarMigraineUser.id.in_(OrmarDrugUse.objects.filter(date__gte=after_datetime,
+                                                                         date__lte=before_datetime).values('owner_id')) |
+                    OrmarMigraineUser.id.in_(OrmarPressure.objects.filter(datetime__gte=after_datetime,
+                                                                          date__lte=before_datetime).values('owner_id')) |
+                    OrmarMigraineUser.notify_every != -1
+                )
+            )
         if len(query_set) == 0:
             return []
         users = await OrmarMigraineUser.objects.filter(*query_set).all()
         return [User.from_orm(user) for user in users]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def paincases(self, ids: list[int]) -> list[PainCase]:
-        paincases = await OrmarPainCase.objects.filter(id__in=ids).all()
+    async def paincases(self, ids: list[int] = None,
+                        after_date: datetime.date = None,
+                        before_date: datetime.date = None) -> list[PainCase]:
+        query_set = []
+        if ids:
+            query_set.append(OrmarPainCase.objects.filter(id__in=ids))
+        if after_date:
+            query_set.append(OrmarPainCase.objects.filter(date__gte=after_date))
+        if before_date:
+            query_set.append(OrmarPainCase.objects.filter(date__lte=before_date))
+        if len(query_set) == 0:
+            return []
+        paincases = await OrmarPainCase.objects.filter(*query_set).all()
         return [PainCase.from_orm(paincase) for paincase in paincases]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def druguses(self, ids: list[int]) -> list[DrugUse]:
-        druguses = await OrmarDrugUse.objects.filter(id__in=ids).all()
+    async def druguses(self, ids: list[int] = None,
+                       after_date: datetime.date = None,
+                       before_date: datetime.date = None) -> list[DrugUse]:
+        query_set = []
+        if ids:
+            query_set.append(OrmarDrugUse.objects.filter(id__in=ids))
+        if after_date:
+            query_set.append(OrmarDrugUse.objects.filter(date__gte=after_date))
+        if before_date:
+            query_set.append(OrmarDrugUse.objects.filter(date__lte=before_date))
+        if len(query_set) == 0:
+            return []
+        druguses = await OrmarDrugUse.objects.filter(*query_set).all()
         return [DrugUse.from_orm(druguse) for druguse in druguses]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def pressures(self, ids: list[int]) -> list[Pressure]:
-        pressures = await OrmarPressure.objects.filter(id__in=ids).all()
+    async def pressures(self, ids: list[int] = None,
+                        after_date: datetime.date = None,
+                        before_date: datetime.date = None) -> list[Pressure]:
+        query_set = []
+        if ids:
+            query_set.append(OrmarPressure.objects.filter(id__in=ids))
+        if after_date:
+            query_set.append(OrmarPressure.objects.filter(datetime__gte=after_date))
+        if before_date:
+            query_set.append(OrmarPressure.objects.filter(datetime__lte=before_date))
+        if len(query_set) == 0:
+            return []
+        pressures = await OrmarPressure.objects.filter(*query_set).all()
         return [Pressure.from_orm(pressure) for pressure in pressures]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def statistics(self, after_date_included: datetime.date, before_date: datetime.date) -> List[Statistics]:
+    async def statistics(self,
+                         after_date: datetime.date,
+                         before_date: datetime.date,
+                         only_summarized: bool = True) -> Statistics:
         statistics = await OrmarStatistics.objects.filter(
-            date__gte=after_date_included,
-            date__lt=before_date
-        ).all()
-        return [Statistics.from_orm(stat) for stat in statistics]
+            date__gte=after_date, date__lte=before_date
+        ).sum()
+        new_users = deleted_users = super_active_users = paincases = druguses = pressures = []
+        if not only_summarized:
+            new_users = await OrmarMigraineUser.objects.filter(joined__gte=after_date, joined__lte=before_date).all()
+            deleted_users = await OrmarSavedUser.objects.filter(deleted__gte=after_date, deleted__lte=before_date).all()
+            super_active_users = await self.users(active=True,
+                                                  active_after_dt=after_date, active_before_dt=before_date)
+            paincases = await self.paincases(after_date=after_date, before_date=before_date)
+            druguses = await self.druguses(after_date=after_date, before_date=before_date)
+            pressures = await self.pressures(after_date=after_date, before_date=before_date)
+        return Statistics(
+            after_date=after_date,
+            before_date=before_date,
+            n_new_users=statistics.new_users,
+            n_deleted_users=statistics.deleted_users,
+            n_active_users=statistics.active_users,
+            n_super_active_users=statistics.super_active_users,
+            n_paincases=statistics.paincases,
+            n_druguses=statistics.druguses,
+            n_pressures=statistics.pressures,
+            new_users=new_users,
+            deleted_users=deleted_users,
+            super_active_users=super_active_users,
+            paincases=paincases,
+            druguses=druguses,
+            pressures=pressures
+        )
 
 
 schema = strawberry.Schema(Query)

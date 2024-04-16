@@ -1,6 +1,6 @@
 import {Card, CardContent, Link, Typography, useTheme, Divider} from "@mui/material";
 import {useEffect, useState, useRef} from "react";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {tokens} from "../../theme";
 import {addWindow, closeWindow, changeWindowPos, DraggableEntity} from "../../reducers/draggables";
 import Draggable from "react-draggable";
@@ -31,6 +31,7 @@ export interface UserProps {
 
 export function UserView({entity, short=false}) {
   const dispatch = useDispatch();
+  const state = useSelector((state) => state.positions);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const name = entity.name;
@@ -66,7 +67,7 @@ export function UserView({entity, short=false}) {
     return (
       <>
         <Typography variant="body2"
-                    onClick={() => dispatch(addWindow({name, id}))}>
+                    onClick={() => dispatch(addWindow({name, id: id}))}>
           User {shortViewData.firstName} {shortViewData.lastName} (@{shortViewData.userName})
         </Typography>
       </>

@@ -142,3 +142,75 @@ export const GET_DRUGUSE_BY_ID = gql`
     }
   }
 `;
+
+export const GET_PRESSURE_BY_ID = gql`
+  query GetPressureById($id: Int!) {
+    pressures(ids: $ids) {
+      id
+      datetime
+      systolic
+      diastolic
+      pulse
+      ownerId
+    }
+  }
+`;
+
+
+export const GET_SUM_STATISTICS_BETWEEN_DATES = gql`
+  query GetStatisticsBetween($afterDate: Date!, $beforeDate: Date!, $onlySummarized: Boolean!) {
+    statistics(afterDate: $afterDate, beforeDate: $beforeDate, onlySummarized: true) {
+      nNewUsers
+      nDeletedUsers
+      nActiveUsers
+      nSuperActiveUsers
+      nPaincases
+      nDruguses
+      nPressures
+    }
+  }
+`;
+
+
+export const GET_DETAILED_STATISTICS_BETWEEN_DATES = gql`
+  query GetDetailsStatisticsBetween($afterDate: Date!, $beforeDate: Date!, $onlySummarized: Boolean!) {
+    statistics(afterDate: $afterDate, beforeDate: $beforeDate, onlySummarized: false) {
+      newUsers {
+        telegramId
+        firstName
+        lastName
+        userName
+      }
+      deletedUsers {
+        telegramId
+        firstName
+        lastName
+        userName
+      }
+      activeUsers {
+        telegramId
+        firstName
+        lastName
+        userName
+      }
+      superActiveUsers {
+        telegramId
+        firstName
+        lastName
+        userName
+      }
+      paincases {
+        id
+        date
+      }
+      druguses {
+        id
+        date
+      }
+      pressures {
+        id
+        datetime
+      }
+    }
+  }
+`;
