@@ -173,7 +173,7 @@ export const GET_SUM_STATISTICS_BETWEEN_DATES = gql`
 
 
 export const GET_DETAILED_STATISTICS_BETWEEN_DATES = gql`
-  query GetDetailsStatisticsBetween($afterDate: Date!, $beforeDate: Date!, $onlySummarized: Boolean!) {
+  query GetDetailsStatisticsBetween($afterDate: Date!, $beforeDate: Date!) {
     statistics(afterDate: $afterDate, beforeDate: $beforeDate, onlySummarized: false) {
       newUsers {
         telegramId
@@ -182,12 +182,6 @@ export const GET_DETAILED_STATISTICS_BETWEEN_DATES = gql`
         userName
       }
       deletedUsers {
-        telegramId
-        firstName
-        lastName
-        userName
-      }
-      activeUsers {
         telegramId
         firstName
         lastName

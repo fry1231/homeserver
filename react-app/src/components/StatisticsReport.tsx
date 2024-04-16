@@ -7,6 +7,7 @@ import {useDispatch, useSelector} from "react-redux";
 
 
 interface UserProps {
+  name?: string;
   telegramId: string;
   firstName: string;
   lastName: string;
@@ -14,11 +15,13 @@ interface UserProps {
 }
 
 interface IdDate {
+  name?: string;
   id: string;
   date: string;
 }
 
 interface IdDatetime {
+  name?: string;
   id: string;
   datetime: string;
 }
@@ -54,8 +57,31 @@ export const StatisticsReport = ({afterDate, beforeDate}) => {
     variables: {afterDate, beforeDate}
   });
   const {loading, error, data} = result;
+  error && console.error(error);
+  
   const handleClick = () => {
     alert("This is a placeholder for the error message");
+  }
+  
+  if (data && data.statistics) {
+    data.statistics.newUsers.forEach((user) => {
+      user = {...user, name: "User"};
+    });
+    data.statistics.deletedUsers.forEach((user) => {
+      user = {...user, name: "User"};
+    });
+    data.statistics.superActiveUsers.forEach((user) => {
+      user = {...user, name: "User"};
+    });
+    data.statistics.paincases.forEach((paincase) => {
+      paincase = {...paincase, name: "Paincase"};
+    });
+    data.statistics.druguses.forEach((druguse) => {
+      druguse = {...druguse, name: "Druguse"};
+    });
+    data.statistics.pressures.forEach((pressure) => {
+      pressure = {...pressure, name: "Pressure"};
+    });
   }
   return (
     <Paper elevation={3}>

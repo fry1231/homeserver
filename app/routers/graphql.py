@@ -320,7 +320,7 @@ class Query:
                          only_summarized: bool = True) -> Statistics:
         statistics = await OrmarStatistics.objects.filter(
             date__gte=after_date, date__lte=before_date
-        ).sum()
+        ).sum(["new_users", "deleted_users", "active_users", "super_active_users", "paincases", "druguses", "pressures"])
         new_users = deleted_users = super_active_users = paincases = druguses = pressures = []
         if not only_summarized:
             new_users = await OrmarMigraineUser.objects.filter(joined__gte=after_date, joined__lte=before_date).all()

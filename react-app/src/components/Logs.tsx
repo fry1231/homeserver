@@ -60,8 +60,9 @@ export default function Logs() {
       target = e.target;
     }
     const currentScrollPos = target.scrollTop;
-    // console.log('scrollpos', currentScrollPos);
-    const bottom = target.scrollHeight - target.scrollTop === target.clientHeight;
+    const botOffsetFloored = Math.floor((target.scrollHeight - target.scrollTop) / 10);
+    const bottom = botOffsetFloored === Math.floor(target.clientHeight / 10);
+    console.log(botOffsetFloored, Math.floor(target.clientHeight / 10), bottom)
     if (bottom) {
       askMoreLogs();
       target.scrollTo(0, currentScrollPos-1);
