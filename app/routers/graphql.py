@@ -2,7 +2,7 @@ import strawberry
 from strawberry.fastapi import GraphQLRouter
 from strawberry.types import Info
 import datetime
-from typing import List, Union, ForwardRef
+from typing import List, Union, ForwardRef, NewType
 
 from misc.security import IsAuthenticated
 from db.sql.models import (
@@ -16,7 +16,8 @@ from db.sql.models import (
 
 
 BigInt = strawberry.scalar(
-    Union[int, str],  # type: ignore
+    # Union[int, str],
+    NewType("BigInt", Union[int, str]),
     serialize=lambda v: int(v),
     parse_value=lambda v: str(v),
     description="BigInt field",
@@ -350,6 +351,6 @@ class Query:
         )
 
 
-schema = strawberry.Schema(Query, types=[BigInt])
+schema = strawberry.Schema(Query)
 
 graphql_app = GraphQLRouter(schema)
