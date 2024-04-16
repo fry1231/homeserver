@@ -327,9 +327,10 @@ class Query:
             deleted_users = await OrmarSavedUser.objects.filter(deleted__gte=after_date, deleted__lte=before_date).all()
             super_active_users = await self.users(active=True,
                                                   active_after_dt=after_date, active_before_dt=before_date)
-            paincases = await self.paincases(after_date=after_date, before_date=before_date)
-            druguses = await self.druguses(after_date=after_date, before_date=before_date)
-            pressures = await self.pressures(after_date=after_date, before_date=before_date)
+            query = Query()
+            paincases = await query.paincases(after_date=after_date, before_date=before_date)
+            druguses = await query.druguses(after_date=after_date, before_date=before_date)
+            pressures = await query.pressures(after_date=after_date, before_date=before_date)
         return Statistics(
             after_date=after_date,
             before_date=before_date,
