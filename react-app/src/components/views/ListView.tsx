@@ -51,7 +51,6 @@ export const ListView = ({entity}) => {
       pressureIds
     }
   });
-  
   error && console.error(error);
   
   // Fill listEntities with data, taking into account the entity type

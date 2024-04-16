@@ -78,6 +78,7 @@ export function UserView({entity, short=false}) {
   const {loading, error, data} = useQuery(GET_USER_BY_ID, {
     variables: {id}
   });
+  error && console.error(error);
   
   const props: UserProps = data
     ? data.user
