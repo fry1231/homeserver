@@ -77,7 +77,7 @@ class OrmarPainCase(ormar.Model):
     aura = Boolean()
     provocateurs = String(max_length=512, nullable=True)
     symptoms = String(max_length=512, nullable=True)
-    description = String(max_length=256, nullable=True)
+    description = String(max_length=1024, nullable=True)
 
     owner_id = ormar.ForeignKey(OrmarMigraineUser, related_name='paincases')
     # medecine_taken = ormar.ForeignKey(ForwardRef('OrmarDrugUse'), virtual=True)

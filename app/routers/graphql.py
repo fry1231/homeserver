@@ -326,17 +326,17 @@ class Query:
         ).sum(["new_users", "deleted_users", "active_users", "super_active_users", "paincases", "druguses", "pressures"])
         new_users = deleted_users = super_active_users = paincases = druguses = pressures = []
         if not only_summarized:
-            paincases: list[OrmarPainCase] = await OrmarPainCase.objects.filter(date__gte=after_date, date__lte=before_date).all()
+            paincases = await OrmarPainCase.objects.filter(date__gte=after_date, date__lte=before_date).all()
             druguses = await OrmarDrugUse.objects.filter(date__gte=after_date, date__lte=before_date).all()
             pressures = await OrmarPressure.objects.filter(datetime__gte=after_date, datetime__lte=before_date).all()
 
             new_users = await OrmarMigraineUser.objects.filter(joined__gte=after_date, joined__lte=before_date).all()
             deleted_users = await OrmarSavedUser.objects.filter(deleted__gte=after_date, deleted__lte=before_date).all()
-            active_users_id = [el.owner_id for el in paincases] + \
-                              [el.owner_id for el in druguses] + \
-                              [el.owner_id for el in pressures]
+            active_users_id = set([el.owner_id for el in paincases] +
+                                  [el.owner_id for el in druguses] +
+                                  [el.owner_id for el in pressures])
             super_active_users = await OrmarMigraineUser.objects.filter(telegram_id__in=active_users_id).all()
-            paincases: list[PainCase] = [PainCase.from_orm(paincase) for paincase in paincases]
+            paincases = [PainCase.from_orm(paincase) for paincase in paincases]
             druguses = [DrugUse.from_orm(druguse) for druguse in druguses]
             pressures = [Pressure.from_orm(pressure) for pressure in pressures]
         return Statistics(
