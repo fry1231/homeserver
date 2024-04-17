@@ -20,14 +20,12 @@ const StatisticsChart = () => {
   const {loading, error, data} = useQuery(GET_DAILY_STATISTICS_BETWEEN, {
     variables: {
       afterDate: new Date('2024-03-01').toISOString().split('T')[0],
-      beforeDate: new Date('2023-03-31').toISOString().split('T')[0],
+      beforeDate: new Date('2024-03-31').toISOString().split('T')[0],
     }
   });
+  error && console.error(error);
   
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
-  
-  const plotData = Object.keys(data.statistics).map(key => {
+  const plotData = data && Object.keys(data.statistics).map(key => {
     if (key !== 'afterDate') {
       return {
         x: data.statistics.map(item => item.afterDate),
@@ -39,6 +37,8 @@ const StatisticsChart = () => {
     }
     return null;
   }).filter(Boolean);
+  console.log(data)
+  console.log(plotData)
   
   const layout = {
     title: 'App Statistics',
@@ -52,7 +52,7 @@ const StatisticsChart = () => {
       showline: true,
     },
   };
-  z
+  
   return (
     <Plot
       data={plotData}

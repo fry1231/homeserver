@@ -210,12 +210,12 @@ class Statistics:
     n_druguses: int
     n_pressures: int
 
-    new_users: List[User] | None
-    deleted_users: List[User] | None
-    super_active_users: List[User] | None
-    paincases: List[PainCase] | None
-    druguses: List[DrugUse] | None
-    pressures: List[Pressure] | None
+    new_users: List[User] | None = None
+    deleted_users: List[User] | None = None
+    super_active_users: List[User] | None = None
+    paincases: List[PainCase] | None = None
+    druguses: List[DrugUse] | None = None
+    pressures: List[Pressure] | None = None
 
 
 @strawberry.type
@@ -345,7 +345,6 @@ class Query:
             active_users_id = set([el.owner_id.telegram_id for el in paincases] +
                                   [el.owner_id.telegram_id for el in druguses] +
                                   [el.owner_id.telegram_id for el in pressures])
-            logger.info(f"Active users: {active_users_id}")
             super_active_users = await OrmarMigraineUser.objects.filter(
                 OrmarMigraineUser.telegram_id.in_(active_users_id)
             ).all()

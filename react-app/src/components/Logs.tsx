@@ -192,19 +192,28 @@ export default function Logs() {
     handleScroll(null);
   }, [scrollable.current]);
   
+  // Format the log message, transforming User <id> into a clickable link if necessary
   const FormattedMessage = ({message}) => {
-    const messageParts = message.split(/(User\d+)/);
+    const messageParts = message.split(/(User \d+)/);
     return (
       <>
         {messageParts.map((part, i) => {
           if (part.startsWith("User")) {
-            return <Typography key={i} variant="h7" color={colors.orangeAccent[300]}
-                               onClick={() => dispatch(
-                                 addWindow({name: "User", id: parseInt(part.replace("User ", ""))})
-                               )}
-            >{part}</Typography>;
+            const userId = parseInt(part.replace("User ", ""));
+            return (
+              <>
+                <Typography key={i + 'a'} variant="h7" color={colors.grey[300]}>User</Typography>
+                <Typography ml={1} key={i} variant="h7" color={colors.orangeAccent[300]}
+                                 onClick={() => dispatch(
+                                   addWindow({name: "User", id: parseInt(userId)})
+                                 )}
+                >{userId}</Typography>
+              </>
+            );
           } else {
-            return <Typography key={i} variant="h7" color={colors.grey[300]}>{part}</Typography>;
+            return part.startsWith(".")
+              ? <Typography key={i} variant="h7" color={colors.grey[300]} style={{overflowWrap: 'anywhere'}}>{part}</Typography>
+              : <Typography ml={1} key={i} variant="h7" color={colors.grey[300]} style={{overflowWrap: 'anywhere'}}>{part}</Typography>
           }
         })}
       </>
@@ -224,11 +233,6 @@ export default function Logs() {
         <Grid container direction="column">
         {logs.map((logRecord: string, i) => {
           const {timeString, logLevel, message, location} = logRecord;
-          let formattedMessage = message;
-          if (message.contains("User")) {
-            const messageParts = message.split(/(User\d+)/);
-          }
-          
           const color = logLevel === "[INFO]"
             ? colors.primary[100]
             : logLevel === "[WARNING]"
@@ -245,7 +249,7 @@ export default function Logs() {
                   </div>
                   <Typography variant="h7" mr={1} color={colors.blueAccent[200]} key={i}>{localizedTime(timeString)} </Typography>
                   <Typography variant="h7" mr={1} color={color} style={{width: maxWidth}} align="center">{logLevel}</Typography>
-                  <Typography variant="h7" mr={1} color={colors.grey[300]} style={{overflowWrap: 'break-word'}}>{formattedMessage}</Typography>
+                  <FormattedMessage message={message}/>
                 </Grid>
               </Grid>
               <Typography variant="h7" color={colors.grey[500]}>{location}</Typography>
