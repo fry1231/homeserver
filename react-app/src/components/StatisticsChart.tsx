@@ -52,7 +52,7 @@ const StatisticsChart = () => {
       showline: true,
     },
   };
-  
+  z
   return (
     <Plot
       data={plotData}

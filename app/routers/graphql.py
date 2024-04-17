@@ -75,7 +75,7 @@ async def get_owner(root, info: Info) -> "User":
     return User.from_orm(owner)
 
 
-async def get_related_paincase(root, info: Info) -> "PainCase" | None:
+async def get_related_paincase(root, info: Info) -> Union["PainCase", None]:
     """Get the related paincase of a druguse."""
     if not root.paincase_id:
         return None

@@ -203,6 +203,10 @@ export default function Logs() {
         <Grid container direction="column">
         {logs.map((logRecord: string, i) => {
           const {timeString, logLevel, message, location} = logRecord;
+          if (message.contains("User")) {
+            // User link extraction logic
+          }
+          
           const color = logLevel === "[INFO]"
             ? colors.primary[100]
             : logLevel === "[WARNING]"
