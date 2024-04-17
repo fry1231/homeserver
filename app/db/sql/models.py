@@ -75,8 +75,8 @@ class OrmarPainCase(ormar.Model):
     durability = SmallInteger()
     intensity = SmallInteger()
     aura = Boolean()
-    provocateurs = String(max_length=512, nullable=True)
-    symptoms = String(max_length=512, nullable=True)
+    provocateurs = String(max_length=1024, nullable=True)
+    symptoms = String(max_length=1024, nullable=True)
     description = String(max_length=1024, nullable=True)
 
     owner_id = ormar.ForeignKey(OrmarMigraineUser, related_name='paincases')

@@ -333,9 +333,9 @@ class Query:
 
             new_users = await OrmarMigraineUser.objects.filter(joined__gte=after_date, joined__lte=before_date).all()
             deleted_users = await OrmarSavedUser.objects.filter(deleted__gte=after_date, deleted__lte=before_date).all()
-            active_users_id = set([el.owner_id for el in paincases] +
-                                  [el.owner_id for el in druguses] +
-                                  [el.owner_id for el in pressures])
+            active_users_id = set([el.owner_id.telegram_id for el in paincases] +
+                                  [el.owner_id.telegram_id for el in druguses] +
+                                  [el.owner_id.telegram_id for el in pressures])
             logger.info(f"Active users: {active_users_id}")
             super_active_users = await OrmarMigraineUser.objects.filter(
                 OrmarMigraineUser.telegram_id.in_(active_users_id)
