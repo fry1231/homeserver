@@ -254,11 +254,11 @@ class Query:
                 before_datetime = active_before
             # Get all users who have submitted a paincase, druguse or pressure in the last month OR specified timeframe
             paincase_users = await (OrmarPainCase.objects.filter(date__gte=after_datetime.date(),
-                                                                 date__lte=before_datetime.date()).fields('owner_id').all())
+                                                                 date__lte=before_datetime.date()).all())
             druguse_users = await (OrmarDrugUse.objects.filter(date__gte=after_datetime.date(),
-                                                               date__lte=before_datetime.date()).fields('owner_id').all())
+                                                               date__lte=before_datetime.date()).all())
             pressure_users = await (OrmarPressure.objects.filter(datetime__gte=after_datetime,
-                                                                 datetime__lte=before_datetime).fields('owner_id').all())
+                                                                 datetime__lte=before_datetime).all())
             super_active_users_id = set([el.owner_id for el in paincase_users] +
                                         [el.owner_id for el in druguse_users] +
                                         [el.owner_id for el in pressure_users])
