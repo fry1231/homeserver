@@ -1,5 +1,5 @@
 import {IconButton, Paper, Typography} from "@mui/material";
-import {GET_DETAILED_STATISTICS_BETWEEN_DATES, GET_SUM_STATISTICS_BETWEEN_DATES} from "../misc/gqlQueries";
+import {GET_DETAILED_STATISTICS_BETWEEN, GET_SUM_STATISTICS_BETWEEN} from "../misc/gqlQueries";
 import {ApolloError, useQuery} from "@apollo/client";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import {addWindow} from "../reducers/draggables";
@@ -53,55 +53,58 @@ interface QueryResult {
 export const StatisticsReport = ({afterDate, beforeDate}) => {
   const dispatch = useDispatch();
   const state = useSelector((state) => state.positions);
-  const result: QueryResult = useQuery(GET_DETAILED_STATISTICS_BETWEEN_DATES, {
+  const result: QueryResult = useQuery(GET_DETAILED_STATISTICS_BETWEEN, {
     variables: {afterDate, beforeDate}
   });
-  const {loading, error, data} = result;
+  let {loading, error, data} = result;
   error && console.error(error);
   
   const handleClick = () => {
     alert("This is a placeholder for the error message");
   }
   
-  if (data && data.statistics) {
-    data.statistics.newUsers.forEach((user) => {
-      user = {...user, name: "User"};
-    });
-    data.statistics.deletedUsers.forEach((user) => {
-      user = {...user, name: "User"};
-    });
-    data.statistics.superActiveUsers.forEach((user) => {
-      user = {...user, name: "User"};
-    });
-    data.statistics.paincases.forEach((paincase) => {
-      paincase = {...paincase, name: "Paincase"};
-    });
-    data.statistics.druguses.forEach((druguse) => {
-      druguse = {...druguse, name: "Druguse"};
-    });
-    data.statistics.pressures.forEach((pressure) => {
-      pressure = {...pressure, name: "Pressure"};
-    });
-  }
+  const newUsers = data ? data.statistics.newUsers.map(user => (
+    {name: "User", id: user.telegramId, shortView: user})) : [];
+  const deletedUsers = data ? data.statistics.deletedUsers.map(user => (
+    {name: "User", id: user.telegramId, shortView: user})) : [];
+  const superActiveUsers = data ? data.statistics.superActiveUsers.map(user => (
+    {name: "User", id: user.telegramId, shortView: user})) : [];
+  const paincases = data ? data.statistics.paincases.map(paincase => (
+    {name: "Paincase", id: paincase.id, shortView: paincase})) : [];
+  const druguses = data ? data.statistics.druguses.map(druguse => (
+    {name: "Druguse", id: druguse.id, shortView: druguse})) : [];
+  const pressures = data ? data.statistics.pressures.map(pressure => (
+    {name: "Pressure", id: pressure.id, shortView: pressure})) : [];
+  
   return (
     <Paper elevation={3}>
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error.message}</p>}
       {data && (
         <div>
-          <Typography>New users: {data.statistics.newUsers.length} <IconButton onClick={() => {
-            dispatch(addWindow({name: "List", id: state.n, nestedContent: data.statistics.newUsers}))
+          <Typography>New users: {newUsers.length} <IconButton onClick={() => {
+            dispatch(addWindow({name: "List", id: state.n, nestedContent: newUsers}))
           }}><ErrorOutlineIcon
             fontSize="small"/></IconButton></Typography>
-          <Typography>Deleted users: {data.statistics.deletedUsers.length} <IconButton onClick={handleClick}><ErrorOutlineIcon
+          <Typography>Deleted users: {deletedUsers.length} <IconButton onClick={() => {
+            dispatch(addWindow({name: "List", id: state.n, nestedContent: deletedUsers}))
+          }}><ErrorOutlineIcon
             fontSize="small"/></IconButton></Typography>
-          <Typography>Active users: {data.statistics.superActiveUsers.length} <IconButton onClick={handleClick}><ErrorOutlineIcon
+          <Typography>Active users: {superActiveUsers.length} <IconButton onClick={() => {
+            dispatch(addWindow({name: "List", id: state.n, nestedContent: superActiveUsers}))
+          }}><ErrorOutlineIcon
             fontSize="small"/></IconButton></Typography>
-          <Typography>Paincases: {data.statistics.paincases.length} <IconButton onClick={handleClick}><ErrorOutlineIcon
+          <Typography>Paincases: {paincases.length} <IconButton onClick={() => {
+            dispatch(addWindow({name: "List", id: state.n, nestedContent: paincases}))
+          }}><ErrorOutlineIcon
             fontSize="small"/></IconButton></Typography>
-          <Typography>Druguses: {data.statistics.druguses.length} <IconButton onClick={handleClick}><ErrorOutlineIcon
+          <Typography>Druguses: {druguses.length} <IconButton onClick={() => {
+            dispatch(addWindow({name: "List", id: state.n, nestedContent: druguses}))
+          }}><ErrorOutlineIcon
             fontSize="small"/></IconButton></Typography>
-          <Typography>Pressures: {data.statistics.pressures.length} <IconButton onClick={handleClick}><ErrorOutlineIcon
+          <Typography>Pressures: {pressures.length} <IconButton onClick={() => {
+            dispatch(addWindow({name: "List", id: state.n, nestedContent: pressures}))
+          }}><ErrorOutlineIcon
             fontSize="small"/></IconButton></Typography>
         </div>
       )}

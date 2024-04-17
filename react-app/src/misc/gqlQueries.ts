@@ -111,9 +111,9 @@ export const GET_USER_BY_ID = gql`
   }
 `;
 
-export const GET_PAINCASE_BY_ID = gql`
-  query GetPaincaseById($id: Int!) {
-    paincases(ids: [$id]) {
+export const GET_PAINCASES_BY_ID = gql`
+  query GetPaincasesById($ids: [Int!]!) {
+    paincases(ids: $ids) {
       id
       date
       durability
@@ -130,14 +130,16 @@ export const GET_PAINCASE_BY_ID = gql`
       }
       medecineTaken {
         id
+        drugname
+        amount
       }
     }
   }
 `;
 
-export const GET_DRUGUSE_BY_ID = gql`
-  query GetDruguseById($id: Int!) {
-    druguses(ids: [$id]) {
+export const GET_DRUGUSES_BY_ID = gql`
+  query GetDruguseById($ids: [Int!]!) {
+    druguses(ids: $ids) {
       id
       date
       amount
@@ -148,7 +150,9 @@ export const GET_DRUGUSE_BY_ID = gql`
         lastName
         userName
       }
-      paincaseId
+      paincase {
+        id
+      }
     }
   }
 `;
@@ -172,8 +176,8 @@ export const GET_PRESSURES_BY_ID = gql`
 `;
 
 
-export const GET_SUM_STATISTICS_BETWEEN_DATES = gql`
-  query GetStatisticsBetween($afterDate: Date!, $beforeDate: Date!, $onlySummarized: Boolean!) {
+export const GET_SUM_STATISTICS_BETWEEN = gql`
+  query GetStatisticsBetween($afterDate: Date!, $beforeDate: Date!) {
     statistics(afterDate: $afterDate, beforeDate: $beforeDate, onlySummarized: true) {
       nNewUsers
       nDeletedUsers
@@ -187,7 +191,7 @@ export const GET_SUM_STATISTICS_BETWEEN_DATES = gql`
 `;
 
 
-export const GET_DETAILED_STATISTICS_BETWEEN_DATES = gql`
+export const GET_DETAILED_STATISTICS_BETWEEN = gql`
   query GetDetailsStatisticsBetween($afterDate: Date!, $beforeDate: Date!) {
     statistics(afterDate: $afterDate, beforeDate: $beforeDate, onlySummarized: false) {
       newUsers {
@@ -220,6 +224,21 @@ export const GET_DETAILED_STATISTICS_BETWEEN_DATES = gql`
         id
         datetime
       }
+    }
+  }
+`;
+
+export const GET_DAILY_STATISTICS_BETWEEN = gql`
+  query GetDailyStatisticsBetween($afterDate: Date!, $beforeDate: Date!) {
+    dailyStatistics(afterDate: $afterDate, beforeDate: $beforeDate) {
+      afterDate
+      nNewUsers
+      nDeletedUsers
+      nActiveUsers
+      nSuperActiveUsers
+      nPaincases
+      nDruguses
+      nPressures
     }
   }
 `;

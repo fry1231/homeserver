@@ -203,13 +203,13 @@ export const FarmChart = () => {
       fixedrange: true,
       range: [0, 400],
     },
-    yaxis4: {
-      title: 'Soil Moisture %',
-      side: 'right',
-      overlaying: 'y',
-      position: 1,
-      visible: false,
-    },
+    // yaxis4: {
+    //   title: 'Soil Moisture %',
+    //   side: 'right',
+    //   overlaying: 'y',
+    //   position: 1,
+    //   visible: false,
+    // },
     legend: {
       x: 1.2,
       y: 1
@@ -239,7 +239,7 @@ export const FarmChart = () => {
           mode: 'lines',
           name: 'Soil Moisture',
           yaxis: 'y2',
-          line: {color: `rgba(0, 255, 0, 0.2)`},
+          line: {color: `rgba(0, 255, 0, 1)`},
         },
         {
           x: chartData.timeline,
@@ -250,15 +250,15 @@ export const FarmChart = () => {
           yaxis: 'y3',
           line: {color: 'blue'},
         },
-        {
-          x: chartData.timeline,
-          y: chartData.soilMoistureNormalized,
-          type: 'scatter',
-          mode: 'lines',
-          name: 'Soil Moisture Normalized',
-          yaxis: 'y4',
-          line: {color: 'green'},
-        }
+        // {
+        //   x: chartData.timeline,
+        //   y: chartData.soilMoistureNormalized,
+        //   type: 'scatter',
+        //   mode: 'lines',
+        //   name: 'Soil Moisture Normalized',
+        //   yaxis: 'y4',
+        //   line: {color: 'green'},
+        // }
       ]}
       layout={layout}
     />

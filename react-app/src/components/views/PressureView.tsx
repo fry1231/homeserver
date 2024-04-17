@@ -35,12 +35,10 @@ export function PressureView({entity, short=false}) {
       console.error("No shortViewData for entity", entity);
     }
     return (
-      <>
-        <Typography variant="body2"
-                    onClick={() => dispatch(addWindow({name, id}))}>
-          Pressure {shortViewData.datetime}
-        </Typography>
-      </>
+      <Typography variant="body2"
+                  onClick={() => dispatch(addWindow({name, id}))}>
+        Pressure {shortViewData.datetime}
+      </Typography>
     )
   }
   
@@ -49,16 +47,15 @@ export function PressureView({entity, short=false}) {
   });
   error && console.error(error);
   
-  
   const props: PressureProps = data
     ? data.pressures[0]
     : {
-      id: "Loading...",
+      id: -1,
       datetime: "Loading...",
-      systolic: 0,
-      diastolic: 0,
-      pulse: 0,
-      owner: {telegramId: 0, firstName: "Loading..."}
+      systolic: -1,
+      diastolic: -1,
+      pulse: -1,
+      owner: {telegramId: -1, firstName: "Loading..."}
     };
   
   const ownerStr = ''
@@ -66,11 +63,11 @@ export function PressureView({entity, short=false}) {
     + (props.owner.lastName ? props.owner.lastName + ' ' : '')
     + (props.owner.userName ? '(@' + props.owner.userName + ')' : '');
   return (
-    <>
+    <CardContent>
       <CardRow left="" right={`${props.systolic}/${props.diastolic} mmHg, ${props.pulse} bpm`}/>
       <CardRow left="Owner" right={ownerStr}
                onClickHandler={() => dispatch(addWindow({name: "User", id: props.owner.telegramId}))}/>
-    </>
+    </CardContent>
 
 );
 }

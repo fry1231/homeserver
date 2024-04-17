@@ -65,12 +65,10 @@ export function UserView({entity, short=false}) {
       return;
     }
     return (
-      <>
-        <Typography variant="body2"
-                    onClick={() => dispatch(addWindow({name, id: id}))}>
-          User {shortViewData.firstName} {shortViewData.lastName} (@{shortViewData.userName})
-        </Typography>
-      </>
+      <Typography variant="body2"
+                  onClick={() => dispatch(addWindow({name, id: id}))}>
+        User {shortViewData.firstName} {shortViewData.lastName} (@{shortViewData.userName})
+      </Typography>
     )
   }
   
@@ -101,7 +99,8 @@ export function UserView({entity, short=false}) {
   };
   
   return (
-    <>
+    <CardContent>
+      {/*Header*/}
       <Typography display="inline" color={colors.orangeAccent[500]} variant="body2" component="p">
         {props.firstName ? props.firstName : ""} {props.lastName ? props.lastName : null}
       </Typography><Typography ml={1} display="inline" color={colors.orangeAccent[500]} variant="body2"
@@ -121,35 +120,13 @@ export function UserView({entity, short=false}) {
       {props.latitude && props.longitude
         ? <CardRow left="Location" right={`${Math.round(props.latitude * 100) / 100}, ${Math.round(props.longitude * 100) / 100}`}
                    onClickHandler={() => showMap(props.latitude, props.longitude)}/>
-        // <>
-        //   <Typography mr={1} color={colors.grey[300]} display="inline" variant="body2" component="p">
-        //     Location:
-        //   </Typography>
-        //   <Link component="button" variant="body2" color="inherit" onClick={() => showMap(props.latitude, props.longitude)}>
-        //     {Math.round(props.latitude * 100) / 100}, {Math.round(props.longitude * 100) / 100}
-        //   </Link>
-        //   <br/>
-        // </>
-      : null}
+        : null}
       
-      {/*Paincases, Druguses, Pressures*/}
-      <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
-        Paincases:
-        </Typography> <Link component="button" variant="body2" color="inherit" onClick={showPaincases}>
-      {props.paincases.length}
-      </Link><br/>
+      {/*Paincases, Druguses, Pressures. 'show*' calls a list with entities */}
+      <CardRow left="Paincases" right={props.paincases.length} onClickHandler={showPaincases}/>
+      <CardRow left="Druguses" right={props.druguses.length} onClickHandler={showDruguses}/>
+      <CardRow left="Pressures" right={props.pressures.length} onClickHandler={showPressures}/>
       
-      <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
-        Druguses:
-        </Typography> <Link component="button" variant="body2" color="inherit" onClick={showDruguses}>
-      {props.druguses.length}
-      </Link><br/>
-      
-      <Typography color={colors.grey[300]} display="inline" variant="body2" component="p">
-        Pressures:
-        </Typography> <Link component="button" variant="body2" color="inherit" onClick={showPressures}>
-      {props.pressures.length}
-      </Link><br/>
-    </>
+    </CardContent>
   );
 }

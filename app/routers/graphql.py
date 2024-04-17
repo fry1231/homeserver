@@ -75,6 +75,14 @@ async def get_owner(root, info: Info) -> "User":
     return User.from_orm(owner)
 
 
+async def get_related_paincase(root, info: Info) -> "PainCase" | None:
+    """Get the related paincase of a druguse."""
+    if not root.paincase_id:
+        return None
+    paincase = await OrmarPainCase.objects.get(id=root.paincase_id)
+    return PainCase.from_orm(paincase)
+
+
 @strawberry.type
 class DrugUse:
     id: int
@@ -84,6 +92,7 @@ class DrugUse:
     owner_id: BigInt
     owner: "User" = strawberry.field(resolver=get_owner)
     paincase_id: int | None
+    paincase: "PainCase" | None = strawberry.field(resolver=get_related_paincase)
 
     @classmethod
     def from_orm(cls, orm_drug):
@@ -201,12 +210,12 @@ class Statistics:
     n_druguses: int
     n_pressures: int
 
-    new_users: List[User]
-    deleted_users: List[User]
-    super_active_users: List[User]
-    paincases: List[PainCase]
-    druguses: List[DrugUse]
-    pressures: List[Pressure]
+    new_users: List[User] | None
+    deleted_users: List[User] | None
+    super_active_users: List[User] | None
+    paincases: List[PainCase] | None
+    druguses: List[DrugUse] | None
+    pressures: List[Pressure] | None
 
 
 @strawberry.type
@@ -241,9 +250,9 @@ class Query:
             paincase_users = await OrmarPainCase.objects.all()
             druguse_users = await OrmarDrugUse.objects.all()
             pressure_users = await OrmarPressure.objects.all()
-            active_users_id = set([el.owner_id for el in paincase_users] +
-                                  [el.owner_id for el in druguse_users] +
-                                  [el.owner_id for el in pressure_users])
+            active_users_id = set([el.owner_id.telegram_id for el in paincase_users] +
+                                  [el.owner_id.telegram_id for el in druguse_users] +
+                                  [el.owner_id.telegram_id for el in pressure_users])
             query_set.append(OrmarMigraineUser.id.in_(active_users_id))
         if super_active is not None:
             # Has at least 1 submitted paincase, druguse or pressure in the last month or notify every != -1
@@ -260,10 +269,10 @@ class Query:
                                                                date__lte=before_datetime.date()).all())
             pressure_users = await (OrmarPressure.objects.filter(datetime__gte=after_datetime,
                                                                  datetime__lte=before_datetime).all())
-            super_active_users_id = set([el.owner_id for el in paincase_users] +
-                                        [el.owner_id for el in druguse_users] +
-                                        [el.owner_id for el in pressure_users])
-            query_set.append(OrmarMigraineUser.id.in_(super_active_users_id))
+            super_active_users_id = set([el.owner_id.telegram_id for el in paincase_users] +
+                                        [el.owner_id.telegram_id for el in druguse_users] +
+                                        [el.owner_id.telegram_id for el in pressure_users])
+            query_set.append(OrmarMigraineUser.telegram_id.in_(super_active_users_id))
         if len(query_set) == 0:
             return []
         users = await OrmarMigraineUser.objects.filter(*query_set).all()
@@ -360,6 +369,25 @@ class Query:
             druguses=druguses,
             pressures=pressures
         )
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    async def daily_statistics(self,
+                               before_date: datetime.date,
+                               after_date: datetime.date) -> list[Statistics]:
+        statistics = await OrmarStatistics.objects.filter(
+            date__gte=after_date, date__lte=before_date
+        ).all()
+        return [Statistics(
+            after_date=stat.date,
+            before_date=stat.date,
+            n_new_users=stat.new_users,
+            n_deleted_users=stat.deleted_users,
+            n_active_users=stat.active_users,
+            n_super_active_users=stat.super_active_users,
+            n_paincases=stat.paincases,
+            n_druguses=stat.druguses,
+            n_pressures=stat.pressures
+        ) for stat in statistics]
 
 
 schema = strawberry.Schema(Query)
