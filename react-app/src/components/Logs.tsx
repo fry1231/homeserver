@@ -5,6 +5,7 @@ import {logsRefreshed, logUpdateRecieved, clearLogs} from "../reducers/logs";
 import {useAuth} from "../misc/authProvider.jsx";
 import {tokens} from "../theme";
 import {useTheme} from "@mui/material/styles";
+import {addWindow} from "../reducers/draggables";
 
 // Parse date in 30.04.2024_19:04:56 format to Date object in local time
 const localizedTime = (timeString: string) => {
@@ -15,6 +16,7 @@ const localizedTime = (timeString: string) => {
   const parsedDate = new Date(normalizedDate);
   return parsedDate.toLocaleString("ru-RU");
 }
+
 
 export default function Logs() {
   const dispatch = useDispatch();
@@ -190,6 +192,25 @@ export default function Logs() {
     handleScroll(null);
   }, [scrollable.current]);
   
+  const FormattedMessage = ({message}) => {
+    const messageParts = message.split(/(User\d+)/);
+    return (
+      <>
+        {messageParts.map((part, i) => {
+          if (part.startsWith("User")) {
+            return <Typography key={i} variant="h7" color={colors.orangeAccent[300]}
+                               onClick={() => dispatch(
+                                 addWindow({name: "User", id: parseInt(part.replace("User ", ""))})
+                               )}
+            >{part}</Typography>;
+          } else {
+            return <Typography key={i} variant="h7" color={colors.grey[300]}>{part}</Typography>;
+          }
+        })}
+      </>
+    );
+  }
+  
   return (
     <div style={{postition: 'absolute', overflowY: 'auto', height: '100vh'}}>
       {
@@ -203,8 +224,9 @@ export default function Logs() {
         <Grid container direction="column">
         {logs.map((logRecord: string, i) => {
           const {timeString, logLevel, message, location} = logRecord;
+          let formattedMessage = message;
           if (message.contains("User")) {
-            // User link extraction logic
+            const messageParts = message.split(/(User\d+)/);
           }
           
           const color = logLevel === "[INFO]"
@@ -223,7 +245,7 @@ export default function Logs() {
                   </div>
                   <Typography variant="h7" mr={1} color={colors.blueAccent[200]} key={i}>{localizedTime(timeString)} </Typography>
                   <Typography variant="h7" mr={1} color={color} style={{width: maxWidth}} align="center">{logLevel}</Typography>
-                  <Typography variant="h7" mr={1} color={colors.grey[300]} style={{overflowWrap: 'break-word'}}>{message}</Typography>
+                  <Typography variant="h7" mr={1} color={colors.grey[300]} style={{overflowWrap: 'break-word'}}>{formattedMessage}</Typography>
                 </Grid>
               </Grid>
               <Typography variant="h7" color={colors.grey[500]}>{location}</Typography>

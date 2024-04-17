@@ -92,7 +92,7 @@ class DrugUse:
     owner_id: BigInt
     owner: "User" = strawberry.field(resolver=get_owner)
     paincase_id: int | None
-    paincase: "PainCase" | None = strawberry.field(resolver=get_related_paincase)
+    paincase: Union["PainCase", None] = strawberry.field(resolver=get_related_paincase)
 
     @classmethod
     def from_orm(cls, orm_drug):
