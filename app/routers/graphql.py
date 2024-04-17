@@ -237,9 +237,9 @@ class Query:
             query_set.append(OrmarMigraineUser.timezone == timezone)
         if active is not None:
             # Has at least 1 submitted paincase, druguse or pressure in all time or notify every != -1
-            paincase_users = await (OrmarPainCase.objects.fields('owner_id').all())
-            druguse_users = await (OrmarDrugUse.objects.fields('owner_id').all())
-            pressure_users = await (OrmarPressure.objects.fields('owner_id').all())
+            paincase_users = await OrmarPainCase.objects.all()
+            druguse_users = await OrmarDrugUse.objects.all()
+            pressure_users = await OrmarPressure.objects.all()
             active_users_id = set([el.owner_id for el in paincase_users] +
                                   [el.owner_id for el in druguse_users] +
                                   [el.owner_id for el in pressure_users])
@@ -342,13 +342,13 @@ class Query:
         return Statistics(
             after_date=after_date,
             before_date=before_date,
-            n_new_users=statistics.new_users,
-            n_deleted_users=statistics.deleted_users,
-            n_active_users=statistics.active_users,
-            n_super_active_users=statistics.super_active_users,
-            n_paincases=statistics.paincases,
-            n_druguses=statistics.druguses,
-            n_pressures=statistics.pressures,
+            n_new_users=statistics['new_users'],
+            n_deleted_users=statistics['deleted_users'],
+            n_active_users=statistics['active_users'],
+            n_super_active_users=statistics['super_active_users'],
+            n_paincases=statistics['paincases'],
+            n_druguses=statistics['druguses'],
+            n_pressures=statistics['pressures'],
             new_users=new_users,
             deleted_users=deleted_users,
             super_active_users=super_active_users,
