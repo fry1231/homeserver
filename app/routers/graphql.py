@@ -223,8 +223,8 @@ class Query:
                     timezone: str | None = None,
                     active: bool | None = None,
                     super_active: bool | None = None,
-                    active_after_dt: datetime.date | None = None,
-                    active_before_dt: datetime.date | None = None
+                    active_after: datetime.date | None = None,
+                    active_before: datetime.date | None = None
                     ) -> List[User]:
         query_set = []
         if telegram_ids:
@@ -237,33 +237,32 @@ class Query:
             query_set.append(OrmarMigraineUser.timezone == timezone)
         if active is not None:
             # Has at least 1 submitted paincase, druguse or pressure in all time or notify every != -1
-            query_set.append(
-                OrmarMigraineUser.objects.filter(
-                    OrmarMigraineUser.id.in_(OrmarPainCase.objects.values('owner_id')) |
-                    OrmarMigraineUser.id.in_(OrmarDrugUse.objects.values('owner_id')) |
-                    OrmarMigraineUser.id.in_(OrmarPressure.objects.values('owner_id')) |
-                    OrmarMigraineUser.notify_every != -1
-                )
-            )
+            paincase_users = await OrmarPainCase.objects.fields(['owner_id']).all()
+            druguse_users = await OrmarDrugUse.objects.fields(['owner_id']).all()
+            pressure_users = await OrmarPressure.objects.fields(['owner_id']).all()
+            active_users_id = set([el.owner_id for el in paincase_users] +
+                                  [el.owner_id for el in druguse_users] +
+                                  [el.owner_id for el in pressure_users])
+            query_set.append(OrmarMigraineUser.id.in_(active_users_id))
         if super_active is not None:
             # Has at least 1 submitted paincase, druguse or pressure in the last month or notify every != -1
             before_datetime = datetime.datetime.now()
             after_datetime = before_datetime - datetime.timedelta(days=30)
-            if active_after_dt:
-                after_datetime = active_after_dt
-            if active_before_dt:
-                before_datetime = active_before_dt
-            query_set.append(
-                OrmarMigraineUser.objects.filter(
-                    OrmarMigraineUser.id.in_(OrmarPainCase.objects.filter(date__gte=after_datetime,
-                                                                          date__lte=before_datetime).values('owner_id')) |
-                    OrmarMigraineUser.id.in_(OrmarDrugUse.objects.filter(date__gte=after_datetime,
-                                                                         date__lte=before_datetime).values('owner_id')) |
-                    OrmarMigraineUser.id.in_(OrmarPressure.objects.filter(datetime__gte=after_datetime,
-                                                                          date__lte=before_datetime).values('owner_id')) |
-                    OrmarMigraineUser.notify_every != -1
-                )
-            )
+            if active_after:
+                after_datetime = active_after
+            if active_before:
+                before_datetime = active_before
+
+            paincase_users = await OrmarPainCase.objects.filter(date__gte=after_datetime,
+                                                                date__lte=before_datetime).values('owner_id').all()
+            druguse_users = await OrmarDrugUse.objects.filter(date__gte=after_datetime,
+                                                              date__lte=before_datetime).values('owner_id').all()
+            pressure_users = await OrmarPressure.objects.filter(datetime__gte=after_datetime,
+                                                                datetime__lte=before_datetime).values('owner_id').all()
+            super_active_users_id = set([el.owner_id for el in paincase_users] +
+                                        [el.owner_id for el in druguse_users] +
+                                        [el.owner_id for el in pressure_users])
+            query_set.append(OrmarMigraineUser.id.in_(super_active_users_id))
         if len(query_set) == 0:
             return []
         users = await OrmarMigraineUser.objects.filter(*query_set).all()
@@ -333,12 +332,10 @@ class Query:
 
             new_users = await OrmarMigraineUser.objects.filter(joined__gte=after_date, joined__lte=before_date).all()
             deleted_users = await OrmarSavedUser.objects.filter(deleted__gte=after_date, deleted__lte=before_date).all()
-            super_active_users = await OrmarMigraineUser.objects.filter(
-                OrmarMigraineUser.telegram_id.in_([el.owner_id for el in paincases] +
-                                                  [el.owner_id for el in druguses] +
-                                                  [el.owner_id for el in pressures])
-            ).all()
-
+            active_users_id = [el.owner_id for el in paincases] + \
+                              [el.owner_id for el in druguses] + \
+                              [el.owner_id for el in pressures]
+            super_active_users = await OrmarMigraineUser.objects.filter(id__in=active_users_id).all()
             paincases: list[PainCase] = [PainCase.from_orm(paincase) for paincase in paincases]
             druguses = [DrugUse.from_orm(druguse) for druguse in druguses]
             pressures = [Pressure.from_orm(pressure) for pressure in pressures]
