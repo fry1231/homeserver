@@ -237,9 +237,9 @@ class Query:
             query_set.append(OrmarMigraineUser.timezone == timezone)
         if active is not None:
             # Has at least 1 submitted paincase, druguse or pressure in all time or notify every != -1
-            paincase_users = await OrmarPainCase.objects.fields('owner_id').all()
-            druguse_users = await OrmarDrugUse.objects.fields('owner_id').all()
-            pressure_users = await OrmarPressure.objects.fields('owner_id').all()
+            paincase_users = await (OrmarPainCase.objects.fields('owner_id').all())
+            druguse_users = await (OrmarDrugUse.objects.fields('owner_id').all())
+            pressure_users = await (OrmarPressure.objects.fields('owner_id').all())
             active_users_id = set([el.owner_id for el in paincase_users] +
                                   [el.owner_id for el in druguse_users] +
                                   [el.owner_id for el in pressure_users])
@@ -253,10 +253,10 @@ class Query:
             if active_before:
                 before_datetime = active_before
             # Get all users who have submitted a paincase, druguse or pressure in the last month OR specified timeframe
-            paincase_users = await (OrmarPainCase.objects.filter(date__gte=after_datetime,
-                                                                 date__lte=before_datetime).fields('owner_id').all())
-            druguse_users = await (OrmarDrugUse.objects.filter(date__gte=after_datetime,
-                                                               date__lte=before_datetime).fields('owner_id').all())
+            paincase_users = await (OrmarPainCase.objects.filter(date__gte=after_datetime.date(),
+                                                                 date__lte=before_datetime.date()).fields('owner_id').all())
+            druguse_users = await (OrmarDrugUse.objects.filter(date__gte=after_datetime.date(),
+                                                               date__lte=before_datetime.date()).fields('owner_id').all())
             pressure_users = await (OrmarPressure.objects.filter(datetime__gte=after_datetime,
                                                                  datetime__lte=before_datetime).fields('owner_id').all())
             super_active_users_id = set([el.owner_id for el in paincase_users] +
