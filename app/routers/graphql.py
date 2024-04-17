@@ -13,6 +13,7 @@ from db.sql.models import (
     OrmarPressure,
     OrmarStatistics
 )
+from config import logger
 
 
 BigInt = strawberry.scalar(
@@ -335,7 +336,10 @@ class Query:
             active_users_id = set([el.owner_id for el in paincases] +
                                   [el.owner_id for el in druguses] +
                                   [el.owner_id for el in pressures])
-            super_active_users = await OrmarMigraineUser.objects.filter(telegram_id__in=active_users_id).all()
+            logger.info(f"Active users: {active_users_id}")
+            super_active_users = await OrmarMigraineUser.objects.filter(
+                OrmarMigraineUser.telegram_id.in_(active_users_id)
+            ).all()
             paincases = [PainCase.from_orm(paincase) for paincase in paincases]
             druguses = [DrugUse.from_orm(druguse) for druguse in druguses]
             pressures = [Pressure.from_orm(pressure) for pressure in pressures]
