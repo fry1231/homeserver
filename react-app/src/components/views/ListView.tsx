@@ -22,7 +22,6 @@ export const ListView = ({entity}) => {
   const pressureIds = [];
   let listEntities = [];
   if (requiredEntities) {
-    console.log("requiredEntities", requiredEntities)
     requiredEntities.forEach((entity) => {
       if (entity.name.includes("User")) {
         userIds.push(entity.id);
@@ -89,35 +88,35 @@ export const ListView = ({entity}) => {
         listEntities.map((entity: DraggableEntity, i) => {
             if (entity.name.includes("Paincase")) {
               return (
-                <div style={{display: 'flex', alignItems: 'center'}}>
+                <div key={i} style={{display: 'flex', alignItems: 'center'}}>
                   <Typography mr={1}>{i + 1}. </Typography>
                   <PaincaseView entity={entity} short={true} key={`PC_${entity.id}`}/>
                 </div>
               )
             } else if (entity.name.includes("Druguse")) {
               return (
-                <div style={{display: 'flex', alignItems: 'center'}}>
+                <div key={i} style={{display: 'flex', alignItems: 'center'}}>
                   <Typography mr={1}>{i + 1}. </Typography>
                   <DruguseView entity={entity} short={true} key={`DU_${entity.id}`}/>
                 </div>
               )
             } else if (entity.name.includes("Pressure")) {
               return (
-                <div style={{display: 'flex', alignItems: 'center'}}>
+                <div key={i} style={{display: 'flex', alignItems: 'center'}}>
                   <Typography mr={1}>{i + 1}. </Typography>
                   <PressureView entity={entity} short={true} key={`P_${entity.id}`}/>
                 </div>
               )
             } else if (entity.name.includes("User")) {
               return (
-                <div style={{display: 'flex', alignItems: 'center'}}>
+                <div key={i} style={{display: 'flex', alignItems: 'center'}}>
                   <Typography mr={1}>{i + 1}. </Typography>
                   <UserView entity={entity} short={true} key={entity.id}/>
                 </div>
               )
             } else if (entity.name.includes("List")) {
               return (
-                <div style={{display: 'flex', alignItems: 'center'}}>
+                <div key={i} style={{display: 'flex', alignItems: 'center'}}>
                   <Typography mr={1}>{i + 1}. </Typography>
                   <ListView entity={entity} key={entity.id}/>
                 </div>

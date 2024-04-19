@@ -7,7 +7,8 @@ import {UserProps, UserView} from "../views/UserView";
 import {ListView} from "../views/ListView";
 import {CardHeader} from "../common/CardHeader";
 import Draggable from "react-draggable";
-import {Card, CardContent, Divider} from "@mui/material";
+import {Card, CardContent, Divider, useTheme} from "@mui/material";
+import {tokens} from "../../theme";
 
 
 // Type guards
@@ -36,12 +37,11 @@ export default function DraggableContainer() {
   const statePositions = useSelector((state) => state.positions);
   const entities = statePositions.entities;
   const dispatch = useDispatch();
-  // const name = entity.name;
-  // const id = entity.id;
-  // const pos = entity.pos;
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+
   return (
     <div style={{position: "relative"}}>
-      
       {entities.map((entity: DraggableEntity) => {
         return (
           <Draggable
@@ -56,7 +56,14 @@ export default function DraggableContainer() {
             }}
             handle=".handle"
           >
-            <Card style={{position: "absolute", zIndex: entity.pos.z}}>
+            <Card style={{
+              position: "absolute",
+              zIndex: entity.pos.z,
+              backgroundColor: colors.primary[400],
+              color: colors.grey[100],
+              borderRadius: '5px',
+              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)'
+            }}>
               <CardContent>
                 <CardHeader entityName={entity.name} entityId={entity.id} left={entity.name}/>
                 <Divider/>

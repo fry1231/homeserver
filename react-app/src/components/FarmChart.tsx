@@ -202,6 +202,7 @@ export const FarmChart = () => {
       visible: false,
       fixedrange: true,
       range: [0, 400],
+      ...commonAxisLayout,
     },
     // yaxis4: {
     //   title: 'Soil Moisture %',

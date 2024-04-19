@@ -24,14 +24,14 @@ export interface UserProps {
   latitude: number | null;
   longitude: number | null;
   
-  paincases: number[];   // IDs
-  druguses: number[];
-  pressures: number[];
+  paincases: {id: number, date: string}[];
+  druguses: { id: number, date: string }[];
+  pressures: { id: number, datetime: string }[];
 }
 
 export function UserView({entity, short=false}) {
   const dispatch = useDispatch();
-  const state = useSelector((state) => state.positions);
+  const statePositions = useSelector((state) => state.positions);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const name = entity.name;
@@ -48,14 +48,17 @@ export function UserView({entity, short=false}) {
   const showMap = (lat, lon) => {
     console.log("show map" + lat + lon);
   }
-  const showPaincases = () => {
-  
+  const showPaincases = (paincases: { id, date }[]) => {
+    const nestedContent = paincases.map(({id, date}) => ({name: "Paincase", id, date}));
+    dispatch(addWindow({name: "List", id: statePositions.n, nestedContent}));
   }
-  const showDruguses = () => {
-  
+  const showDruguses = (druguses: { id, date }[]) => {
+    const nestedContent = druguses.map(({id, date}) => ({name: "Druguse", id, date}));
+    dispatch(addWindow({name: "List", id: statePositions.n, nestedContent}));
   }
-  const showPressures = () => {
-  
+  const showPressures = (pressures: { id, datetime }[]) => {
+    const nestedContent = pressures.map(({id, datetime}) => ({name: "Pressure", id, datetime}));
+    dispatch(addWindow({name: "List", id: statePositions.n, nestedContent}));
   }
   
   if (short) {
@@ -123,9 +126,9 @@ export function UserView({entity, short=false}) {
         : null}
       
       {/*Paincases, Druguses, Pressures. 'show*' calls a list with entities */}
-      <CardRow left="Paincases" right={props.paincases.length} onClickHandler={showPaincases}/>
-      <CardRow left="Druguses" right={props.druguses.length} onClickHandler={showDruguses}/>
-      <CardRow left="Pressures" right={props.pressures.length} onClickHandler={showPressures}/>
+      <CardRow left="Paincases" right={props.paincases.length} onClickHandler={() => showPaincases(props.paincases)}/>
+      <CardRow left="Druguses" right={props.druguses.length} onClickHandler={() => showDruguses(props.druguses)}/>
+      <CardRow left="Pressures" right={props.pressures.length} onClickHandler={() => showPressures(props.pressures)}/>
       
     </CardContent>
   );

@@ -4,7 +4,7 @@ import {ApolloError, useQuery} from "@apollo/client";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import {addWindow} from "../reducers/draggables";
 import {useDispatch, useSelector} from "react-redux";
-
+// import useStyles from "./global/Flicker";
 
 interface UserProps {
   name?: string;
@@ -51,6 +51,7 @@ interface QueryResult {
 
 //  ISO8601 date format
 export const StatisticsReport = ({afterDate, beforeDate}) => {
+  const {flicker, withAnimation} = useStyles();
   const dispatch = useDispatch();
   const state = useSelector((state) => state.positions);
   const result: QueryResult = useQuery(GET_DETAILED_STATISTICS_BETWEEN, {
@@ -78,9 +79,8 @@ export const StatisticsReport = ({afterDate, beforeDate}) => {
   
   return (
     <Paper elevation={3}>
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error.message}</p>}
       {data && (
+        // <div> className={`${flicker} ${withAnimation}`}>
         <div>
           <Typography>New users: {newUsers.length} <IconButton onClick={() => {
             dispatch(addWindow({name: "List", id: state.n, nestedContent: newUsers}))

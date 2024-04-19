@@ -46,6 +46,10 @@ const slice = createSlice({
     
     addWindow(state, action) {
       const newEntity: DraggableEntity = action.payload;
+      // Donot add empty List windows
+      if (newEntity.name === "List" && newEntity.nestedContent?.length === 0) {
+        return;
+      }
       state.entities = state.entities.filter((w) => w.name !== action.payload.name || w.id !== action.payload.id);
       state.lastPosition = {
         x: state.lastPosition.x + 30,
@@ -55,7 +59,7 @@ const slice = createSlice({
       state.n += 1;
       state.maxZ += 1;
       state.entities.push({...newEntity, pos: state.lastPosition});
-      console.log("added window", newEntity.name, newEntity.id);
+      // console.log("added window", newEntity.name, newEntity.id);
     },
     
     closeWindow(state, action) {

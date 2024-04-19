@@ -100,12 +100,15 @@ export const GET_USER_BY_ID = gql`
      
       paincases {
         id
+        date
       }
       druguses {
         id
+        date
       }
       pressures {
         id
+        datetime
       }
     }
   }

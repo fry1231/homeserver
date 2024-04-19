@@ -118,7 +118,7 @@ class PainCase:
     description: str | None
     owner_id: BigInt
     owner: "User" = strawberry.field(resolver=get_owner)
-    medecine_taken: List[DrugUse] | None = strawberry.field(resolver=get_paincase_druguses)
+    medecine_taken: List[DrugUse] = strawberry.field(resolver=get_paincase_druguses)
 
     @classmethod
     def from_orm(cls, orm_pain):
