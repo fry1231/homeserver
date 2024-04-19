@@ -253,7 +253,7 @@ class Query:
             active_users_id = set([el.owner_id.telegram_id for el in paincase_users] +
                                   [el.owner_id.telegram_id for el in druguse_users] +
                                   [el.owner_id.telegram_id for el in pressure_users])
-            query_set.append(OrmarMigraineUser.id.in_(active_users_id))
+            query_set.append(OrmarMigraineUser.telegram_id.in_(active_users_id))
         if super_active is not None:
             # Has at least 1 submitted paincase, druguse or pressure in the last month or notify every != -1
             before_datetime = datetime.datetime.now()
