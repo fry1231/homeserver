@@ -30,7 +30,7 @@ def injectable(
         func: Callable[..., Coroutine[Any, Any, T]],
 ) -> Callable[..., Coroutine[Any, Any, T]]:
     """
-    ©barapa
+    © barapa
     https://github.com/tiangolo/fastapi/discussions/7720#discussioncomment-8661497
 
     A decorator to enable FastAPI-style dependency injection for any asynchronous function.
@@ -69,7 +69,7 @@ def injectable(
 
             if errors:
                 error_details = "\n".join([str(error) for error in errors])
-                logger.info(f"Dependency resolution errors: {error_details}")
+                logger.info(f"Dependency resolution errors from function {func}: {error_details}")
 
             return await dependant.call(*args, **{**values, **kwargs})
 
