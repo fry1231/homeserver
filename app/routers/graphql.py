@@ -250,8 +250,11 @@ class Query:
         if active is not None:
             # Has at least 1 submitted paincase, druguse or pressure in all time or notify every != -1
             paincase_users = await OrmarPainCase.objects.all()
+            logger.debug(f"After getting paincases: {time() - t1}")
             druguse_users = await OrmarDrugUse.objects.all()
+            logger.debug(f"After getting druguses: {time() - t1}")
             pressure_users = await OrmarPressure.objects.all()
+            logger.debug(f"After getting pressures: {time() - t1}")
             active_users_id = set([el.owner_id.telegram_id for el in paincase_users] +
                                   [el.owner_id.telegram_id for el in druguse_users] +
                                   [el.owner_id.telegram_id for el in pressure_users])
