@@ -27,6 +27,7 @@ engine = create_async_engine(
 
 migraine_engine = create_async_engine(
     DB2_URL,
+    pool_size=20,
 )
 
 
