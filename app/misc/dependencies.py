@@ -54,9 +54,12 @@ def injectable(
         if not inspect.iscoroutinefunction(dependant.call):
             raise RuntimeError("The decorated function must be asynchronous.")
 
+        fake_query_params = {}
+        if kwargs:
+            fake_query_params.update(kwargs)
+            fake_query_params.update({"self": None})
         logger.debug(f"Resolving dependencies for function {func}, args: {args}, kwargs: {kwargs}")
-        fake_request = Request({"type": "http", "headers": [],
-                                "query_string": {} if not kwargs else kwargs.update({"self": None})})
+        fake_request = Request({"type": "http", "headers": [], "query_string": fake_query_params})
         values: dict[str, Any] = {}
         errors: list[Any] = []
 
