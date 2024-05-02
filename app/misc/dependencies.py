@@ -45,7 +45,6 @@ def injectable(
         RuntimeError: If the wrapped function is not asynchronous.
         DependencyError: If an error occurs during dependency resolution.
     """
-
     @wraps(func)
     async def call_with_solved_dependencies(*args: Any, **kwargs: Any) -> T:  # type: ignore
         dependant: Dependant = get_dependant(path="command", call=func)
@@ -56,7 +55,7 @@ def injectable(
             raise RuntimeError("The decorated function must be asynchronous.")
 
         logger.debug(f"Resolving dependencies for function {func}, args: {args}, kwargs: {kwargs}")
-        fake_request = Request({"type": "http", "headers": [], "query_string": kwargs.update({"self": ""})})
+        fake_request = Request({"type": "http", "headers": [], "query_string": kwargs})
         values: dict[str, Any] = {}
         errors: list[Any] = []
 
