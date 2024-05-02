@@ -1,4 +1,4 @@
-import {Box, Grid, Paper, Radio, Typography} from "@mui/material";
+import {Box, Grid, LinearProgress, Paper, Radio, Typography} from "@mui/material";
 import {useEffect, useState, useRef, createRef } from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {logsRefreshed, logUpdateRecieved, clearLogs} from "../reducers/logs";
@@ -6,6 +6,8 @@ import {useAuth} from "../misc/authProvider.jsx";
 import {tokens} from "../theme";
 import {useTheme} from "@mui/material/styles";
 import {addWindow} from "../reducers/draggables";
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 
 // Parse date in 30.04.2024_19:04:56 format to Date object in local time
 const localizedTime = (timeString: string) => {
@@ -73,7 +75,6 @@ export default function Logs() {
   useEffect(() => {
     // Measure the max width of the log level element
       logLevelRefs.current.map((ref) => {
-          // console.log(ref);
         const width = ref.current.offsetWidth + 0.1 * ref.current.offsetWidth;
         if (width > maxWidth) {
           setMaxWidth(width);
@@ -174,9 +175,13 @@ export default function Logs() {
   }
   const logs: LogRecord[] = stateLocal.log_records.map((logRecord: string) => {
     const [timeString, logLevel] = logRecord.split(' ', 2);
-    const messageAndLocation = logRecord.split(' ').slice(2).join(' ');
-    const message = messageAndLocation.split(' ').slice(0, -1).join(' ');
-    const location = messageAndLocation.split(' ').slice(-1)[0];
+    let messageAndLocation = logRecord.split(' ').slice(2).join(' ');
+    let message = messageAndLocation.split(' ').slice(0, -1).join(' ');
+    let location = messageAndLocation.split(' ').slice(-1)[0];
+    if (!location.startsWith('(')) {
+      message += ' ' + location;
+      location = '';
+    }
     return {timeString, logLevel, message, location};
   });
   
@@ -194,7 +199,12 @@ export default function Logs() {
   
   // Format the log message, transforming User <id> into a clickable link if necessary
   const FormattedMessage = ({message}) => {
+    const [isFolded, setIsFolded] = useState(true);
+    const maxLength = 50;
     const messageParts = message.split(/(User \d+)/);
+    const toggleFold = () => {
+      setIsFolded(!isFolded);
+    };
     return (
       <>
         {messageParts.map((part, i) => {
@@ -211,25 +221,31 @@ export default function Logs() {
               </>
             );
           } else {
-            return part.startsWith(".")
-              ? <Typography key={i} variant="h7" color={colors.grey[300]} style={{overflowWrap: 'anywhere'}}>{part}</Typography>
-              : <Typography ml={1} key={i} variant="h7" color={colors.grey[300]} style={{overflowWrap: 'anywhere'}}>{part}</Typography>
+            // Display only the first maxLength characters of the message
+            const displayText = isFolded && part.length > maxLength ? `${part.substring(0, maxLength)}` : part;
+            // Split the text into lines on \n
+            return displayText.split('\n').map((line, j) => (
+                <Typography key={`${i}-${j}`} variant="h7" color={colors.grey[300]} component="p"
+                              style={{overflowWrap: 'anywhere'}}>{line}</Typography>
+            ));
           }
         })}
+        {isFolded && message.length > maxLength &&   // unfold button if the message is longer than maxLength
+            <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}><UnfoldMoreIcon color="secondary" /></Typography>}
+        {!isFolded && message.length > maxLength &&   // fold button if the message is longer than maxLength
+            <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}><UnfoldLessIcon color="error" /></Typography>}
       </>
     );
   }
   
   return (
-    <div style={{postition: 'absolute', overflowY: 'auto', height: '100vh'}}>
-      {
-        waitingToReconnect
-          ? <Box><Radio color="default" checked={true}/>Connecting...</Box>
-          : isOpen
-            ? <Box><Radio color="success" checked={true}/>Connected</Box>
-            : <Box><Radio color="error" checked={true}/>Disconnected</Box>
-      }
-      <Paper ref={scrollable} onScroll={handleScroll} style={{overflowY: 'scroll', height: '50vh', width: '70vw'}}>
+    <div style={{overflow: 'hidden'}}>
+      <Paper ref={scrollable} onScroll={handleScroll} style={{position: 'relative', overflowY: 'scroll', height: '80vh', width: '80vw'}}>
+        {
+          waitingToReconnect || !isOpen
+            ? <LinearProgress/>
+            : null
+        }
         <Grid container direction="column">
         {logs.map((logRecord: string, i) => {
           const {timeString, logLevel, message, location} = logRecord;
@@ -255,8 +271,7 @@ export default function Logs() {
               <Typography variant="h7" color={colors.grey[500]}>{location}</Typography>
             </Grid>
           );
-        })
-        }
+        })}
         </Grid>
       </Paper>
     </div>

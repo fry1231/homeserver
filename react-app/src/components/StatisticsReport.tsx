@@ -51,7 +51,7 @@ interface QueryResult {
 
 //  ISO8601 date format
 export const StatisticsReport = ({afterDate, beforeDate}) => {
-  const {flicker, withAnimation} = useStyles();
+  // const {flicker, withAnimation} = useStyles();
   const dispatch = useDispatch();
   const state = useSelector((state) => state.positions);
   const result: QueryResult = useQuery(GET_DETAILED_STATISTICS_BETWEEN, {

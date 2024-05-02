@@ -249,15 +249,13 @@ class Query:
             query_set.append(OrmarMigraineUser.timezone == timezone)
         if active is not None:
             # Has at least 1 submitted paincase, druguse or pressure in all time or notify every != -1
-            paincase_users = await OrmarPainCase.objects.all()
-            logger.debug(f"After getting paincases: {time() - t1}")
-            druguse_users = await OrmarDrugUse.objects.all()
-            logger.debug(f"After getting druguses: {time() - t1}")
-            pressure_users = await OrmarPressure.objects.all()
-            logger.debug(f"After getting pressures: {time() - t1}")
-            active_users_id = set([el.owner_id.telegram_id for el in paincase_users] +
-                                  [el.owner_id.telegram_id for el in druguse_users] +
-                                  [el.owner_id.telegram_id for el in pressure_users])
+            paincase_users = await OrmarPainCase.objects.values('owner_id')
+            paincase_user_ids = [el['owner_id'] for el in paincase_users]
+            druguse_users = await OrmarDrugUse.objects.values('owner_id')
+            druguse_user_ids = [el['owner_id'] for el in druguse_users]
+            pressure_users = await OrmarPressure.objects.values('owner_id')
+            pressure_user_ids = [el['owner_id'] for el in pressure_users]
+            active_users_id = set(paincase_user_ids + druguse_user_ids + pressure_user_ids)
             query_set.append(OrmarMigraineUser.telegram_id.in_(active_users_id))
         if super_active is not None:
             # Has at least 1 submitted paincase, druguse or pressure in the last month or notify every != -1
@@ -269,14 +267,15 @@ class Query:
                 before_datetime = active_before
             # Get all users who have submitted a paincase, druguse or pressure in the last month OR specified timeframe
             paincase_users = await (OrmarPainCase.objects.filter(date__gte=after_datetime.date(),
-                                                                 date__lte=before_datetime.date()).all())
+                                                                 date__lte=before_datetime.date()).values('owner_id'))
+            paincase_user_ids = [el['owner_id'] for el in paincase_users]
             druguse_users = await (OrmarDrugUse.objects.filter(date__gte=after_datetime.date(),
-                                                               date__lte=before_datetime.date()).all())
+                                                               date__lte=before_datetime.date()).values('owner_id'))
+            druguse_user_ids = [el['owner_id'] for el in druguse_users]
             pressure_users = await (OrmarPressure.objects.filter(datetime__gte=after_datetime,
-                                                                 datetime__lte=before_datetime).all())
-            super_active_users_id = set([el.owner_id.telegram_id for el in paincase_users] +
-                                        [el.owner_id.telegram_id for el in druguse_users] +
-                                        [el.owner_id.telegram_id for el in pressure_users])
+                                                                 datetime__lte=before_datetime).values('owner_id'))
+            pressure_user_ids = [el['owner_id'] for el in pressure_users]
+            super_active_users_id = set(paincase_user_ids + druguse_user_ids + pressure_user_ids)
             query_set.append(OrmarMigraineUser.telegram_id.in_(super_active_users_id))
         if len(query_set) == 0:
             return []
@@ -340,7 +339,7 @@ class Query:
         statistics = await OrmarStatistics.objects.filter(
             date__gte=after_date, date__lte=before_date
         ).sum(["new_users", "deleted_users", "active_users", "super_active_users", "paincases", "druguses", "pressures"])
-        new_users = deleted_users = super_active_users = paincases = druguses = pressures = []
+        new_users, deleted_users, super_active_users, paincases, druguses, pressures = ([] for _ in range(6))
         if not only_summarized:
             paincases = await OrmarPainCase.objects.filter(date__gte=after_date, date__lte=before_date).all()
             druguses = await OrmarDrugUse.objects.filter(date__gte=after_date, date__lte=before_date).all()

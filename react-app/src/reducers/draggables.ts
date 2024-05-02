@@ -75,7 +75,7 @@ const slice = createSlice({
     },
     
     closeAllWindows(state) {
-      state.entities.clear();
+      state.entities.length = 0;
       state.lastPosition = {x: 0, y: 0, z: 2};
       state.n = 0;
       state.maxZ = 2;

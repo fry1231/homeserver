@@ -147,6 +147,24 @@ export const themeSettings = (mode) => {
   const colors = tokens(mode);
   return {
     components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          '::-webkit-scrollbar': {
+            width: '1em',
+          },
+          '::-webkit-scrollbar-track': {
+            boxShadow: 'inset 0 0 10px 10px rgba(255,0,0,0.00)',
+            border: 'solid 20px transparent',
+          },
+          '::-webkit-scrollbar-thumb': {
+            boxShadow: 'inset 0 0 10px 10px rgba(0,0,0,0)',
+            backgroundColor: 'rgba(0,0,0,.3)',
+            // borderRadius: '10px',
+            borderLeft: `solid 5px transparent`,
+            backgroundClip: 'content-box',
+          },
+        },
+      },
       MuiList: {
         styleOverrides: {
           root: {
@@ -156,22 +174,6 @@ export const themeSettings = (mode) => {
             padding: 0,
             listStyle: "none",
             height: "100%",
-            '&::-webkit-scrollbar': {
-              width: '0.4em'
-            },
-            '&::-webkit-scrollbar-track': {
-              boxShadow: 'inset 0 0 6px rgba(0,0,0,0.00)',
-              border: 'solid 3px transparent',
-              
-              webkitBoxShadow: 'inset 0 0 6px rgba(0,0,0,0.00)'
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'rgba(0,0,0,.1)',
-              outline: '1px solid slategrey',
-              borderRadius: 10,
-              // boxShadow: 'inset 0 0 10px 10px red',
-              // border: 'solid 3px transparent',
-            }
           }
         }
       }
