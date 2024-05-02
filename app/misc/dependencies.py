@@ -55,7 +55,7 @@ def injectable(
         if not inspect.iscoroutinefunction(dependant.call):
             raise RuntimeError("The decorated function must be asynchronous.")
 
-        fake_request = Request({"type": "http", "headers": [], "query_string": {"self": ""}})
+        fake_request = Request({"type": "http", "headers": [], "query_string": {"self": "", "start": "", "end": ""}})
         values: dict[str, Any] = {}
         errors: list[Any] = []
 
