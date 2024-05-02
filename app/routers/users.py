@@ -13,7 +13,7 @@ from misc.security import (
     ACCESS_TOKEN_EXPIRE_DAYS,
     Token
 )
-from dependencies import is_admin
+from misc.dependencies import is_admin
 from typing import Annotated
 
 

@@ -4,7 +4,7 @@ from typing import List, Optional
 import datetime
 
 from db.influx import get_influx_data, write_influx_data
-from dependencies import is_admin, home_client
+from misc.dependencies import is_admin, home_client
 
 
 router = APIRouter(

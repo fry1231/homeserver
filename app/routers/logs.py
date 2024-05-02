@@ -10,7 +10,7 @@ from db.redis.models import LogsSnapshot, LogUpdate
 from db.sql.models import User
 from routers import WebsocketConnectionManager
 from config import logger
-from dependencies import websocket_authorized, get_redis_conn, injectable
+from misc.dependencies import websocket_authorized, get_redis_conn, injectable
 
 router = APIRouter(
     prefix="/logs",

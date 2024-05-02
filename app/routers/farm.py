@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List
 import datetime
 
-from dependencies import is_admin, farm_client, get_redis_conn
+from misc.dependencies import is_admin, farm_client, get_redis_conn
 from db.influx import get_influx_data, write_influx_data
 from misc.data_handling import downsample
 

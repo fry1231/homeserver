@@ -237,7 +237,6 @@ class Query:
                     active_after: datetime.date | None = None,
                     active_before: datetime.date | None = None
                     ) -> List[User]:
-        t1 = time()
         query_set = []
         if telegram_ids:
             query_set.append(
@@ -283,7 +282,6 @@ class Query:
         if len(query_set) == 0:
             return []
         users = await OrmarMigraineUser.objects.filter(*query_set).all()
-        logger.debug(f"Query time: {time() - t1}")
         return [User.from_orm(user) for user in users]
 
     @strawberry.field(permission_classes=[IsAuthenticated])

@@ -12,7 +12,7 @@ import datetime
 import pytz
 import traceback
 
-from dependencies import is_admin, get_redis_conn, injectable
+from misc.dependencies import is_admin, get_redis_conn, injectable
 from config import IDF_TOKEN
 from misc.utils import delayed_action
 

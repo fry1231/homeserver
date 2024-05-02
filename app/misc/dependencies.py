@@ -55,7 +55,7 @@ def injectable(
         if not inspect.iscoroutinefunction(dependant.call):
             raise RuntimeError("The decorated function must be asynchronous.")
 
-        fake_request = Request({"type": "http", "headers": [], "query_string": ""})
+        fake_request = Request({"type": "http", "headers": [], "query_string": "", "self": None, "end": None})
         values: dict[str, Any] = {}
         errors: list[Any] = []
 
@@ -69,7 +69,7 @@ def injectable(
 
             if errors:
                 error_details = "\n".join([str(error) for error in errors])
-                logger.info(f"Dependency resolution errors from function {func}: {error_details}")
+                logger.warning(f"Dependency resolution errors from function {func}: {error_details}")
 
             return await dependant.call(*args, **{**values, **kwargs})
 

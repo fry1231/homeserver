@@ -17,7 +17,7 @@ from routers.graphql import graphql_app
 from db.sql import database, migraine_database
 from routers.buses import BusResponse
 from utils import get_events
-from dependencies import get_redis_conn
+from misc.dependencies import get_redis_conn
 
 
 @asynccontextmanager
