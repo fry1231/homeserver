@@ -127,15 +127,15 @@ class OrmarSavedUser(ormar.Model):
 
     id = Integer(primary_key=True, index=True)
     telegram_id = BigInteger()
-    first_name = String(max_length=256)
-    last_name = String(max_length=256)
-    user_name = String(max_length=256)
-    joined = Date()
+    first_name = String(max_length=256, nullable=True)
+    last_name = String(max_length=256, nullable=True)
+    user_name = String(max_length=256, nullable=True)
+    joined = Date(nullable=True)
     deleted = Date()
     timezone = String(max_length=256)
     language = String(max_length=2)
-    latitude = Float()
-    longitude = Float()
+    latitude = Float(nullable=True)
+    longitude = Float(nullable=True)
 
 
 OrmarMigraineUser.update_forward_refs()
