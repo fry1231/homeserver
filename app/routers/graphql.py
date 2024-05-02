@@ -240,7 +240,10 @@ class Query:
         t1 = time()
         query_set = []
         if telegram_ids:
-            query_set.append(OrmarMigraineUser.telegram_id.in_(telegram_ids))
+            query_set.append(
+                OrmarMigraineUser.telegram_id.in_(telegram_ids)
+                | OrmarSavedUser.telegram_id.in_(telegram_ids)
+            )
         if has_coordinates is not None:
             query_set.append(OrmarMigraineUser.latitude.isnull(not has_coordinates))
         if language:

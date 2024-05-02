@@ -36,6 +36,7 @@ export const ListView = ({entity}) => {
       }
     });
   }
+  
   const {loading, error, data} = useQuery(GET_LIST_ITEMS_SHORT, {
     variables: {
       userIds,

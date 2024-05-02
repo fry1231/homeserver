@@ -76,7 +76,7 @@ export const StatisticsReport = ({afterDate, beforeDate}) => {
     {name: "Druguse", id: druguse.id, shortView: druguse})) : [];
   const pressures = data ? data.statistics.pressures.map(pressure => (
     {name: "Pressure", id: pressure.id, shortView: pressure})) : [];
-  
+  console.log(deletedUsers)
   return (
     <Paper elevation={3}>
       {data && (
