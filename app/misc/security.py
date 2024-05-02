@@ -10,12 +10,10 @@ import typing
 import asyncio
 
 import orjson
-from misc.dependencies import is_admin
+import misc.dependencies as dependencies
 from db.sql.models import User
 from fastapi.security import OAuth2PasswordBearer
 from config import SECRET
-
-
 
 
 ALGORITHM = "HS256"
@@ -63,7 +61,7 @@ async def user_authorized(token: str, check_if_admin: bool = True) -> bool:
         user = await User.objects.get_or_none(uuid=uuid)
         if user is None:
             return False
-        if check_if_admin and not is_admin:
+        if check_if_admin and not dependencies.is_admin:
             return False
         return True
     except JWTError:
