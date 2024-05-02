@@ -1,16 +1,13 @@
-from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, HTTPException, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 import asyncio
-import datetime
-from pydantic import BaseModel
-from typing import Annotated
 import async_timeout
 import orjson
 
 from db.redis.models import LogsSnapshot, LogUpdate
-from db.sql.models import User
 from routers import WebsocketConnectionManager
 from config import logger
 from misc.dependencies import websocket_authorized, get_redis_conn, injectable
+
 
 router = APIRouter(
     prefix="/logs",

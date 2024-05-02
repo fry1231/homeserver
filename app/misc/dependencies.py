@@ -10,6 +10,7 @@ from fastapi.dependencies.utils import get_dependant, solve_dependencies
 from jose import jwt, JWTError
 from starlette import status
 from starlette.websockets import WebSocket
+import inspect
 
 from config import SECRET, logger
 from db.influx import get_influx_client
@@ -54,10 +55,10 @@ def injectable(
         if not inspect.iscoroutinefunction(dependant.call):
             raise RuntimeError("The decorated function must be asynchronous.")
 
-        fake_query_params = {}
-        logger.debug(f"Resolving dependencies for function {func}, args: {args}, kwargs: {kwargs}")
-        if kwargs:
-            fake_query_params.update(kwargs)
+        param_names = inspect.signature(func).parameters.keys()
+        fake_query_params = {k: v for k, v in zip(param_names, args)}
+        logger.debug(f"Resolving dependencies for function {func}, args: {args}, kwargs: {kwargs}, dict: {fake_query_params}")
+        if fake_query_params:
             fake_query_params.update({"self": None})
         logger.debug(f"Fake query params: {fake_query_params}")
         logger.debug(f"Resolving dependencies for function {func}, args: {args}, kwargs: {kwargs}")
