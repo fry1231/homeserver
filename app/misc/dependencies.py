@@ -55,9 +55,11 @@ def injectable(
             raise RuntimeError("The decorated function must be asynchronous.")
 
         fake_query_params = {}
+        logger.debug(f"Resolving dependencies for function {func}, args: {args}, kwargs: {kwargs}")
         if kwargs:
             fake_query_params.update(kwargs)
             fake_query_params.update({"self": None})
+        logger.debug(f"Fake query params: {fake_query_params}")
         logger.debug(f"Resolving dependencies for function {func}, args: {args}, kwargs: {kwargs}")
         fake_request = Request({"type": "http", "headers": [], "query_string": fake_query_params})
         values: dict[str, Any] = {}
