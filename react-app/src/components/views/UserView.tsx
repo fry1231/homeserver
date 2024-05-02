@@ -70,7 +70,7 @@ export function UserView({entity, short=false}) {
     return (
       <Typography variant="body2"
                   onClick={() => dispatch(addWindow({name, id: id}))}>
-        User {shortViewData.firstName} {shortViewData.lastName} (@{shortViewData.userName})
+        User {shortViewData.firstName} {shortViewData.lastName} {shortViewData.userName ? `(@${shortViewData.userName})` : null}
       </Typography>
     )
   }
