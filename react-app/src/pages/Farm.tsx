@@ -45,7 +45,7 @@ export default function Farm() {
   return (
     <Grid container direction="column" alignItems="center" spacing={3}>
       <Grid item>
-        <DateRangePicker />
+        <DateRangePicker stateKey={"dates"} />
       </Grid>
       <Grid item>
         <FarmChart />

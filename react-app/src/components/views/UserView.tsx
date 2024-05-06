@@ -109,7 +109,7 @@ export function UserView({entity, short=false}) {
       </Typography><Typography ml={1} display="inline" color={colors.orangeAccent[500]} variant="body2"
                                component="p">({props.language})</Typography>
       {props.userName
-        ? <Link ml={2} href={`https://t.me/${props.userName}`} color={colors.orangeAccent[500]} variant="body2">@{props.userName}</Link>
+        ? <Link ml={2} href={`https://t.me/${props.userName}`} target="_blank" color={colors.orangeAccent[500]} variant="body2">@{props.userName}</Link>
         : null}
       <br/>
       

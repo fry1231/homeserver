@@ -103,7 +103,7 @@ class DrugUse:
             amount=orm_drug.amount,
             drugname=orm_drug.drugname,
             owner_id=orm_drug.owner_id,
-            paincase_id=orm_drug.paincase_id
+            paincase_id=orm_drug.paincase_id.pk if orm_drug.paincase_id else None
         )
 
 
@@ -132,7 +132,7 @@ class PainCase:
             provocateurs=orm_pain.provocateurs,
             symptoms=orm_pain.symptoms,
             description=orm_pain.description,
-            owner_id=orm_pain.owner_id
+            owner_id=orm_pain.owner_id.pk if orm_pain.owner_id else None
         )
 
 
@@ -154,7 +154,7 @@ class Pressure:
             systolic=orm_pressure.systolic,
             diastolic=orm_pressure.diastolic,
             pulse=orm_pressure.pulse,
-            owner_id=orm_pressure.owner_id
+            owner_id=orm_pressure.owner_id.pk if orm_pressure.owner_id else None
         )
 
 

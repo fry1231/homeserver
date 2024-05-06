@@ -39,6 +39,7 @@ export default function Logs() {
   const scrollable = useRef(null);
   const [lastLogsEnd, setLastLogsEnd] = useState(0);
   
+  // Ask for more logs when the user scrolls to the bottom
   const askMoreLogs = () => {
     const chunkSize = 50;
     const start = logs.length;
@@ -72,8 +73,8 @@ export default function Logs() {
     }
   }
   
+  // Measure the max width of the log level element to set the width of the column
   useEffect(() => {
-    // Measure the max width of the log level element
       logLevelRefs.current.map((ref) => {
         const width = ref.current.offsetWidth + 0.1 * ref.current.offsetWidth;
         if (width > maxWidth) {
@@ -82,6 +83,7 @@ export default function Logs() {
       });
   }, [logLevelRefs.current]);
   
+  // Set up the websocket connection
   useEffect(() => {
     if (waitingToReconnect) {
       return;
@@ -143,6 +145,7 @@ export default function Logs() {
     
   }, []);
   
+  // Handle incoming messages
   useEffect(() => {
     if (incomingMessage) {
       const data = JSON.parse(incomingMessage);
@@ -187,7 +190,7 @@ export default function Logs() {
   
   // Sort by timeString descending
   logs.sort((a, b) => {
-    return a.timeString > b.timeString ? -1 : 1;
+    return new Date(a.timeString) > new Date(b.timeString) ? -1 : 1;
   });
   
   // Create a ref for each log level element
@@ -211,21 +214,23 @@ export default function Logs() {
           if (part.startsWith("User")) {
             const userId = parseInt(part.replace("User ", ""));
             return (
-              <>
-                <Typography key={i + 'a'} variant="h7" color={colors.grey[300]}>User</Typography>
-                <Typography ml={1} key={i} variant="h7" color={colors.orangeAccent[300]}
+              <div key={i}>
+                <Typography variant="h7" color={colors.grey[300]}>User</Typography>
+                <Typography ml={1} variant="h7" color={colors.orangeAccent[300]}
                                  onClick={() => dispatch(
                                    addWindow({name: "User", id: parseInt(userId)})
                                  )}
                 >{userId}</Typography>
-              </>
+              </div>
             );
           } else {
             // Display only the first maxLength characters of the message
             const displayText = isFolded && part.length > maxLength ? `${part.substring(0, maxLength)}` : part;
             // Split the text into lines on \n
             return displayText.split('\n').map((line, j) => (
-                <Typography key={`${i}-${j}`} variant="h7" color={colors.grey[300]} component="p"
+                <Typography
+                  ml={(j === 0) && (line.startsWith('.')) ? 0 : 1}
+                  key={`${i}-${j}`} variant="h7" color={colors.grey[300]} component="p"
                               style={{overflowWrap: 'anywhere'}}>{line}</Typography>
             ));
           }

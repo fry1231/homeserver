@@ -15,7 +15,7 @@ const Statistics = () => {
   
   return (
     <>
-      <Accordion>
+      <Accordion defaultExpanded>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon/>}
           aria-controls="panel1a-content"
@@ -27,7 +27,21 @@ const Statistics = () => {
           <StatisticsReport afterDate={todayString} beforeDate={todayString}/>
         </AccordionDetails>
       </Accordion>
-      <StatisticsChart/>
+      <Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon/>}
+          aria-controls="panel2a-content"
+          id="panel2a-header"
+        >
+          <Typography variant="h5">Month</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <StatisticsReport afterDate={monthAgoString} beforeDate={todayString}/>
+        </AccordionDetails>
+      </Accordion>
+      
+      {/*Charts*/}
+      <StatisticsChart startDate={monthAgo} endDate={today}/>
     </>
   );
 };

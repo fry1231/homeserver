@@ -124,7 +124,8 @@ export default function States() {
       stateLocal.states.map((state) => {
         if (state.state_name.startsWith(formName)) {
           const step: stateInstance = {state_name: state.state_name, user_ids: state.user_ids};
-          steps.splice(parseInt(state.state_name.split(':')[1]), 0, step)
+          // Sort by step number
+          steps[parseInt(state.state_name.split(':')[1])] = step;
         }
       });
       forms.push(steps);
@@ -141,44 +142,44 @@ export default function States() {
           : <Box><Radio color="error" checked={true} />Disconnected</Box>
       }
       {forms.map((steps, i) => {
-          return(
-            <Paper key={i}>
-                <Typography variant="h5" mx={2}>{steps[0].state_name.split(':')[0]}</Typography>
-                <Box sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  justifyContent: 'space-around',
-                  overflow: 'hidden',
-                  bgcolor: 'background.paper',
-                  m: 1,
-                  p: 1,
-                  borderRadius: 1,
-                  boxShadow: 1
-                }}>
-                  {steps.map((state, j) => {
-                    return (
-                      <Box key={j} mx={1} display="flex" flexDirection="column" alignItems="center" justifyContent="space-between">
-                        <Typography variant="h6">{state.state_name.split(':')[2]}</Typography>
-                        
-                        <Typography variant="h6"
-                          color={state.user_ids.length > 0 ? 'error' : 'textPrimary'}
-                          style={{backgroundColor: state.user_ids.length > 0 ? 'error' : 'textPrimary'}}
-                          onClick={() => {
-                            const userEntities: DraggableEntity[] = [];
-                            state.user_ids.map((userId) => {
-                              userEntities.push({name: "User", id: userId});
-                            });
-                            dispatch(addWindow({name: "List", id: statePositions.n, nestedContent: userEntities}))
-                          }}
-                        >{state.user_ids.length}</Typography>
-                      </Box>
-                    );
-                  })}
-                </Box>
-            </Paper>
-          );
-      })
-      }
+        return(
+          <Paper key={i}>
+              <Typography variant="h5" mx={2}>{steps[0].state_name.split(':')[0]}</Typography>
+              <Box sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-around',
+                overflow: 'hidden',
+                bgcolor: 'background.paper',
+                m: 1,
+                p: 1,
+                borderRadius: 1,
+                boxShadow: 1
+              }}>
+                {steps.map((state, j) => {
+                  return (
+                    <Box key={j} mx={1} display="flex" flexDirection="column" alignItems="center" justifyContent="space-between">
+                      <Typography variant="h6">{state.state_name.split(':')[2]}</Typography>
+                      
+                      <Typography variant="h6"
+                        color={state.user_ids.length > 0 ? 'error' : 'textPrimary'}
+                        style={{backgroundColor: state.user_ids.length > 0 ? 'error' : 'textPrimary'}}
+                        onClick={() => {
+                          const userEntities: DraggableEntity[] = [];
+                          state.user_ids.map((userId) => {
+                            userEntities.push({name: "User", id: userId});
+                          });
+                          dispatch(addWindow({name: "List", id: statePositions.n, nestedContent: userEntities}))
+                        }}
+                      >{state.user_ids.length}</Typography>
+                    </Box>
+                  );
+                  
+                })}
+              </Box>
+          </Paper>
+        );
+      })}
     </>
-    );
+  );
 }

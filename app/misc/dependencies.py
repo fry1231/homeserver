@@ -57,12 +57,12 @@ def injectable(
 
         param_names = inspect.signature(func).parameters.keys()
         fake_query_params = {}
-        if 'start' not in param_names:
-            fake_query_params = {k: v for k, v in zip(param_names, args)}
-            if fake_query_params:
-                fake_query_params["self"] = None
-        logger.debug(f"Resolving dependencies for function {func}, args: {args}, kwargs: {kwargs}")
-        logger.debug(f"Fake query params: {fake_query_params}")
+        # if 'start' not in param_names:
+        #     fake_query_params = {k: v for k, v in zip(param_names, args)}
+        #     if fake_query_params:
+        #         fake_query_params["self"] = None
+        # logger.debug(f"Resolving dependencies for function {func}, args: {args}, kwargs: {kwargs}")
+        # logger.debug(f"Fake query params: {fake_query_params}")
         fake_request = Request({"type": "http", "headers": [], "query_string": fake_query_params})
         values: dict[str, Any] = {}
         errors: list[Any] = []

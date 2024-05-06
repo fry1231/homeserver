@@ -18,14 +18,14 @@ interface DataPoint {
 }
 
 
-const StatisticsChart = () => {
+const StatisticsChart = ({startDate, endDate}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   
   const {loading, error, data} = useQuery(GET_DAILY_STATISTICS_BETWEEN, {
     variables: {
-      afterDate: new Date('2024-03-01').toISOString().split('T')[0],
-      beforeDate: new Date('2024-03-31').toISOString().split('T')[0],
+      afterDate: startDate.toISOString().split('T')[0],
+      beforeDate: endDate.toISOString().split('T')[0],
     }
   });
   error && console.error(error);
