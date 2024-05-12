@@ -7,7 +7,6 @@ import stateReducer from './reducers/states';
 import usersReducer from './reducers/users';
 import logsReducer from './reducers/logs';
 import positionsReducer from './reducers/draggables';
-import datesReducer from './reducers/dates';
 import AuthProvider from "./misc/authProvider.jsx";
 import Routes from "./routes";
 import axios from "axios";
@@ -21,7 +20,6 @@ const store = configureStore({
       users: usersReducer,
       logs: logsReducer,
       positions: positionsReducer,
-      dates: datesReducer,
     },
   devTools: import.meta.env.VITE_REACT_APP_IN_PRODUCTION == '0',
 });

@@ -39,7 +39,7 @@ export interface PaincaseProps {
     lastName?: string;
     userName?: string;
   };
-  medecine_taken: DruguseProps[];
+  medecineTaken: DruguseProps[];
 }
 
 
@@ -82,7 +82,7 @@ export function PaincaseView({entity, short=false}) {
       symptoms: "Loading...",
       description: "Loading...",
       owner: {telegramId: 0, firstName: "Loading..."},
-      medecine_taken: []
+      medecineTaken: []
     };
   
   const ownerStr = ''
@@ -98,23 +98,30 @@ export function PaincaseView({entity, short=false}) {
       <CardRow left="Provocateurs" right={props.provocateurs} />
       <CardRow left="Symptoms" right={props.symptoms} />
       <CardRow left="Description" right={props.description ? props.description : "—"}/>
-      
-      {("medecine_taken" in props) && (props.medecine_taken.length !== 0)
-        ? props.medecine_taken.map((druguse: DruguseProps, i: number) => {
+      <Typography display="inline" color={colors.grey[300]} variant="body2" component="p">
+        Medecine taken:
+      </Typography>
+      {("medecineTaken" in props) && (props.medecineTaken.length !== 0)
+        ? props.medecineTaken.map((druguse: DruguseProps, i: number) => {
             const drugname = druguse.drugname;
             const amount = druguse.amount;
             return (
-              <>
-                <Typography color={colors.grey[300]} variant="body2" component="p">
-                  Medecine taken:</Typography>
-                <Typography key={i} ml={2} variant="body2" component="p">
+              <div key={i}>
+                 {/*<Typography color={colors.grey[300]} variant="body2" component="p">*/}
+                 {/*  Medecine taken:</Typography>*/}
+                <Typography display="inline" ml={2} variant="body2" component="p">
                   {drugname}: {amount}
-                </Typography>
-              </>
+                </Typography><br/>
+              </div>
             );
           })
-        : <CardRow left="Medecine taken" right="—" />
+        : <Typography display="inline" ml={2} variant="body2" component="p">
+              —
+          </Typography>
       }
+      {("medecineTaken" in props) && (props.medecineTaken.length === 0)
+        ? <br />
+        : null}
       <CardRow left="Owner" right={ownerStr}
                onClickHandler={() => dispatch(addWindow({name: "User", id: props.owner.telegramId}))}/>
     </CardContent>

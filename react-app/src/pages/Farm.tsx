@@ -8,8 +8,12 @@ import DateRangePicker from "../components/DateRangePicker";
 
 export default function Farm() {
   const [wateringNeeded, setWateringNeeded] = useState(false);
-  const [selectedDateRange, setSelectedDateRange] = useState([new Date(), new Date()]);
-  
+  // const [selectedDateRange, setSelectedDateRange] = useState([new Date(), new Date()]);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const [startDate, setStartDate] = useState(yesterday);
+  const [endDate, setEndDate] = useState(today);
   const requestWatering = () => {
     axios.post(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/set-needed`, null, {
       signal: timeoutAbortSignal(5000)
@@ -45,10 +49,10 @@ export default function Farm() {
   return (
     <Grid container direction="column" alignItems="center" spacing={3}>
       <Grid item>
-        <DateRangePicker stateKey={"dates"} />
+        <DateRangePicker startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate}/>
       </Grid>
       <Grid item>
-        <FarmChart />
+        <FarmChart startDate={startDate} endDate={endDate}/>
       </Grid>
       <Grid item>
         <Button

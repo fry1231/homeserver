@@ -71,7 +71,7 @@ export function DruguseView({entity, short=false}) {
   return (
     <CardContent>
       <CardRow left="Date" right={props.date}/>
-      <CardRow left={props.drugname} right={props.amount + " mg"}/>
+      <CardRow left={props.drugname} right={props.amount}/>
       <CardRow left="Owner" right={ownerStr}
                 onClickHandler={() => dispatch(addWindow({name: "User", id: props.owner.telegramId}))}/>
       {props.paincase && <CardRow left="Paincase" right={props.paincase.id.toString()}

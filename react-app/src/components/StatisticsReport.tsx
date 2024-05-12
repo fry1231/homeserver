@@ -50,7 +50,7 @@ interface QueryResult {
 // }
 
 //  ISO8601 date format
-export const StatisticsReport = ({afterDate, beforeDate}) => {
+const StatisticsReport = ({afterDate, beforeDate}) => {
   // const {flicker, withAnimation} = useStyles();
   const dispatch = useDispatch();
   const state = useSelector((state) => state.positions);
@@ -59,10 +59,6 @@ export const StatisticsReport = ({afterDate, beforeDate}) => {
   });
   let {loading, error, data} = result;
   error && console.error(error);
-  
-  const handleClick = () => {
-    alert("This is a placeholder for the error message");
-  }
   
   const newUsers = data ? data.statistics.newUsers.map(user => (
     {name: "User", id: user.telegramId, shortView: user})) : [];
@@ -76,10 +72,14 @@ export const StatisticsReport = ({afterDate, beforeDate}) => {
     {name: "Druguse", id: druguse.id, shortView: druguse})) : [];
   const pressures = data ? data.statistics.pressures.map(pressure => (
     {name: "Pressure", id: pressure.id, shortView: pressure})) : [];
+  
+  if (loading) return <Paper elevation = {3}>Loading...</Paper>;
+  
   return (
     <Paper elevation={3}>
       {data && (
         // <div> className={`${flicker} ${withAnimation}`}>
+        
         <div>
           <Typography>New users: {newUsers.length} <IconButton onClick={() => {
             dispatch(addWindow({name: "List", id: state.n, nestedContent: newUsers}))
@@ -110,3 +110,5 @@ export const StatisticsReport = ({afterDate, beforeDate}) => {
     </Paper>
   );
 };
+
+export default StatisticsReport;

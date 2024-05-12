@@ -46,7 +46,7 @@ const StatisticsChart = ({startDate, endDate}) => {
     yaxis,
   }));
   
-  // Find the maximum value in each of the y series
+  // Find the maximum value in each of the y series to set axis ranges
   const ySeries = plotData.filter(({yaxis}) => yaxis === 'y').map(({y}) => y);
   const y1maxVal = Math.max(...ySeries.reduce((a, b) => a.concat(b), []));
   const y2Series = plotData.filter(({yaxis}) => yaxis === 'y2').map(({y}) => y);
