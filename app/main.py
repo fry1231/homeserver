@@ -16,7 +16,7 @@ from routers import (
 from routers.graphql import graphql_app
 from db.sql import database, migraine_database
 from routers.buses import BusResponse
-from utils import get_events
+# from utils import get_events
 from misc.dependencies import get_redis_conn
 
 
@@ -104,7 +104,7 @@ async def master_refresh(redis_conn=Depends(get_redis_conn)):
 async def index(request: Request):
     try:
         return templates.TemplateResponse("main.html",
-                                          {'request': request, 'events': get_events()})
+                                          {'request': request, 'events': []})  # get_events()})
     except:
         logger.error(traceback.format_exc())
 
