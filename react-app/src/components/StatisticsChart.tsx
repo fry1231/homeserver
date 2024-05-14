@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import Plot from 'react-plotly.js';
 import {useQuery} from '@apollo/client';
 import {GET_DAILY_STATISTICS_BETWEEN} from '../misc/gqlQueries';
-import {useTheme} from "@mui/material";
+import {LinearProgress, useTheme} from "@mui/material";
 import {tokens} from "../theme";
 
 
@@ -21,7 +21,6 @@ interface DataPoint {
 const StatisticsChart = ({startDate, endDate}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  
   const {loading, error, data} = useQuery(GET_DAILY_STATISTICS_BETWEEN, {
     variables: {
       afterDate: startDate.toISOString().split('T')[0],
@@ -104,10 +103,17 @@ const StatisticsChart = ({startDate, endDate}) => {
   };
   
   return (
-    <Plot
-      data={plotData}
-      layout={layout}
-    />
+    <>
+      {
+        loading
+          ? <LinearProgress/>
+          : null
+      }
+      <Plot
+        data={plotData}
+        layout={layout}
+      />
+    </>
   );
 };
 

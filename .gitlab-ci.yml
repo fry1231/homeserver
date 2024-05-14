@@ -18,6 +18,8 @@ check_vars:
       [ -z "$IS_TESTING" ] || \
       [ -z "$DOTENV_FILE" ] || \
       [ -z "$HASHPASS_ADMIN" ] || \
+      [ -z "$GOOGLE_CLIENT_ID" ] || \
+      [ -z "$GOOGLE_CLIENT_SECRET" ] || \
       [ -z "$INFLUXDB_PASSWORD" ] || \
       [ -z "$INFLUXDB_USERNAME" ]; then
         echo "Error: Missing one or more required environment variables."

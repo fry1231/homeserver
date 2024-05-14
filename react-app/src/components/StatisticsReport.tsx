@@ -1,4 +1,4 @@
-import {IconButton, Paper, Typography} from "@mui/material";
+import {IconButton, LinearProgress, Paper, Typography} from "@mui/material";
 import {GET_DETAILED_STATISTICS_BETWEEN, GET_SUM_STATISTICS_BETWEEN} from "../misc/gqlQueries";
 import {ApolloError, useQuery} from "@apollo/client";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -73,13 +73,17 @@ const StatisticsReport = ({afterDate, beforeDate}) => {
   const pressures = data ? data.statistics.pressures.map(pressure => (
     {name: "Pressure", id: pressure.id, shortView: pressure})) : [];
   
-  if (loading) return <Paper elevation = {3}>Loading...</Paper>;
+  // if (loading) return <Paper elevation = {3}>Loading...</Paper>;
   
   return (
     <Paper elevation={3}>
+      {
+        loading
+          ? <LinearProgress/>
+          : null
+      }
       {data && (
         // <div> className={`${flicker} ${withAnimation}`}>
-        
         <div>
           <Typography>New users: {newUsers.length} <IconButton onClick={() => {
             dispatch(addWindow({name: "List", id: state.n, nestedContent: newUsers}))

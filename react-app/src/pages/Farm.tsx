@@ -10,6 +10,7 @@ export default function Farm() {
   const [wateringNeeded, setWateringNeeded] = useState(false);
   // const [selectedDateRange, setSelectedDateRange] = useState([new Date(), new Date()]);
   const today = new Date();
+  today.setHours(23, 59, 59, 999)
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
   const [startDate, setStartDate] = useState(yesterday);

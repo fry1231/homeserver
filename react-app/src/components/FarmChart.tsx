@@ -96,6 +96,7 @@ const combinedChart = (sensorsData: SensorsDataPoint[],
     soilMoistureNormalized: soilMoistureNormalized,
     // wateringSeries,
   }
+  
 }
 
 export const FarmChart = ({startDate, endDate}) => {
@@ -107,7 +108,6 @@ export const FarmChart = ({startDate, endDate}) => {
   // const {startDateTS, endDateTS} = stateLocal;
   // const startDate = new Date(startDateTS);
   // const endDate = new Date(endDateTS);
-  const [prevEndDate, setPrevEndDate] = useState(endDate);
   const [chartData, setChartData] = useState({
     timeline: [],
     temperatureSeries: [],
@@ -165,7 +165,7 @@ export const FarmChart = ({startDate, endDate}) => {
       });
       return _;
     }(), 1000 * 60);
-    setPrevEndDate(endDate);
+    // setPrevEndDate(endDate);
     return () => clearInterval(getData);
   }, [startDate, endDate]);
   

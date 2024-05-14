@@ -1,10 +1,7 @@
-from fastapi import Depends, FastAPI, HTTPException, status, APIRouter
+from fastapi import Depends, HTTPException, status, APIRouter
 from fastapi.responses import RedirectResponse
-from ormar.exceptions import NoMatch
-import orjson
-from config import logger, SECRET
 from pydantic import BaseModel
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from db.sql.models import User
 from misc.security import (
     get_password_hash,
@@ -13,15 +10,14 @@ from misc.security import (
     ACCESS_TOKEN_EXPIRE_DAYS,
     Token
 )
+from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
 from misc.dependencies import is_admin
 from typing import Annotated
+import aiohttp
 
 
 router = APIRouter(
     prefix="/users",
-    # tags=["items"],
-    # dependencies=[Depends(get_token_header)],
-    # responses={404: {"description": "Not found"}},
 )
 
 
@@ -31,13 +27,12 @@ class SignupForm(BaseModel):
     email: str
 
 
-@router.post("/register")
-async def register_user(form_data: SignupForm):
-    username = form_data.username
-    password = form_data.password
-    email = form_data.email
+async def create_user(username: str,
+                      password: str,
+                      email: str,
+                      exc_if_not_exist: bool = True) -> User:
     user = await User.objects.get_or_none(username=username)
-    if user:
+    if user and exc_if_not_exist:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already registered"
@@ -58,10 +53,19 @@ async def register_user(form_data: SignupForm):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="User creation failed"
         )
+    return user
+
+
+@router.post("/register")
+async def register_user(form_data: SignupForm):
+    username = form_data.username
+    password = form_data.password
+    email = form_data.email
+    await create_user(username, password, email)
     return RedirectResponse(url="/users/login")
 
 
-@router.post("/token")
+@router.post("/auth/form")
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ) -> Token:
@@ -78,6 +82,58 @@ async def login_for_access_token(
         expire_minutes=(60 * 24 * ACCESS_TOKEN_EXPIRE_DAYS)
     )
     return Token(access_token=access_token, token_type="bearer")
+
+
+@router.get("/login/google")
+async def login_google():
+    return RedirectResponse(f"https://accounts.google.com/o/oauth2/auth"
+                            f"?response_type=code"
+                            f"&client_id={GOOGLE_CLIENT_ID}"
+                            f"&redirect_uri={GOOGLE_REDIRECT_URI}"
+                            f"&scope=openid%20profile%20email"
+                            f"&access_type=offline")
+
+
+@router.get("/auth/google")
+async def google_login(code: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "code": code,
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "redirect_uri": GOOGLE_REDIRECT_URI,
+                    "grant_type": "authorization_code",
+                }
+        ) as response:
+            data = await response.json()
+            access_token = data.get("access_token")
+            if not access_token:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Could not authenticate with Google"
+                )
+            async with session.get(
+                    "https://www.googleapis.com/oauth2/v1/userinfo",
+                    headers={"Authorization": f"Bearer {access_token}"}
+            ) as response:
+                data = await response.json()
+                email = data.get("email")
+                username = data.get("name")
+                password = data.get("sub")
+                user = await create_user(username, password, email, exc_if_not_exist=False)
+                jwt_token = create_access_token(
+                    user.uuid,
+                    user.is_admin,
+                    expire_minutes=(60 * 24 * ACCESS_TOKEN_EXPIRE_DAYS)
+                )
+                return f"""
+                <script>
+                    localStorage.setItem("token", "{jwt_token}");
+                    window.location.replace("/");
+                </script>
+                """
 
 
 @router.get("/me", response_model=User)

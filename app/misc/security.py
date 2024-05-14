@@ -7,7 +7,6 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from uuid import UUID
 import typing
-import asyncio
 
 import orjson
 import misc.dependencies as dependencies

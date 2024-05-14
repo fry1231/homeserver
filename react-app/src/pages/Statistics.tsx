@@ -6,6 +6,7 @@ import StatisticsReport from "../components/StatisticsReport";
 import StatisticsChart from "../components/StatisticsChart";
 import {Button, Card, CardContent, Container, Grid, Typography} from "@mui/material";
 import DateRangePicker from "../components/DateRangePicker";
+import DatePicker from "../components/DatePicker";
 import {useState} from "react";
 
 
@@ -40,7 +41,7 @@ const Statistics = () => {
   
   return (
     <Container>
-      <Grid container spacing={3}>
+      <Grid container spacing={3} justifyContent="center">
         <Grid item xs={12} md={12}>
           <Accordion defaultExpanded>
             <AccordionSummary
@@ -67,26 +68,18 @@ const Statistics = () => {
             </AccordionDetails>
           </Accordion>
         </Grid>
-        <Grid item xs={12} md={12}>
-          <Card>
-            <CardContent>
-              <Grid container direction="row">
-                <Grid item>
-                  {/*<Grid container direction="column" alignItems="center" justifyContent="space-between">*/}
-                    <Button sx={{mr: 2}} variant="contained" color="secondary" onClick={halfYearRange}>Last 6 months</Button>
-                    <Button mr={2} variant="contained" color="secondary" onClick={yearRange}>Last year</Button>
-                    <Button mr={2} variant="contained" color="secondary" onClick={allTimeRange}>All time</Button>
-                  {/*</Grid>*/}
-                </Grid>
-                <Grid item>
-                  <DateRangePicker startDate={startDate} setStartDate={setStartDate} endDate={endDate}
-                                   setEndDate={setEndDate}/>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-          <StatisticsChart startDate={startDate} endDate={endDate}/>
+        <Grid item >
+          <Grid container direction="row" justifyContent="center">
+            <Button sx={{mr: 2}} variant="contained" color="secondary" onClick={halfYearRange}>Last 6 months</Button>
+            <Button sx={{mr: 2}} variant="contained" color="secondary" onClick={yearRange}>Last year</Button>
+            <Button sx={{mr: 2}} variant="contained" color="secondary" onClick={allTimeRange}>All time</Button>
+          </Grid>
+          <Grid item>
+            <DatePicker date={startDate} setDate={setStartDate} secondDate={endDate} setSecondDate={setEndDate}/>
+            <DatePicker date={endDate} setDate={setEndDate} secondDate={startDate} setSecondDate={setStartDate}/>
+          </Grid>
         </Grid>
+        <StatisticsChart startDate={startDate} endDate={endDate}/>
       </Grid>
     </Container>
   );
