@@ -10,10 +10,11 @@ from misc.security import (
     ACCESS_TOKEN_EXPIRE_DAYS,
     Token
 )
-from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
+from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, logger
 from misc.dependencies import is_admin
 from typing import Annotated
 import aiohttp
+import traceback
 
 
 router = APIRouter(
@@ -96,44 +97,51 @@ async def login_google():
 
 @router.get("/auth/google")
 async def google_login(code: str):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-                "https://oauth2.googleapis.com/token",
-                data={
-                    "code": code,
-                    "client_id": GOOGLE_CLIENT_ID,
-                    "client_secret": GOOGLE_CLIENT_SECRET,
-                    "redirect_uri": GOOGLE_REDIRECT_URI,
-                    "grant_type": "authorization_code",
-                }
-        ) as response:
-            data = await response.json()
-            access_token = data.get("access_token")
-            if not access_token:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Could not authenticate with Google"
-                )
-            async with session.get(
-                    "https://www.googleapis.com/oauth2/v1/userinfo",
-                    headers={"Authorization": f"Bearer {access_token}"}
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                    "https://oauth2.googleapis.com/token",
+                    data={
+                        "code": code,
+                        "client_id": GOOGLE_CLIENT_ID,
+                        "client_secret": GOOGLE_CLIENT_SECRET,
+                        "redirect_uri": GOOGLE_REDIRECT_URI,
+                        "grant_type": "authorization_code",
+                    }
             ) as response:
                 data = await response.json()
-                email = data.get("email")
-                username = data.get("name")
-                password = data.get("sub")
-                user = await create_user(username, password, email, exc_if_not_exist=False)
-                jwt_token = create_access_token(
-                    user.uuid,
-                    user.is_admin,
-                    expire_minutes=(60 * 24 * ACCESS_TOKEN_EXPIRE_DAYS)
-                )
-                return f"""
-                <script>
-                    localStorage.setItem("token", "{jwt_token}");
-                    window.location.replace("/");
-                </script>
-                """
+                access_token = data.get("access_token")
+                if not access_token:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Could not authenticate with Google"
+                    )
+                async with session.get(
+                        "https://www.googleapis.com/oauth2/v1/userinfo",
+                        headers={"Authorization": f"Bearer {access_token}"}
+                ) as response:
+                    data = await response.json()
+                    email = data.get("email")
+                    username = data.get("name")
+                    password = data.get("sub")
+                    user = await create_user(username, password, email, exc_if_not_exist=False)
+                    jwt_token = create_access_token(
+                        user.uuid,
+                        user.is_admin,
+                        expire_minutes=(60 * 24 * ACCESS_TOKEN_EXPIRE_DAYS)
+                    )
+                    return f"""
+                    <script>
+                        localStorage.setItem("token", "{jwt_token}");
+                        window.location.replace("/");
+                    </script>
+                    """
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not authenticate with Google"
+        )
 
 
 @router.get("/me", response_model=User)
