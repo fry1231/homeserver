@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status, APIRouter
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm
 from db.sql.models import User
@@ -130,12 +130,17 @@ async def google_login(code: str):
                         user.is_admin,
                         expire_minutes=(60 * 24 * ACCESS_TOKEN_EXPIRE_DAYS)
                     )
-                    return f"""
+                    return HTMLResponse(f"""
+                    <html>
                     <script>
                         localStorage.setItem("token", "{jwt_token}");
-                        window.location.replace("/");
+                        setTimeout(window.location.replace("/"), 1000);
                     </script>
-                    """
+                    <body>
+                        <h5>Logging in...</h5>
+                    </body>
+                    </html>
+                    """, status_code=200)
     except Exception as e:
         logger.error(traceback.format_exc())
         raise HTTPException(
