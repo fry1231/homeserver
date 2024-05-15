@@ -2,7 +2,7 @@ import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
+// import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
@@ -15,6 +15,8 @@ import {createTheme, ThemeProvider} from '@mui/material/styles';
 import axios from 'axios';
 import {useAuth} from "../misc/authProvider.jsx";
 import {useNavigate} from "react-router-dom";
+import GoogleIcon from '@mui/icons-material/Google';
+import TextField from "./global/CustomInputField"
 
 
 export default function LogIn() {
@@ -86,19 +88,24 @@ export default function LogIn() {
               type="submit"
               fullWidth
               variant="contained"
+              color="secondary"
               sx={{mt: 3, mb: 2}}
             >
               Sign In
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="src/pages/SignIn#" variant="body2">
-                  Forgot password?
+                <Link href={`https://${import.meta.env.VITE_REACT_APP_HOST}/users/login/google`} color="#fff"
+                      variant="body2">
+                  <Box sx={{display: 'flex', alignItems: 'center'}}>
+                    <GoogleIcon/>
+                    <Typography ml={1}>Sign in with Google</Typography>
+                  </Box>
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="/react-app/src/components/SignUp" variant="body2">
-                  {"Don't have an account? Sign Up"}
+                <Link href="/signup" color="#fff" variant="body2">
+                  Don't have an account? Sign Up
                 </Link>
               </Grid>
             </Grid>

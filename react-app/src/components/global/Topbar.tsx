@@ -37,7 +37,6 @@ const Topbar = () => {
   const links = {
     Home: '/',
     States: '/states',
-    Buses: '/buses',
     Logs: '/logs',
     Farm: '/farm',
     Statistics: '/statistics',

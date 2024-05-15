@@ -7,6 +7,7 @@ import Farm from "../pages/Farm";
 import Statistics from "../pages/Statistics";
 import Profile from "../components/Profile";
 import LogIn from "../components/LogIn";
+import SignUp from "../components/SignUp";
 import Topbar from "../components/global/Topbar";
 import BusArrivals from "../components/BusArrivals";
 import States from "../pages/States";
@@ -74,6 +75,10 @@ const Routes = () => {
             path: "/login",
             element: <LogIn />,
         },
+        {
+            path: "/signup",
+            element: <SignUp />,
+        }
     ];
 
     const routeNotFound = {
