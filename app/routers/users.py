@@ -121,10 +121,9 @@ async def google_login(code: str):
                         headers={"Authorization": f"Bearer {access_token}"}
                 ) as response:
                     data = await response.json()
-                    logger.info(f'{data=}')
                     email = data.get("email")
                     username = data.get("name")
-                    password = data.get("sub")
+                    password = data.get("id")
                     user = await create_user(username, password, email, exc_if_not_exist=False)
                     jwt_token = create_access_token(
                         user.uuid,
