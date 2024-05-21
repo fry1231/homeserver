@@ -33,12 +33,6 @@ services:
       - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN:?err}`)"
       - "traefik.http.routers.homescreen.entrypoints=websecure"
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
-#      - "traefik.http.middlewares.homescreen-auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
-#      - "traefik.http.routers.homescreen.middlewares=homescreen-auth"   # switched to jwt
-#      - "traefik.http.routers.homescreen-insecure.rule=Host(`homescreen.${DOMAIN:?err}`)"
-#      - "traefik.http.routers.homescreen-insecure.rule=Host(`${IP}`)"
-#      - "traefik.http.routers.homescreen-insecure.entrypoints=web"
-#      - "traefik.http.routers.homescreen-insecure.middlewares=homescreen-auth"
 
 
   react:
@@ -56,38 +50,6 @@ services:
       - "traefik.http.routers.react.entrypoints=websecure"
       - "traefik.http.routers.react.tls.certresolver=letsencrypt"
 
-#  todobot:
-#    container_name: todobot
-#    env_file:
-#      - .env  # !
-#    build: todobot
-#    depends_on:
-#      - db
-#    command: python -m main
-
-#  db:
-#    container_name: pg_container
-#    image: postgres:13-alpine
-#    user: postgres
-#    restart: always
-#    depends_on:
-#      - traefik
-##    ports:
-##      - "5432:5432"
-#    volumes:
-#      - postgres_data:/var/lib/postgresql/data/
-#    environment:
-#      - POSTGRES_USER=${POSTGRES_USER:?err}
-#      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
-#      - POSTGRES_DB=${POSTGRES_DB:?err}
-#    healthcheck:
-#      test:
-#        - CMD-SHELL
-#        - pg_isready -U ${POSTGRES_USER} --dbname=${POSTGRES_DB:?err}
-#      interval: 3600s
-#      timeout: 10s
-#      retries: 5
-#      start_period: 30s
 
   influxdb:
     container_name: influx
@@ -107,12 +69,6 @@ services:
       - DOCKER_INFLUXDB_INIT_BUCKET=influx-bucket
       - DOCKER_INFLUXDB_INIT_RETENTION=14d
 
-#  redis:
-#    container_name: redis
-#    image: redis:7.0.7
-#    restart: always
-#    expose:
-#      - 6379
 
   traefik:
     container_name: traefik
@@ -150,9 +106,12 @@ services:
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.middlewares=auth"
       - "traefik.http.middlewares.auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
+
+
 volumes:
   letsencrypt:
   influxdb-storage:
+
 
 networks:
   migrebot_migrebot-network:

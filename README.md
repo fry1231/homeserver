@@ -24,7 +24,7 @@ the irrigation process.
 ## Technologies Used
 
 - Backend:
-  - **Python**: FastAPI, Pydantic, SQLAlchemy, Ormar (ORM), Strawberry (GraphQL)
+  - **Python**: FastAPI, Pydantic, SQLAlchemy, Ormar, Strawberry
   - **Databases**: PostgreSQL, Redis
 - Frontend:
   - React
@@ -34,23 +34,9 @@ the irrigation process.
   - **Charts**: Plotly.js
   - **HTTP Client**: Axios
   - **GraphQL Client**: Apollo Client
-  - **Form Validation**: React Hook Form
   - **Authentication**: JWT
-  - **Websockets**: Socket.IO
-  - **Styling**: SCSS
-  - **Linting**: ESLint, Prettier
-  - **Testing**: Jest, React Testing Library
-  - **Deployment**: Vercel
 - **CI/CD**: GitLab
 - **Containerization**: Docker, Docker Compose
 - **Reverse Proxy**: Traefik
 
 ## Project Structure
-
-The project is divided into several parts:
-
-- `react-app/src/pages/Statistics.tsx`: This file contains the React component for displaying the statistics page.
-- `react-app/src/App.tsx`: This is the main React application file. It sets up the Redux store and configures the 
-application's routes.
-- `react-app/src/components/FarmChart.tsx`: This file contains the React component for displaying the farm chart.
-- `app/routers/users.py`: This file contains the FastAPI routes for user registration and authentication.
