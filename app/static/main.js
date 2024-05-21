@@ -214,7 +214,7 @@ function refreshCharts() {
         headers: {"content-type": "application/json; charset=UTF-8"},
         method: "GET"
     };
-    fetch("/ambiance/farmdata", params)
+    fetch("/ambiance/", params)
         .then((response) => response.json())
         .then((data) => {
             let tracesTemp = [];

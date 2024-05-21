@@ -25,8 +25,14 @@ export function Map({userMarkers}: {userMarkers: MarkerProps[]}) {
   const center = userMarkers.reduce((acc, marker) => {
       return [acc[0] + marker.coords[0], acc[1] + marker.coords[1]];
     }, [0, 0]);
-  center[0] /= userMarkers.length;
-  center[1] /= userMarkers.length;
+  let l = userMarkers.length;
+  if (l === 0) {
+    center[0] = 0;
+    center[1] = 0;
+  } else {
+    center[0] /= userMarkers.length;
+    center[1] /= userMarkers.length;
+  }
   
   useEffect(() => {
     console.log(boxRef.current.getBoundingClientRect());
@@ -34,7 +40,7 @@ export function Map({userMarkers}: {userMarkers: MarkerProps[]}) {
   
   return (
     <Box width="60vw" height="50vh" ref={boxRef}>
-      <MapContainer center={center} zoom={1} scrollWheelZoom={true}>
+      <MapContainer center={center} zoom={userMarkers.length === 1 ? 13 : 1} scrollWheelZoom={true}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

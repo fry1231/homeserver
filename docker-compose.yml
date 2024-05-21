@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.8'
 
 services:
   homescreen:
@@ -79,7 +79,6 @@ services:
         ipv4_address: 172.19.0.250   # change accordingly to the subnet or set the subnet implicitly in the network definition
     ports:
       - "80:80"
-      - "8080:8080"
       - "443:443"
     command:
       - "--log.level=INFO"
@@ -87,6 +86,7 @@ services:
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.httpClientTimeout=30"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entrypoint.to=:443"
@@ -95,12 +95,19 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL:?err}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.entryPoint=metrics"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - "--entrypoints.metrics.address=:8899"
+
     volumes:
       - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`dashboard.${DOMAIN:?err}`)"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN:?err}`)"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
@@ -108,9 +115,57 @@ services:
       - "traefik.http.middlewares.auth.basicauth.users=admin:${HASHPASS_ADMIN:?err}"
 
 
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:v2.52.0
+    restart: unless-stopped
+    networks:
+      - migrebot_migrebot-network
+    expose:
+        - 9090
+
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:10.1.10
+    restart: unless-stopped
+    networks:
+      - migrebot_migrebot-network
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    expose:
+      - 3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`dashboard.${DOMAIN:?err}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.middlewares=auth"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+
+
+  node_exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node_exporter
+    command:
+      - '--path.rootfs=/host'
+      - '--collector.disable-defaults'
+      - '--collector.cpu'
+      - '--collector.meminfo'
+      - '--collector.filesystem'
+      - '--collector.netstat'
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    networks:
+      - migrebot_migrebot-network
+    volumes:
+      - '/:/host:ro,rslave'
+
+
 volumes:
   letsencrypt:
   influxdb-storage:
+  grafana-storage:
 
 
 networks:

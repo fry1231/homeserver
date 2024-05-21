@@ -116,7 +116,7 @@ export const GET_USER_BY_ID = gql`
 
 export const GET_USERS_WITH_COORDINATES = gql`
   query GetUsersWithCoordinates {
-    users (hasCoordinates: true) {
+    users(hasCoordinates: true) {
       telegramId
       firstName
       lastName
@@ -124,6 +124,25 @@ export const GET_USERS_WITH_COORDINATES = gql`
       latitude
       longitude
     }
+  }
+`;
+
+export const GET_USERS_SHORT_BY = gql`
+  query GetUserShortBy($language: String, $timezone: String, $includeLanguage: Boolean!, $includeTimezone: Boolean!) {
+    users(language: $language, timezone: $timezone) {
+      telegramId
+      firstName
+      lastName
+      userName
+      language @include(if: $includeLanguage)
+      timezone @include(if: $includeTimezone)
+    }
+  }
+`;
+
+export const GET_TIMEZONES = gql`
+  query GetTimezones {
+    timezones
   }
 `;
 

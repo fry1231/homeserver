@@ -161,21 +161,21 @@ class Pressure:
 @strawberry.type
 class User:
     telegram_id: BigInt
-    last_notified: datetime.datetime
-    notify_every: int
+    last_notified: datetime.datetime | None
+    notify_every: int | None
     first_name: str | None
     last_name: str | None
     user_name: str | None
     joined: datetime.date | None    # None for old users
-    timezone: str
-    language: str
-    utc_notify_at: datetime.time
+    timezone: str | None
+    language: str | None
+    utc_notify_at: datetime.time | None
     latitude: float | None
     longitude: float | None
 
-    n_paincases: int = strawberry.field(resolver=get_user_paincases)
-    n_druguses: int = strawberry.field(resolver=get_user_druguses)
-    n_pressures: int = strawberry.field(resolver=get_user_pressures)
+    n_paincases: int | None = strawberry.field(resolver=get_user_paincases)
+    n_druguses: int | None = strawberry.field(resolver=get_user_druguses)
+    n_pressures: int | None = strawberry.field(resolver=get_user_pressures)
 
     paincases: List[PainCase] | None = strawberry.field(resolver=get_user_paincases)
     druguses: List[DrugUse] | None = strawberry.field(resolver=get_user_druguses)
@@ -285,7 +285,13 @@ class Query:
         return [User.from_orm(user) for user in users]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def paincases(self, ids: list[int] | None = None,
+    async def timezones(self) -> List[str]:
+        timezones = await OrmarMigraineUser.objects.values('timezone')
+        return list(set([el['timezone'] for el in timezones]))
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    async def paincases(self,
+                        ids: list[int] | None = None,
                         after_date: datetime.date | None = None,
                         before_date: datetime.date | None = None) -> list[PainCase]:
         query_set = []
@@ -301,7 +307,8 @@ class Query:
         return [PainCase.from_orm(paincase) for paincase in paincases]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def druguses(self, ids: list[int] | None = None,
+    async def druguses(self,
+                       ids: list[int] | None = None,
                        after_date: datetime.date | None = None,
                        before_date: datetime.date | None = None) -> list[DrugUse]:
         query_set = []
@@ -317,7 +324,8 @@ class Query:
         return [DrugUse.from_orm(druguse) for druguse in druguses]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def pressures(self, ids: list[int] | None = None,
+    async def pressures(self,
+                        ids: list[int] | None = None,
                         after_date: datetime.date | None = None,
                         before_date: datetime.date | None = None) -> list[Pressure]:
         query_set = []

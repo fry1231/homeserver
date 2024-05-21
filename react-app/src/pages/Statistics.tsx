@@ -4,16 +4,19 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import StatisticsReport from "../components/StatisticsReport";
 import StatisticsChart from "../components/StatisticsChart";
-import {Button, Card, CardContent, Container, Grid, LinearProgress, Typography} from "@mui/material";
+import {Button, Card, CardContent, CardHeader, Container, Grid, LinearProgress, Typography} from "@mui/material";
 import DateRangePicker from "../components/DateRangePicker";
 import DatePicker from "../components/DatePicker";
 import {useState} from "react";
 import {useQuery} from "@apollo/client";
-import {GET_USERS_WITH_COORDINATES} from "../misc/gqlQueries";
+import {GET_USERS_SHORT_BY, GET_USERS_WITH_COORDINATES, GET_TIMEZONES} from "../misc/gqlQueries";
 import {MarkerProps, Map} from "../components/Map";
+import {useDispatch} from "react-redux";
+import {addWindow} from "../reducers/draggables";
 
 
 const Statistics = () => {
+  const dispatch = useDispatch();
   const today = new Date();
   const todayString = today.toISOString().split("T")[0];
   const monthAgo = new Date(today);
@@ -66,7 +69,39 @@ const Statistics = () => {
   }
   
   // Users by language
-  // const
+  const usersByLanguage = {
+    en: [],
+    ru: [],
+    uk: [],
+    fr: [],
+    es: []
+  }
+  Object.entries(usersByLanguage).forEach(([languageCode, arr]) => {
+    const {loading, error, data} = useQuery(GET_USERS_SHORT_BY, {
+      variables: {
+        language: languageCode,
+        includeLanguage: true}
+    });
+    if (data) {
+      usersByLanguage[languageCode] = data.users;
+    }
+  });
+  
+  // Users by timezone
+  const {loading: timezoneLoading, error: timezoneError, data: timezoneData} = useQuery(GET_TIMEZONES);
+  let usersByTimezone = {};
+  if (timezoneData) {
+    timezoneData.timezones.forEach((timezone: any) => {
+      const {loading, error, data} = useQuery(GET_USERS_SHORT_BY, {
+        variables: {
+          timezone: timezone.timezone,
+          includeTimezone: true}
+      });
+      if (data) {
+        usersByTimezone[timezone.timezone] = data.users;
+      }
+    });
+  }
   
   return (
     <Container>
@@ -109,14 +144,47 @@ const Statistics = () => {
           </Grid>
         </Grid>
         <StatisticsChart startDate={startDate} endDate={endDate}/>
-        { mapLoading && <LinearProgress />}
-        { mapError && <Typography>Error: {mapError.message}</Typography>}
+        <Grid alignItems="center" justifyContent="center">
+        {mapLoading && <LinearProgress />}
+        {mapError && <Typography>Error: {mapError.message}</Typography>}
+        {userMarkers.length > 0 && <Typography>Users with coordinates: {userMarkers.length}</Typography>}
         {mapData && <Map userMarkers={userMarkers}/>}
+        </Grid>
+        <Grid item>
+          <Card>
+            <CardContent>
+              <CardHeader title="Users by language"/>
+              <Grid container spacing={2}>
+                {Object.entries(usersByLanguage).map(([languageCode, users]) => (
+                  <Grid item key={languageCode}>
+                    <Typography variant="h6">{languageCode}</Typography>
+                    <Typography>{users.length}</Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item>
+          <Card>
+            <CardContent>
+              <CardHeader title="Users by timezone"/>
+              <Grid container spacing={2}>
+                {timezoneLoading && <LinearProgress />}
+                {timezoneError && <Typography>Error: {timezoneError.message}</Typography>}
+                {timezoneData && Object.entries(usersByTimezone).map(([timezone, users]) => (
+                  <Grid item key={timezone}>
+                    <Typography variant="h6">{timezone}</Typography>
+                    <Typography>{users.length}</Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
     </Container>
   );
-  
-  
 };
 
 export default Statistics;
