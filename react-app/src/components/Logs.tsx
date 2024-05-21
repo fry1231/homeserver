@@ -9,7 +9,11 @@ import {addWindow} from "../reducers/draggables";
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 
-// Parse date in 30.04.2024_19:04:56 format to Date object in local time
+
+/**
+ * Parse date in `30.04.2024_19:04:56` format (UTC) to Date object in local time
+ * @param timeString
+ */
 const localizedTime = (timeString: string) => {
   const [datePart, timePart] = timeString.split('_');
   const [day, month, year] = datePart.split('.');
@@ -20,7 +24,7 @@ const localizedTime = (timeString: string) => {
 }
 
 
-export default function Logs() {
+export default function Logs({logLevels}) {
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.logs);
   let protocol: string;
@@ -40,9 +44,14 @@ export default function Logs() {
   const [lastLogsEnd, setLastLogsEnd] = useState(0);
   
   // Ask for more logs when the user scrolls to the bottom
-  const askMoreLogs = () => {
+  const askMoreLogs = (startPos) => {
     const chunkSize = 50;
-    const start = logs.length;
+    let start;
+    if (startPos === undefined) {
+      start = logs.length;
+    } else {
+      start = startPos;
+    }
     const end = start + chunkSize;
     if (end === lastLogsEnd) {
       return;
@@ -67,6 +76,7 @@ export default function Logs() {
     const currentScrollPos = target.scrollTop;
     const botOffsetFloored = Math.floor((target.scrollHeight - target.scrollTop) / 10);
     const bottom = botOffsetFloored === Math.floor(target.clientHeight / 10);
+
     if (bottom) {
       askMoreLogs();
       target.scrollTo(0, currentScrollPos-1);
@@ -165,7 +175,6 @@ export default function Logs() {
           }
         }
       }
-      // handleScroll()
     }
   }, [incomingMessage]);
   
@@ -176,7 +185,7 @@ export default function Logs() {
     message: string;
     location: string;
   }
-  const logs: LogRecord[] = stateLocal.log_records.map((logRecord: string) => {
+  let logs: LogRecord[] = stateLocal.log_records.map((logRecord: string) => {
     const [timeString, logLevel] = logRecord.split(' ', 2);
     let messageAndLocation = logRecord.split(' ').slice(2).join(' ');
     let message = messageAndLocation.split(' ').slice(0, -1).join(' ');
@@ -187,6 +196,10 @@ export default function Logs() {
     }
     return {timeString, logLevel, message, location};
   });
+  
+  // Filter by log level
+  if (logLevels)
+    logs = logs.filter((log) => logLevels.includes(log.logLevel.replace('[', '').replace(']', '')));
   
   // Sort by timeString descending
   logs.sort((a, b) => {
@@ -244,7 +257,7 @@ export default function Logs() {
   }
   
   return (
-    <div style={{overflow: 'hidden'}}>
+    <Box style={{overflow: 'hidden'}}>
       <Paper ref={scrollable} onScroll={handleScroll} style={{position: 'relative', overflowY: 'scroll', height: '80vh', width: '80vw'}}>
         {
           waitingToReconnect || !isOpen
@@ -279,6 +292,6 @@ export default function Logs() {
         })}
         </Grid>
       </Paper>
-    </div>
+    </Box>
   );
 }

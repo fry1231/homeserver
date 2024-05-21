@@ -46,10 +46,6 @@ const Routes = () => {
                     element: <Profile />,
                 },
                 {
-                    path: "/buses",
-                    element: <BusArrivals/>,
-                },
-                {
                     path: "/states",
                     element: <States />,
                 },
@@ -104,7 +100,7 @@ const Routes = () => {
         return curr.children ? acc.concat(curr.children.map(child => child.path)) : acc.concat(curr.path);
     }, []);
     const currentPath = window.location.pathname;
-    const showTopbar = currentPath !== "/login" && availablePaths.includes(currentPath);
+    const showTopbar = currentPath !== "/login" && currentPath !== "/signup" && availablePaths.includes(currentPath);
 
     routes = [...routes, routeNotFound];
 

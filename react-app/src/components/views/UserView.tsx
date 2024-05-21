@@ -8,6 +8,7 @@ import {CardHeader} from "../common/CardHeader";
 import {CardRow} from "../common/CardRow";
 import {useQuery} from "@apollo/client";
 import {GET_USER_BY_ID} from "../../misc/gqlQueries";
+import {MarkerProps} from "../Map";
 
 
 export interface UserProps {
@@ -42,11 +43,10 @@ export function UserView({entity, short=false}) {
   useEffect(() => {
     setId(entity.id);
   }, [entity.id]);
-  const pos = entity.pos;
   const shortViewData = entity.shortViewData;
   
-  const showMap = (lat, lon) => {
-    console.log("show map" + lat + lon);
+  const showMap = (user: UserProps) => {
+    dispatch(addWindow({name: "Map", id: statePositions.n, nestedContent: [user]}));
   }
   const showPaincases = (paincases: { id, date }[]) => {
     const nestedContent = paincases.map(({id, date}) => ({name: "Paincase", id, date}));
@@ -122,7 +122,7 @@ export function UserView({entity, short=false}) {
       {/*Location*/}
       {props.latitude && props.longitude
         ? <CardRow left="Location" right={`${Math.round(props.latitude * 100) / 100}, ${Math.round(props.longitude * 100) / 100}`}
-                   onClickHandler={() => showMap(props.latitude, props.longitude)}/>
+                   onClickHandler={() => showMap(props)}/>
         : null}
       
       {/*Paincases, Druguses, Pressures. 'show*' calls a list with entities */}

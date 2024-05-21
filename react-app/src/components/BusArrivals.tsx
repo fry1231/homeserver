@@ -1,4 +1,4 @@
-import {Box, Button, Stack, Switch, Typography, useTheme} from "@mui/material";
+import {Box, Button, Grid, Stack, Switch, Typography, useTheme} from "@mui/material";
 import {tokens} from "../theme.ts";
 import {useEffect, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -23,6 +23,15 @@ interface BusArrival {
   secondsToBus?: number;
 }
 
+const timeToBus = (eta: string) => {
+  const secondsToBus = Math.floor((new Date(eta).getTime() - Date.now()) / 1000);
+  const minutes = Math.floor(secondsToBus / 60);
+  const seconds = secondsToBus % 60;
+  return minutes < 0 || seconds < 0
+    ? 'Missed'
+    : `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  
+}
 
 export default function BusArrivals() {
   const {token, setToken} = useAuth();
@@ -50,7 +59,6 @@ export default function BusArrivals() {
           const data: BusResponse = JSON.parse(
             newChunk
             );
-          console.log(data);
           const busData = data.busData;
           busData.map((destination) => {
             destination.buses.map((bus) => {
@@ -77,10 +85,7 @@ export default function BusArrivals() {
       if (busData) {
         Array.from(document.getElementsByClassName("timeToBus")).forEach((element) => {
           const backupTime = new Date(element.previousElementSibling.getAttribute("backuptime"));
-          const secondsToBus = Math.floor((backupTime.getTime() - Date.now()) / 1000);
-          const minutes = Math.floor(secondsToBus / 60);
-          const seconds = secondsToBus % 60;
-          element.innerHTML = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+          element.innerHTML = timeToBus(backupTime.toISOString());
         })
       }
     }, 1000);
@@ -92,24 +97,23 @@ export default function BusArrivals() {
   }, [limitReached]);
 
   return (
-    <>
-      <Box display="flex" justifyContent="right" mx={4}>
-        <Stack direction="column" alignItems="center">
-          <Typography>Refresh Rate</Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography>Low</Typography>
-            <Switch
-              checked={state.fastRefresh}
-              inputProps={{'aria-label': 'controlled'}}
-              onChange={() => {
-                dispatch(speedUpRefresh(!state.fastRefresh));
-              }}
-              label="Fast Update"
-              color="warning"/>
-            <Typography>High</Typography>
-          </Stack>
-        </Stack>
-      </Box>
+      // <Box display="flex" justifyContent="right" mx={4}>
+      //   <Stack direction="column" alignItems="center">
+      //     <Typography>Refresh Rate</Typography>
+      //     <Stack direction="row" spacing={1} alignItems="center">
+      //       <Typography>Low</Typography>
+      //       <Switch
+      //         checked={state.fastRefresh}
+      //         inputProps={{'aria-label': 'controlled'}}
+      //         onChange={() => {
+      //           dispatch(speedUpRefresh(!state.fastRefresh));
+      //         }}
+      //         label="Fast Update"
+      //         color="warning"/>
+      //       <Typography>High</Typography>
+      //     </Stack>
+      //   </Stack>
+      // </Box>
       <Box display="flex" flexDirection="column" m={4}>
         {busData.map((destination, index) => {
           return (
@@ -128,7 +132,6 @@ export default function BusArrivals() {
           );
         })}
       </Box>
-    </>
   );
 }
 
@@ -136,10 +139,13 @@ export default function BusArrivals() {
 const BusRow = (props: BusArrival) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
   const minutes = Math.floor(props.secondsToBus / 60);
   const seconds = props.secondsToBus % 60;
-  const timeToBus = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+  const timeToBus = minutes < 0 || seconds < 0
+    ? 'Missed'
+    : `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
   let busColor;
   if (props.busNum == 258) {
         busColor = colors.redAccent[400];
@@ -154,17 +160,17 @@ const BusRow = (props: BusArrival) => {
     return (
   <Box display="flex" justifyContent="space-between">
     {/*Bus number and destination*/}
-      <Box display="flex" justifyContent="left">
+      <Box display="flex" justifyContent="left" alignItems="center">
         <Box
           justifyContent="center"
           alignItems="center"
           bgcolor={busColor}
           color="black"
-          borderRadius="20%"
+          borderRadius="30%"
           width="40px"
-          height="25px"
+          height="20px"
           textAlign="center"
-          fontSize="16px">
+          fontSize="13px">
           <b>{props.busNum}</b>
         </Box>
         {/*<Typography sx={{*/}
@@ -195,7 +201,7 @@ const BusRow = (props: BusArrival) => {
       <Box display="flex" justifyContent="right">
         <p backuptime={new Date(props.eta).toISOString()} style={{
             fontFamily: "Arial",
-            fontSize: "20px",
+            fontSize: "13px",
             color: colors.grey[100],
             padding: "3px 14px",
             marginTop: "4px",
@@ -205,7 +211,7 @@ const BusRow = (props: BusArrival) => {
         </p>
         <p className={"timeToBus"} style={{
           fontFamily: "Arial",
-          fontSize: "20px",
+          fontSize: "13px",
           color: colors.grey[100],
           padding: "3px 14px",
           marginTop: "4px",

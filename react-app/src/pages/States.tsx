@@ -134,6 +134,8 @@ export default function States() {
   
   return (
     <>
+      <Typography onClick={() => dispatch(addWindow({name: "User", id: 358774905}))
+      }>OPEN USER</Typography>
       {
         waitingToReconnect
         ? <Box><Radio color="default" checked={true} />Connecting...</Box>

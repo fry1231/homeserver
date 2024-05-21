@@ -17,28 +17,30 @@ import {useAuth} from "../misc/authProvider.jsx";
 import {useNavigate} from "react-router-dom";
 import GoogleIcon from '@mui/icons-material/Google';
 import TextField from "./global/CustomInputField"
+import {useError} from "../misc/ErrorHandling";
 
 
 export default function LogIn() {
+  const {setErrorMessage} = useError();
   const {setToken} = useAuth();
   const navigate = useNavigate();
   
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    axios.post('/users/auth/form', data, {timeout: 1000})
+    axios.post('/users/auth/form', data, {timeout: 5000})
       .then((response) => {
         if (response.status === 200) {
           const token = response.data.access_token;
           setToken(token);
           navigate('/');
-        } else {
-          console.log(response);
-          alert('Wrong server response');
         }})
       .catch((error) => {
         console.log(error);
-        alert('Wrong username or password');
+        if (error.response)
+          setErrorMessage(error.response.data.detail);
+        else
+          setErrorMessage(error.message)
       });
   };
   

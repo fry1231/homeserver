@@ -10,7 +10,7 @@ templates.env.globals.update(getenv=os.getenv)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s (%(filename)s:%(lineno)s)',
-    datefmt='%d.%m.%Y_%H:%M:%S',
+    datefmt='%d.%m.%Y %H:%M:%S',
     handlers=[
         logging.StreamHandler(sys.stdout)
     ]

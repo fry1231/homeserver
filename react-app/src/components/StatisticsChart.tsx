@@ -1,4 +1,3 @@
-import {useEffect, useState} from 'react';
 import Plot from 'react-plotly.js';
 import {useQuery} from '@apollo/client';
 import {GET_DAILY_STATISTICS_BETWEEN} from '../misc/gqlQueries';

@@ -4,10 +4,13 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import StatisticsReport from "../components/StatisticsReport";
 import StatisticsChart from "../components/StatisticsChart";
-import {Button, Card, CardContent, Container, Grid, Typography} from "@mui/material";
+import {Button, Card, CardContent, Container, Grid, LinearProgress, Typography} from "@mui/material";
 import DateRangePicker from "../components/DateRangePicker";
 import DatePicker from "../components/DatePicker";
 import {useState} from "react";
+import {useQuery} from "@apollo/client";
+import {GET_USERS_WITH_COORDINATES} from "../misc/gqlQueries";
+import {MarkerProps, Map} from "../components/Map";
 
 
 const Statistics = () => {
@@ -38,6 +41,32 @@ const Statistics = () => {
     setStartDate(beginningOfTime);
     setEndDate(today);
   }
+  
+  // Get all users with notnull coordinates
+  const {loading: mapLoading, error: mapError, data: mapData} = useQuery(GET_USERS_WITH_COORDINATES);
+  const userMarkers: MarkerProps[] = [];
+  if (mapData) {
+    mapData.users.forEach((user: any) => {
+      let displayName = ''
+      if (user.firstName) {
+        displayName += user.firstName + ' '
+      }
+      if (user.lastName) {
+        displayName += user.lastName + ' '
+      }
+      if (user.userName) {
+        displayName += `(@${user.userName})`
+      }
+      userMarkers.push({
+        coords: [user.latitude, user.longitude],
+        userName: displayName,
+        telegramId: user.telegramId
+      });
+    });
+  }
+  
+  // Users by language
+  // const
   
   return (
     <Container>
@@ -80,6 +109,9 @@ const Statistics = () => {
           </Grid>
         </Grid>
         <StatisticsChart startDate={startDate} endDate={endDate}/>
+        { mapLoading && <LinearProgress />}
+        { mapError && <Typography>Error: {mapError.message}</Typography>}
+        {mapData && <Map userMarkers={userMarkers}/>}
       </Grid>
     </Container>
   );

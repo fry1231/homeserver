@@ -10,7 +10,7 @@ from misc.security import (
     ACCESS_TOKEN_EXPIRE_DAYS,
     Token
 )
-from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, logger
+from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, DOMAIN, logger
 from misc.dependencies import is_admin
 from typing import Annotated
 import aiohttp
@@ -28,12 +28,49 @@ class SignupForm(BaseModel):
     email: str
 
 
+async def get_user(username: str = None, email: str = None) -> User:
+    """
+    Get user by username or email
+    If username provided, email is ignored
+    :param username:
+    :param email:
+    :return: User object or None if user not found
+    """
+    if username:
+        user = await User.objects.get_or_none(username=username)
+    else:
+        user = await User.objects.get_or_none(email=email)
+    return user
+
+
+async def validate_username(username: str) -> None:
+    """
+    Check username length and uniqueness
+
+    :raises HTTPException: if username is too short, too long or already registered
+    """
+    if len(username) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username must be at least 3 characters long"
+        )
+    if len(username) > 50:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username must be at most 50 characters long"
+        )
+    if get_user(username=username):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already registered"
+        )
+
+
 async def create_user(username: str,
                       password: str,
-                      email: str,
-                      exc_if_not_exist: bool = True) -> User:
+                      email: str) -> User:
     user = await User.objects.get_or_none(username=username)
-    if user and exc_if_not_exist:
+    if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already registered"
@@ -57,7 +94,16 @@ async def create_user(username: str,
     return user
 
 
-@router.post("/register")
+@router.get("/check-username")
+async def check_username(username: str):
+    try:
+        await validate_username(username)
+        return {"valid": True, "message": "Username is valid"}
+    except HTTPException as e:
+        return {"valid": False, "message": str(e.detail)}
+
+
+@router.post("/signup")
 async def register_user(form_data: SignupForm):
     username = form_data.username
     password = form_data.password
@@ -66,7 +112,7 @@ async def register_user(form_data: SignupForm):
     return RedirectResponse(url="/users/login")
 
 
-@router.post("/auth/form")
+@router.post("/login/form")
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ) -> Token:
@@ -123,8 +169,11 @@ async def google_login(code: str):
                     data = await response.json()
                     email = data.get("email")
                     username = data.get("name")
-                    password = data.get("id")
-                    user = await create_user(username, password, email, exc_if_not_exist=False)
+                    password = data.get("id")   # every time different
+
+                    user = await get_user(email=email)
+                    if user is None:
+                        user = await create_user(username, password, email)
                     jwt_token = create_access_token(
                         user.uuid,
                         user.is_admin,
@@ -134,7 +183,7 @@ async def google_login(code: str):
                     <html>
                     <script>
                         localStorage.setItem("token", "{jwt_token}");
-                        setTimeout(window.location.replace("/"), 1000);
+                        setTimeout(window.location.href("https://hs.{DOMAIN}"), 1000);
                     </script>
                     <body>
                         <h5>Logging in...</h5>

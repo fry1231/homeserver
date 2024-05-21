@@ -11,6 +11,7 @@ import AuthProvider from "./misc/authProvider.jsx";
 import Routes from "./routes";
 import axios from "axios";
 import {ApolloWrapper} from "./misc/ApolloClient";
+import {ErrorProvider} from "./misc/ErrorHandling";
 
 // Redux store
 const store = configureStore({
@@ -38,13 +39,15 @@ function App() {
           <AuthProvider>
             <Container>
               <ApolloWrapper>
-                {/*<Helmet>*/}
-                {/*  <meta name="apple-mobile-web-app-capable" content="yes"/>*/}
-                {/*  <meta httpEquiv="Content-Security-Policy"*/}
-                {/*        content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;"/>*/}
-                {/*  <title>HomeServer</title>*/}
-                {/*</Helmet>*/}
-                <Routes/>
+                <ErrorProvider>
+                  {/*<Helmet>*/}
+                  {/*  <meta name="apple-mobile-web-app-capable" content="yes"/>*/}
+                  {/*  <meta httpEquiv="Content-Security-Policy"*/}
+                  {/*        content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;"/>*/}
+                  {/*  <title>HomeServer</title>*/}
+                  {/*</Helmet>*/}
+                  <Routes/>
+                </ErrorProvider>
               </ApolloWrapper>
             </Container>
           </AuthProvider>

@@ -5,32 +5,11 @@ import {DruguseProps, DruguseView} from "../views/DruguseView";
 import {PressureProps, PressureView} from "../views/PressureView";
 import {UserProps, UserView} from "../views/UserView";
 import {ListView} from "../views/ListView";
+import {MapView} from "../views/MapView";
 import {CardHeader} from "../common/CardHeader";
 import Draggable from "react-draggable";
 import {Card, CardContent, Divider, useTheme} from "@mui/material";
 import {tokens} from "../../theme";
-
-
-// Type guards
-// export function isPaincaseProps(obj: any): obj is PaincaseProps {
-//   return 'durability' in obj;
-// }
-//
-// export function isDruguseProps(obj: any): obj is DruguseProps {
-//   return 'amount' in obj;
-// }
-//
-// export function isPressureProps(obj: any): obj is PressureProps {
-//   return 'systolic' in obj;
-// }
-//
-// export function isUserProps(obj: any): obj is UserProps {
-//   return 'joined' in obj;
-// }
-//
-// export function isListViewProps(obj: any): obj is ListViewProps {
-//   return 'entities' in obj;
-// }
 
 
 export default function DraggableContainer() {
@@ -42,7 +21,7 @@ export default function DraggableContainer() {
 
   return (
     <div style={{position: "relative"}}>
-      {entities.map((entity: DraggableEntity) => {
+      {entities.map((entity: DraggableEntity, i) => {
         return (
           <Draggable
             // enableUserSelectHack={false}
@@ -56,13 +35,17 @@ export default function DraggableContainer() {
             }}
             handle=".handle"
           >
-            <Card style={{
+            <Card sx={{
               position: "absolute",
-              zIndex: entity.pos.z,
+              zIndex: entity.pos?.z,
               backgroundColor: colors.primary[400],
               color: colors.grey[100],
               borderRadius: '5px',
-              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)'
+              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)',
+              maxWidth: '95vw',
+              // minWidth: '300px',
+              // width: '300px',
+              height: 'auto',
             }}>
               <CardContent>
                 <CardHeader entityName={entity.name} entityId={entity.id} left={entity.name}/>
@@ -70,17 +53,19 @@ export default function DraggableContainer() {
                 {(() => {
                   switch (entity.name) {
                     case "Paincase":
-                      return <PaincaseView entity={entity} key={entity.name + entity.id}/>;
+                      return <PaincaseView entity={entity} key={i}/>;
                     case "Druguse":
-                      return <DruguseView entity={entity} key={entity.name + entity.id}/>;
+                      return <DruguseView entity={entity} key={i}/>;
                     case "Pressure":
-                      return <PressureView entity={entity} key={entity.name + entity.id}/>;
+                      return <PressureView entity={entity} key={i}/>;
                     case "User":
-                      return <UserView entity={entity} key={entity.name + entity.id}/>;
+                      return <UserView entity={entity} key={i}/>;
                     case "List":
-                      return <ListView entity={entity} key={entity.name + entity.id}/>;
+                      return <ListView entity={entity} key={i}/>;
+                    case "Map":
+                      return <MapView entity={entity} key={i}/>;
                     default:
-                      return <div key={entity.name + entity.id}>Unknown entity</div>;
+                      return <div key={i}>Unknown entity</div>;
                   }
                 })()}
               </CardContent>
@@ -88,7 +73,6 @@ export default function DraggableContainer() {
           </Draggable>
         )
       }
-      
   )}
     </div>
   );

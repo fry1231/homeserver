@@ -1,5 +1,5 @@
 import asyncio
-
+import datetime
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
@@ -13,6 +13,7 @@ from config import logger, DOMAIN, templates
 from routers import (
     buses, states, users, logs, ambiance, farm
 )
+from middlewares import AntiFloodMiddleware
 from routers.graphql import graphql_app
 from db.sql import database, migraine_database
 from routers.buses import BusResponse
@@ -48,12 +49,10 @@ app.include_router(graphql_app, prefix="/graphql", include_in_schema=False)
 app.include_router(ambiance.router)
 app.include_router(farm.router)
 
-
+# Middlewares
 # @app.middleware("http")
 # async def graphql_playground(request: Request, call_next):
 #     return await call_next(request)
-
-
 origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
@@ -75,6 +74,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(AntiFloodMiddleware(limit=100, per=datetime.timedelta(minutes=1)))
 
 
 class RefreshResponse(BaseModel):

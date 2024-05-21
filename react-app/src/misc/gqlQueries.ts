@@ -114,6 +114,19 @@ export const GET_USER_BY_ID = gql`
   }
 `;
 
+export const GET_USERS_WITH_COORDINATES = gql`
+  query GetUsersWithCoordinates {
+    users (hasCoordinates: true) {
+      telegramId
+      firstName
+      lastName
+      userName
+      latitude
+      longitude
+    }
+  }
+`;
+
 export const GET_PAINCASES_BY_ID = gql`
   query GetPaincasesById($ids: [Int!]!) {
     paincases(ids: $ids) {

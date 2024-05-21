@@ -214,7 +214,7 @@ export const FarmChart = ({startDate, endDate}) => {
       overlaying: 'y',
       position: 1,
       fixedrange: true,
-      range: [0, 400],
+      range: [50, 200],
       ...commonAxisLayout,
       gridcolor: colors.grey[200],
     },

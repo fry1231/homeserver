@@ -82,6 +82,17 @@ export const ListView = ({entity}) => {
     listEntities.push({name: "", id: 0})
   }
   
+  // Sort by date OR datetime (if exist) descending
+  listEntities.sort((a, b) => {
+    if (a.shortViewData?.date && b.shortViewData?.date) {
+      return new Date(b.shortViewData.date) - new Date(a.shortViewData.date);
+    } else if (a.shortViewData?.datetime && b.shortViewData?.datetime) {
+      return new Date(b.shortViewData.datetime) - new Date(a.shortViewData.datetime);
+    } else {
+      return 0;
+    }
+  });
+  
   return (
   
     <List>

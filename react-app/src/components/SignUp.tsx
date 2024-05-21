@@ -1,25 +1,76 @@
-import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import {createTheme, ThemeProvider} from '@mui/material/styles';
+import axios from 'axios';
+import {useState, useEffect} from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import {Tooltip} from "@mui/material";
+import {useError} from "../misc/ErrorHandling";
 
 
 export default function SignUp() {
+  const {setErrorMessage} = useError();
+  const [username, setUsername] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [valid, setValid] = useState<boolean>(false);
+  const [validationError, setValidationError] = useState<string>('');
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    
+    // submit data
+    axios.post('/users/signup', data, {timeout: 5000})
+      .catch((error) => {
+        console.log(error);
+        if (error.response)
+          setErrorMessage(error.response.data.detail);
+        else
+          setErrorMessage(error.message);
+      });
   };
+  
+  const checkUsernameValidity = async (username: string) => {
+    try {
+      const response = await axios.get(`/users/check-username?username=${username}`);
+      const data: {valid, message} = response.data;
+      
+      if (data.valid) {
+        // Username is valid
+        setValid(true);
+      } else {
+        // Username is not valid
+        setValidationError(data.message)
+        setValid(false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setValidationError('Server error. Please try again later.')
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Check username validity when the username changes
+  useEffect(() => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    
+    if (username) {
+      setLoading(true);
+      setTimer(setTimeout(() => {
+        checkUsernameValidity(username);
+      }, 1000));
+    }
+  }, [username]);
   
   return (
         <Box
@@ -47,6 +98,19 @@ export default function SignUp() {
                   id="username"
                   label="Username"
                   autoFocus
+                  onChange={(e) => setUsername(e.target.value)}
+                  InputProps={{
+                    endAdornment:
+                      loading
+                      ? <CircularProgress color="secondary" size={20}/>
+                      : valid
+                        ? <CheckCircleIcon color="success"/>
+                        : username.length === 0
+                          ? null
+                          : <Tooltip title={validationError}>
+                              <CancelIcon color="error" aria-hidden={undefined}/>
+                            </Tooltip>
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>

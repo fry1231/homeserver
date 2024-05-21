@@ -77,12 +77,8 @@ const StatisticsReport = ({afterDate, beforeDate}) => {
   
   return (
     <Paper elevation={3}>
-      {
-        loading
-          ? <LinearProgress/>
-          : null
-      }
-      {data && (
+      { loading && <LinearProgress/> }
+      { data && (
         // <div> className={`${flicker} ${withAnimation}`}>
         <div>
           <Typography>New users: {newUsers.length} <IconButton onClick={() => {

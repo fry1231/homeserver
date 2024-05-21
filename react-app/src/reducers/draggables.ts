@@ -1,4 +1,5 @@
 import {createSlice} from "@reduxjs/toolkit";
+import {UserProps} from "../components/views/UserView";
 
 
 // Object that represents a draggable window with content
@@ -6,8 +7,8 @@ export interface DraggableEntity {
   name: string;   // "Paincase", "Druguse", "Pressure", "User", "List", "Custom"
   id: number;  // id of the DB entry | telegramId for User | n for List & Custom
   pos?: {x: number, y: number, z: number};   // null if new window
-  nestedContent?: DraggableEntity[];    // Used for List
-  shortViewData?: any;
+  nestedContent?: DraggableEntity[] | UserProps[];    // Used for List and Map
+  shortViewData?: any;    // Short view of the data or coordinates for Map
 }
 
 interface payloadPosChanged {
@@ -20,11 +21,11 @@ const initialState = {
   lastPosition: {
     x: 0,
     y: 0,
-    z: 2,
+    z: 1000,
   },
   entities: [] as DraggableEntity[],
   n: 0,    // with each new window, n is incremented
-  maxZ: 2  // with each dragStart
+  maxZ: 1000  // with each dragStart
 };
 
 const slice = createSlice({
@@ -46,7 +47,7 @@ const slice = createSlice({
     
     addWindow(state, action) {
       const newEntity: DraggableEntity = action.payload;
-      // Donot add empty List windows
+      // Do not add empty List windows
       if (newEntity.name === "List" && newEntity.nestedContent?.length === 0) {
         return;
       }
@@ -58,8 +59,11 @@ const slice = createSlice({
       };
       state.n += 1;
       state.maxZ += 1;
-      state.entities.push({...newEntity, pos: state.lastPosition});
-      // console.log("added window", newEntity.name, newEntity.id);
+      if (newEntity.pos) {
+        state.entities.push({...newEntity, pos: {...newEntity.pos, z: state.maxZ}});
+      } else {
+        state.entities.push({...newEntity, pos: state.lastPosition});
+      }
     },
     
     closeWindow(state, action) {
@@ -69,7 +73,7 @@ const slice = createSlice({
       if (state.entities.length === 0) {
         state.lastPosition = {x: 0, y: 0, z: 2};
         state.n = 0;
-        state.maxZ = 2;
+        state.maxZ = 1000;
       }
       // console.log("closed window", name, id)
     },
@@ -78,7 +82,7 @@ const slice = createSlice({
       state.entities.length = 0;
       state.lastPosition = {x: 0, y: 0, z: 2};
       state.n = 0;
-      state.maxZ = 2;
+      state.maxZ = 1000;
     }
   }
 });

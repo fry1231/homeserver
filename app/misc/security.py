@@ -55,12 +55,10 @@ async def user_authorized(token: str, check_if_admin: bool = True) -> bool:
         payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
         user_props = orjson.loads(payload.get("sub"))
         uuid = user_props.get("uuid")
+        is_admin = user_props.get("is_admin")
         if uuid is None:
             return False
-        user = await User.objects.get_or_none(uuid=uuid)
-        if user is None:
-            return False
-        if check_if_admin and not dependencies.is_admin:
+        if check_if_admin and not is_admin:
             return False
         return True
     except JWTError:
