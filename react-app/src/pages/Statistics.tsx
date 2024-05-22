@@ -91,17 +91,18 @@ const Statistics = () => {
   const {loading: timezoneLoading, error: timezoneError, data: timezoneData} = useQuery(GET_TIMEZONES);
   let usersByTimezone = {};
   if (timezoneData) {
-    timezoneData.timezones.forEach((timezone: any) => {
-      const {loading, error, data} = useQuery(GET_USERS_SHORT_BY, {
-        variables: {
-          timezone: timezone.timezone,
-          includeTimezone: true}
-      });
-      if (data) {
-        usersByTimezone[timezone.timezone] = data.users;
-      }
+    timezoneData.timezones.map((timezone: any) => {usersByTimezone[timezone.timezone] = []});
+    }
+  Object.entries(usersByTimezone).forEach(([timezone, arr]) => {
+    const {loading, error, data} = useQuery(GET_USERS_SHORT_BY, {
+      variables: {
+        timezone: timezone,
+        includeTimezone: true}
     });
-  }
+    if (data) {
+      usersByTimezone[timezone] = data.users;
+    }
+  });
   
   return (
     <Container>

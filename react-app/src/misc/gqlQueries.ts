@@ -127,22 +127,27 @@ export const GET_USERS_WITH_COORDINATES = gql`
   }
 `;
 
-export const GET_USERS_SHORT_BY = gql`
-  query GetUserShortBy($language: String, $timezone: String, $includeLanguage: Boolean!, $includeTimezone: Boolean!) {
-    users(language: $language, timezone: $timezone) {
+export const GET_USERS_SHORT_BY_LANG = gql`
+  query GetUserShortBy($language: String) {
+    users(language: $language) {
       telegramId
       firstName
       lastName
       userName
-      language @include(if: $includeLanguage)
-      timezone @include(if: $includeTimezone)
+      language
     }
   }
 `;
 
-export const GET_TIMEZONES = gql`
-  query GetTimezones {
-    timezones
+export const GET_USERS_SHORT_BY_TZ = gql`
+  query GetUserShortBy($timezone: String) {
+    users(timezone: $timezone) {
+      telegramId
+      firstName
+      lastName
+      userName
+      timezone
+    }
   }
 `;
 

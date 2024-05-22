@@ -285,9 +285,17 @@ class Query:
         return [User.from_orm(user) for user in users]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def timezones(self) -> List[str]:
-        timezones = await OrmarMigraineUser.objects.values('timezone')
-        return list(set([el['timezone'] for el in timezones]))
+    async def users_by_timezones(self) -> dict[str, list[User]]:
+        users = await OrmarMigraineUser.objects.values([
+            'telegram_id',
+            'first_name',
+            'last_name',
+            'user_name',
+            'timezone'
+        ])
+        timezones = list(set([el['timezone'] for el in users]))
+        return {timezone: [User.from_orm(user) for user in users if user['timezone'] == timezone]
+                for timezone in timezones}
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def paincases(self,

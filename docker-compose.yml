@@ -119,7 +119,7 @@ services:
     container_name: prometheus
     image: prom/prometheus:v2.52.0
     command:
-      - "--storage.tsdb.retention.time=7d"
+      - "--storage.tsdb.retention.time=3d"
       - "--config.file=/etc/prometheus/prometheus.yml"
     restart: always
     networks:
