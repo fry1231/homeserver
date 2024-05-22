@@ -9,7 +9,7 @@ import DateRangePicker from "../components/DateRangePicker";
 import DatePicker from "../components/DatePicker";
 import {useState} from "react";
 import {useQuery} from "@apollo/client";
-import {GET_USERS_SHORT_BY, GET_USERS_WITH_COORDINATES, GET_TIMEZONES} from "../misc/gqlQueries";
+import {GET_USERS_SHORT_BY_LANG, GET_USERS_SHORT_BY_TZ, GET_USERS_WITH_COORDINATES} from "../misc/gqlQueries";
 import {MarkerProps, Map} from "../components/Map";
 import {useDispatch} from "react-redux";
 import {addWindow} from "../reducers/draggables";
@@ -77,7 +77,7 @@ const Statistics = () => {
     es: []
   }
   Object.entries(usersByLanguage).forEach(([languageCode, arr]) => {
-    const {loading, error, data} = useQuery(GET_USERS_SHORT_BY, {
+    const {loading, error, data} = useQuery(GET_USERS_SHORT_BY_LANG, {
       variables: {
         language: languageCode,
         includeLanguage: true}
@@ -88,21 +88,8 @@ const Statistics = () => {
   });
   
   // Users by timezone
-  const {loading: timezoneLoading, error: timezoneError, data: timezoneData} = useQuery(GET_TIMEZONES);
-  let usersByTimezone = {};
-  if (timezoneData) {
-    timezoneData.timezones.map((timezone: any) => {usersByTimezone[timezone.timezone] = []});
-    }
-  Object.entries(usersByTimezone).forEach(([timezone, arr]) => {
-    const {loading, error, data} = useQuery(GET_USERS_SHORT_BY, {
-      variables: {
-        timezone: timezone,
-        includeTimezone: true}
-    });
-    if (data) {
-      usersByTimezone[timezone] = data.users;
-    }
-  });
+  const {loading: timezoneLoading, error: timezoneError, data: timezoneData} = useQuery(GET_USERS_SHORT_BY_TZ);
+  const usersByTimezone = timezoneData.usersByTimezones;
   
   return (
     <Container>

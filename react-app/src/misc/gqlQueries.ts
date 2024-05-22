@@ -128,7 +128,7 @@ export const GET_USERS_WITH_COORDINATES = gql`
 `;
 
 export const GET_USERS_SHORT_BY_LANG = gql`
-  query GetUserShortBy($language: String) {
+  query GetUserShortByLang($language: String) {
     users(language: $language) {
       telegramId
       firstName
@@ -140,8 +140,8 @@ export const GET_USERS_SHORT_BY_LANG = gql`
 `;
 
 export const GET_USERS_SHORT_BY_TZ = gql`
-  query GetUserShortBy($timezone: String) {
-    users(timezone: $timezone) {
+  query GetUserShortByTZ {
+    usersByTimezones {
       telegramId
       firstName
       lastName

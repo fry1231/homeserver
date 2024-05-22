@@ -220,6 +220,12 @@ class Statistics:
 
 
 @strawberry.type
+class TimezoneUsers:
+    timezone: str
+    users: List[User]
+
+
+@strawberry.type
 class Query:
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def user(self, telegram_id: BigInt) -> User:
@@ -285,7 +291,7 @@ class Query:
         return [User.from_orm(user) for user in users]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def users_by_timezones(self) -> dict[str, list[User]]:
+    async def users_by_timezones(self) -> List[TimezoneUsers]:
         users = await OrmarMigraineUser.objects.values([
             'telegram_id',
             'first_name',
@@ -294,8 +300,9 @@ class Query:
             'timezone'
         ])
         timezones = list(set([el['timezone'] for el in users]))
-        return {timezone: [User.from_orm(user) for user in users if user['timezone'] == timezone]
-                for timezone in timezones}
+        return [TimezoneUsers(timezone=timezone,
+                              users=[User.from_orm(user) for user in users if user['timezone'] == timezone])
+                for timezone in timezones]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def paincases(self,
