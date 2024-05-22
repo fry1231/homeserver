@@ -118,11 +118,16 @@ services:
   prometheus:
     container_name: prometheus
     image: prom/prometheus:v2.52.0
+    command:
+      - "--storage.tsdb.retention.time=7d"
+      - "--config.file=/etc/prometheus/prometheus.yml"
     restart: unless-stopped
     networks:
       - migrebot_migrebot-network
     expose:
         - 9090
+    volumes:
+      - /monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
 
   grafana:
@@ -131,10 +136,12 @@ services:
     restart: unless-stopped
     networks:
       - migrebot_migrebot-network
-    volumes:
-      - grafana-storage:/var/lib/grafana
     expose:
       - 3000
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - /monitoring/datasources:/etc/grafana/provisioning/datasources
+      - /monitoring/dashboards:/etc/grafana/provisioning/dashboards
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.grafana.rule=Host(`dashboard.${DOMAIN:?err}`)"
@@ -145,7 +152,7 @@ services:
 
   node_exporter:
     image: prom/node-exporter:v1.8.1
-    container_name: node_exporter
+    container_name: node-exporter
     command:
       - '--path.rootfs=/host'
       - '--collector.disable-defaults'
@@ -155,9 +162,12 @@ services:
       - '--collector.netstat'
 #    network_mode: host
     pid: host
+
     restart: unless-stopped
     networks:
       - migrebot_migrebot-network
+    expose:
+      - 9100
     volumes:
       - '/:/host:ro,rslave'
 
