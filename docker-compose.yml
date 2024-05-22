@@ -127,7 +127,7 @@ services:
     expose:
         - 9090
     volumes:
-      - /monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
 
   grafana:
@@ -140,8 +140,8 @@ services:
       - 3000
     volumes:
       - grafana-storage:/var/lib/grafana
-      - /monitoring/datasources:/etc/grafana/provisioning/datasources
-      - /monitoring/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.grafana.rule=Host(`dashboard.${DOMAIN:?err}`)"
