@@ -121,7 +121,7 @@ services:
     command:
       - "--storage.tsdb.retention.time=7d"
       - "--config.file=/etc/prometheus/prometheus.yml"
-    restart: unless-stopped
+    restart: always
     networks:
       - migrebot_migrebot-network
     expose:
