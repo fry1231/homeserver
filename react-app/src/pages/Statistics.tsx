@@ -11,8 +11,15 @@ import {useState} from "react";
 import {useQuery} from "@apollo/client";
 import {GET_USERS_SHORT_BY_LANG, GET_USERS_SHORT_BY_TZ, GET_USERS_WITH_COORDINATES} from "../misc/gqlQueries";
 import {MarkerProps, Map} from "../components/Map";
+import {UserProps} from "../components/views/UserView";
 import {useDispatch} from "react-redux";
 import {addWindow} from "../reducers/draggables";
+
+
+interface timezoneUsers {
+  timezone: string,
+  users: UserProps[]
+}
 
 
 const Statistics = () => {
@@ -79,8 +86,8 @@ const Statistics = () => {
   Object.entries(usersByLanguage).forEach(([languageCode, arr]) => {
     const {loading, error, data} = useQuery(GET_USERS_SHORT_BY_LANG, {
       variables: {
-        language: languageCode,
-        includeLanguage: true}
+        language: languageCode
+      }
     });
     if (data) {
       usersByLanguage[languageCode] = data.users;
@@ -89,7 +96,18 @@ const Statistics = () => {
   
   // Users by timezone
   const {loading: timezoneLoading, error: timezoneError, data: timezoneData} = useQuery(GET_USERS_SHORT_BY_TZ);
-  const usersByTimezone = timezoneData.usersByTimezones;
+  let usersByTimezone: timezoneUsers;
+  if (timezoneData) {
+    console.log(timezoneData);
+    usersByTimezone = timezoneData.users.reduce((acc: timezoneUsers, user: UserProps) => {
+      if (!acc[user.timezone]) {
+        acc[user.timezone] = [];
+      }
+      acc[user.timezone].push(user);
+      return acc;
+    }, {});
+  }
+  console.log(usersByTimezone)
   
   return (
     <Container>

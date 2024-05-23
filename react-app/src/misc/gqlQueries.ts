@@ -141,12 +141,14 @@ export const GET_USERS_SHORT_BY_LANG = gql`
 
 export const GET_USERS_SHORT_BY_TZ = gql`
   query GetUserShortByTZ {
-    usersByTimezones {
-      telegramId
-      firstName
-      lastName
-      userName
+    usersByTimezones{
       timezone
+      users{
+        telegramId
+        firstName
+        lastName
+        userName
+      }
     }
   }
 `;

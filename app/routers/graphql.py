@@ -301,7 +301,14 @@ class Query:
         ])
         timezones = list(set([el['timezone'] for el in users]))
         return [TimezoneUsers(timezone=timezone,
-                              users=[User.from_orm(user) for user in users if user['timezone'] == timezone])
+                              users=[
+                                  User(
+                                      telegram_id=user['telegram_id'],
+                                      first_name=user['first_name'],
+                                      last_name=user['last_name'],
+                                      user_name=user['user_name'],
+                                      timezone=user['timezone']
+                                  ) for user in users if user['timezone'] == timezone])
                 for timezone in timezones]
 
     @strawberry.field(permission_classes=[IsAuthenticated])
