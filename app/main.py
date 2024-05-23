@@ -4,6 +4,7 @@ import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 import traceback
 import orjson
 from contextlib import asynccontextmanager
@@ -75,6 +76,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(AntiFloodMiddleware, limit=100, per=datetime.timedelta(minutes=1))
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 class RefreshResponse(BaseModel):

@@ -161,17 +161,17 @@ class Pressure:
 @strawberry.type
 class User:
     telegram_id: BigInt
-    last_notified: datetime.datetime | None
-    notify_every: int | None
-    first_name: str | None
-    last_name: str | None
-    user_name: str | None
-    joined: datetime.date | None    # None for old users
-    timezone: str | None
-    language: str | None
-    utc_notify_at: datetime.time | None
-    latitude: float | None
-    longitude: float | None
+    last_notified: datetime.datetime | None = None
+    notify_every: int | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    user_name: str | None = None
+    joined: datetime.date | None = None    # None for old users
+    timezone: str | None = None
+    language: str | None = None
+    utc_notify_at: datetime.time | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
     n_paincases: int | None = strawberry.field(resolver=get_user_paincases)
     n_druguses: int | None = strawberry.field(resolver=get_user_druguses)
