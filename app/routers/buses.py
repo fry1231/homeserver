@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect, HTTPException, Depends
 from fastapi.responses import StreamingResponse, Response
-from typing import Annotated
+import aiohttp
 import orjson
 from pydantic import BaseModel
 import requests
@@ -64,8 +64,15 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
             try:
                 url = 'https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=STIF:StopArea:SP:50973:'
                 headers = {'Accept': 'application/json', 'apikey': IDF_TOKEN}
-                response = requests.get(url=url, headers=headers)
-                data = response.json()
+                async with aiohttp.ClientSession() as session:
+                    try:
+                        async with session.get(url=url,
+                                               headers=headers,
+                                               timeout=aiohttp.ClientTimeout(total=15)) as response:
+                            data = await response.json()
+                    except aiohttp.ServerTimeoutError:
+                        logger.warning('Timeout error while fetching bus data')
+                        return
 
                 # Append each bus to the corresponding list for a destination
                 departures = data['Siri']['ServiceDelivery']['StopMonitoringDelivery'][0]['MonitoredStopVisit']
@@ -92,10 +99,11 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
         )
         data = {'buses': res.model_dump()}
 
+        # Save data to Redis and publish it
         await redis_conn.set('data', orjson.dumps(data))
         await redis_conn.publish('channel:buses', orjson.dumps(data))
 
-        # Sleep time can be changed in Redis
+        # Waiting for sleep time (can be changed in Redis)
         if (sleep_seconds := await redis_conn.get('BUSES_REFRESH_TIME')) is None:
             if (sleep_seconds := os.getenv("BUSES_REFRESH_TIME")) is None:
                 sleep_seconds = 90
