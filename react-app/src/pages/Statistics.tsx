@@ -96,18 +96,12 @@ const Statistics = () => {
   
   // Users by timezone
   const {loading: timezoneLoading, error: timezoneError, data: timezoneData} = useQuery(GET_USERS_SHORT_BY_TZ);
-  let usersByTimezone: timezoneUsers;
+  let usersByTimezone: timezoneUsers[] = [];
   if (timezoneData) {
-    console.log(timezoneData);
-    usersByTimezone = timezoneData.users.reduce((acc: timezoneUsers, user: UserProps) => {
-      if (!acc[user.timezone]) {
-        acc[user.timezone] = [];
-      }
-      acc[user.timezone].push(user);
-      return acc;
-    }, {});
+    timezoneData.usersByTimezones.forEach((tzArr: timezoneUsers) => {
+      usersByTimezone.push(tzArr);
+    });
   }
-  console.log(usersByTimezone)
   
   return (
     <Container>
@@ -178,10 +172,23 @@ const Statistics = () => {
               <Grid container spacing={2}>
                 {timezoneLoading && <LinearProgress />}
                 {timezoneError && <Typography>Error: {timezoneError.message}</Typography>}
-                {timezoneData && Object.entries(usersByTimezone).map(([timezone, users]) => (
+                {usersByTimezone.map(({timezone, users}) => (
                   <Grid item key={timezone}>
                     <Typography variant="h6">{timezone}</Typography>
-                    <Typography>{users.length}</Typography>
+                    <Typography onClick={(e) => {
+                      dispatch(addWindow({name: 'List', nestedContent: users.map((user: UserProps) => {
+                        return {
+                          name: 'User',
+                          id: user.telegramId,
+                          shortViewData: user
+                        }
+                      }),
+                        pos: {
+                          x: e.clientX + window.scrollX,
+                          y: e.clientY + window.scrollY
+                        }
+                      }))
+                    }}>{users.length}</Typography>
                   </Grid>
                 ))}
               </Grid>

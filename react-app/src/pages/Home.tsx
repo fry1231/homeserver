@@ -10,9 +10,6 @@ export default function Home() {
       <Box width={800} height={100}>
         {/*<Logs logLevels={['WARNING', 'INFO', 'ERROR']}/>*/}
       </Box>
-      <Box width={800} height={200}>
-        <Map userMarkers={[]}/>
-      </Box>
     </Grid>
   );
 };

@@ -34,10 +34,6 @@ export function Map({userMarkers}: {userMarkers: MarkerProps[]}) {
     center[1] /= userMarkers.length;
   }
   
-  useEffect(() => {
-    console.log(boxRef.current.getBoundingClientRect());
-  }, [boxRef.current]);
-  
   return (
     <Box width="60vw" height="50vh" ref={boxRef}>
       <MapContainer center={center} zoom={userMarkers.length === 1 ? 13 : 1} scrollWheelZoom={true}>

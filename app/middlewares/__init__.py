@@ -1,1 +1,2 @@
 from middlewares.antiflood import AntiFloodMiddleware
+from middlewares.gzip import CustomGZipMiddleware

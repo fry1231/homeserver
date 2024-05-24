@@ -23,6 +23,10 @@ interface BusArrival {
   secondsToBus?: number;
 }
 
+/** Calculate time to bus
+ * @param eta - ISOstring with time of bus arrival
+ * @returns string with time to bus in 00:00 format
+**/
 const timeToBus = (eta: string) => {
   const secondsToBus = Math.floor((new Date(eta).getTime() - Date.now()) / 1000);
   const minutes = Math.floor(secondsToBus / 60);
@@ -30,11 +34,10 @@ const timeToBus = (eta: string) => {
   return minutes < 0 || seconds < 0
     ? 'Missed'
     : `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  
 }
 
 export default function BusArrivals() {
-  const {token, setToken} = useAuth();
+  const {token} = useAuth();
   const dispatch = useDispatch();
   const state = useSelector((state) => state.buses);
   const busData = state.busData;
@@ -47,7 +50,8 @@ export default function BusArrivals() {
     axios.get(
       `/buses/arrivals`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Accept-Encoding': 'identity',
         },
         responseType: 'stream',
         cancelToken: source.token,
@@ -95,25 +99,10 @@ export default function BusArrivals() {
       clearInterval(timerId);
     };
   }, [limitReached]);
-
+  
+  console.log(busData)
+  
   return (
-      // <Box display="flex" justifyContent="right" mx={4}>
-      //   <Stack direction="column" alignItems="center">
-      //     <Typography>Refresh Rate</Typography>
-      //     <Stack direction="row" spacing={1} alignItems="center">
-      //       <Typography>Low</Typography>
-      //       <Switch
-      //         checked={state.fastRefresh}
-      //         inputProps={{'aria-label': 'controlled'}}
-      //         onChange={() => {
-      //           dispatch(speedUpRefresh(!state.fastRefresh));
-      //         }}
-      //         label="Fast Update"
-      //         color="warning"/>
-      //       <Typography>High</Typography>
-      //     </Stack>
-      //   </Stack>
-      // </Box>
       <Box display="flex" flexDirection="column" m={4}>
         {busData.map((destination, index) => {
           return (

@@ -36,7 +36,6 @@ export default function States() {
       
       client.onopen = () => {
         setIsOpen(true);
-        console.log('ws opened');
       };
       
       client.onclose = () => {
@@ -46,7 +45,6 @@ export default function States() {
           console.log('ws closed by server');
         } else {
           // Cleanup initiated from app side, can return here, to not attempt a reconnect
-          console.log('ws closed by app component unmount');
           return;
         }
         
@@ -56,7 +54,6 @@ export default function States() {
         
         // Parse event code and log
         setIsOpen(false);
-        console.log('ws closed');
         
         // Setting this will trigger a re-run of the effect,
         // cleaning up the current websocket, but not setting
@@ -74,11 +71,8 @@ export default function States() {
       
       
       return () => {
-        
-        console.log('Cleanup');
         // Dereference, so it will set up next time
         clientRef.current = null;
-        
         client.close();
       }
     }

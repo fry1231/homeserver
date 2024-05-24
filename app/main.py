@@ -4,7 +4,6 @@ import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
 import traceback
 import orjson
 from contextlib import asynccontextmanager
@@ -14,7 +13,7 @@ from config import logger, DOMAIN, templates
 from routers import (
     buses, states, users, logs, ambiance, farm
 )
-from middlewares import AntiFloodMiddleware
+from middlewares import AntiFloodMiddleware, CustomGZipMiddleware
 from routers.graphql import graphql_app
 from db.sql import database, migraine_database
 from routers.buses import BusResponse
@@ -76,7 +75,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(AntiFloodMiddleware, limit=100, per=datetime.timedelta(minutes=1))
-app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(CustomGZipMiddleware, exclude_routes=['/buses/arrivals'], minimum_size=1000)
 
 
 class RefreshResponse(BaseModel):
