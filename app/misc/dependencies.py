@@ -1,4 +1,3 @@
-import inspect
 from contextlib import AsyncExitStack
 from functools import wraps
 from typing import Any, Callable, Coroutine, TypeVar, Annotated

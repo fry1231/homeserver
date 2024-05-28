@@ -54,16 +54,16 @@ const slice = createSlice({
       state.entities = state.entities.filter((w) => w.name !== action.payload.name || w.id !== action.payload.id);
       state.lastPosition = {
         x: state.lastPosition.x + 30,
-        y: state.lastPosition.y + 30,
+        y: state.lastPosition.y + 30,    // Consider scroll
         z: state.maxZ + 1
       };
       state.n += 1;
       state.maxZ += 1;
-      if (newEntity.pos) {
-        state.entities.push({...newEntity, pos: {...newEntity.pos, z: state.maxZ}});
-      } else {
+      // if (newEntity.pos) {
+      //   state.entities.push({...newEntity, pos: {...newEntity.pos, z: state.maxZ}});
+      // } else {
         state.entities.push({...newEntity, pos: state.lastPosition});
-      }
+      // }
     },
     
     closeWindow(state, action) {

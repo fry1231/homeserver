@@ -51,10 +51,10 @@ export default function BusArrivals() {
       `/buses/arrivals`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Accept-Encoding': 'identity',
         },
         responseType: 'stream',
         cancelToken: source.token,
+        // Update bus data on each chunk of data received
         onDownloadProgress: (progressEvent) => {
           const newBytes = progressEvent.loaded - previousBytes;
           previousBytes = progressEvent.loaded;
@@ -64,6 +64,7 @@ export default function BusArrivals() {
             newChunk
             );
           const busData = data.busData;
+          // Calculate time to bus for each bus, modify inplace
           busData.map((destination) => {
             destination.buses.map((bus) => {
               bus.secondsToBus = Math.floor((new Date(bus.eta).getTime() - Date.now()) / 1000);

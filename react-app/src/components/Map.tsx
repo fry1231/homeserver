@@ -8,6 +8,8 @@ import {useDispatch} from "react-redux";
 import {tokens} from "../theme";
 import {useTheme} from "@mui/material";
 import {useEffect, useRef} from "react";
+import "leaflet/dist/leaflet.css";
+import {Icon} from 'leaflet';
 
 
 export interface MarkerProps {
@@ -17,6 +19,15 @@ export interface MarkerProps {
 }
 
 export function Map({userMarkers}: {userMarkers: MarkerProps[]}) {
+  let defaultIcon = new Icon({
+    iconUrl: "/images/marker-icon.png",
+    iconRetinaUrl: "/images/marker-icon-2x.png",
+    shadowUrl: "/images/marker-shadow.png",
+    iconSize: [15, 23],
+    // iconAnchor: [12, 41],
+    popupAnchor: [1, -15],
+    shadowSize: [0, 0]
+  });
   const dispatch = useDispatch();
   const theme = useTheme();
   const boxRef = useRef();
@@ -42,7 +53,7 @@ export function Map({userMarkers}: {userMarkers: MarkerProps[]}) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {userMarkers.map((user, i) => (
-          <Marker key={i} position={user.coords}>
+          <Marker key={i} position={user.coords} icon={defaultIcon}>
             <Popup>
               <Typography component="span">ID: {user.telegramId}</Typography>
               <br/>
