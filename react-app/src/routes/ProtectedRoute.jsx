@@ -2,7 +2,7 @@ import {Navigate, Outlet} from "react-router-dom";
 import {useAuth} from "../misc/authProvider.jsx";
 import axios from "axios";
 import {jwtDecode} from "jwt-decode";
-import {useError} from "../misc/ErrorHandling.js";
+import {useError} from "../misc/ErrorHandling";
 
 
 export const ProtectedRoute = () => {
