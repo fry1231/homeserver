@@ -183,7 +183,7 @@ async def google_login(code: str):
                     <html>
                     <script>
                         localStorage.setItem("token", "{jwt_token}");
-                        setTimeout(function(){{ window.location.href =`https://hs.${DOMAIN}`; }}, 1000);
+                        setTimeout(function(){{ window.location.href =`https://hs.{DOMAIN}`; }}, 1000);
                     </script>
                     <body>
                         <h5>Logging in...</h5>
