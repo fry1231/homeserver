@@ -1,4 +1,4 @@
-from contextlib import AsyncExitStack
+from contextlib import AsyncExitStack, asynccontextmanager
 from functools import wraps
 from typing import Any, Callable, Coroutine, TypeVar, Annotated
 import orjson
@@ -15,8 +15,9 @@ from config import SECRET, logger
 from db.influx import get_influx_client
 from db.redis import redis_pool
 from db.sql.models import User
-from misc.security import oauth2_scheme, ALGORITHM, TokenData, user_authorized
-
+from security.security import TokenData
+from security.config import ALGORITHM, oauth2_scheme
+from security.authorization import authorize_user
 
 T = TypeVar("T")
 
@@ -90,9 +91,13 @@ farm_client = lambda: get_influx_client('farm')
 
 
 # redis connection from pool
-def get_redis_conn():
+@asynccontextmanager
+async def get_redis_conn():
     redis_conn = aioredis.Redis(connection_pool=redis_pool, decode_responses=True)
-    return redis_conn
+    try:
+        yield redis_conn
+    finally:
+        await redis_conn.close()
 
 
 # ========= security dependencies
@@ -118,26 +123,19 @@ async def is_authorized(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 
-async def is_admin(
-        current_user: Annotated[User, Depends(is_authorized)]
-):
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to access this resource"
-        )
-    return current_user
-
-
 async def websocket_authorized(
         websocket: WebSocket,
         session: Annotated[str | None, Cookie()] = None,
         token: Annotated[str | None, Query()] = None,
 ):
+    """
+    Check if websocket connection is authorized
+    :return: True if authorized, else raises WebSocketException
+    """
     if session is None and token is None:
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     if token:
-        authorized = await user_authorized(token)
+        authorized = authorize_user(token)
         if not authorized:
             raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     return True
