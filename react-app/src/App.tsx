@@ -9,7 +9,7 @@ import logsReducer from './reducers/logs';
 import positionsReducer from './reducers/draggables';
 import AuthProvider from "./misc/authProvider.jsx";
 import Routes from "./routes";
-import axios from "axios";
+import axios from "../misc/AxiosInstance";
 import {ApolloWrapper} from "./misc/ApolloClient";
 import {ErrorProvider} from "./misc/ErrorHandling";
 
@@ -26,10 +26,6 @@ const store = configureStore({
 });
 
 function App() {
-  let protocol: string;
-  import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? protocol = "https" : protocol = "http";
-  axios.defaults.baseURL = `${protocol}://${import.meta.env.VITE_REACT_APP_HOST}`;
-  
   const [theme, colorMode] = useMode();
   return (
     <ColorModeContext.Provider value={colorMode}>

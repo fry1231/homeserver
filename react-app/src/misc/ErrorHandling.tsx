@@ -1,24 +1,38 @@
 import {createContext, useState, useContext, useEffect} from 'react';
-import {Alert} from "@mui/material";
+import {Alert, Typography} from "@mui/material";
+
 
 const ErrorContext = createContext({
   errorMessage: '',
-  setErrorMessage: () => {
+  setErrorMessage: (value) => {
   },
 });
 
-export const useError = () => useContext(ErrorContext);
+export const useError = () => {
+  const context = useContext(ErrorContext);
+  const {errorMessage, setErrorMessage} = context;
+  
+  useEffect(() => {
+    errorMessage && setTimeout(() => setErrorMessage(''), 5000);
+  }, [errorMessage, setErrorMessage]);
+  
+  return context;
+};
 
 export const ErrorProvider = ({children}) => {
   const [errorMessage, setErrorMessage] = useState('');
-  useEffect(() => {
-    errorMessage && setTimeout(() => setErrorMessage(''), 5000);
-  }, [errorMessage]);
+  
   return (
     <ErrorContext.Provider value={{errorMessage, setErrorMessage}}>
       {errorMessage && (
         <Alert severity="error" onClose={() => setErrorMessage('')}>
-          {errorMessage}
+          {
+            errorMessage.split('\n')
+                        .map(
+                          (line: string, i: number) =>
+                          <Typography key={i}>{line}</Typography>
+                        )
+          }
         </Alert>
       )}
       {children}

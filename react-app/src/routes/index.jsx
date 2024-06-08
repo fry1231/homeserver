@@ -1,6 +1,6 @@
 import {RouterProvider, createBrowserRouter, useRoutes} from "react-router-dom";
 import {useAuth} from "../misc/authProvider.jsx";
-import {ProtectedRoute} from "./ProtectedRoute";
+import {ProtectedRoute, TokenCookieToStorage} from "./ProtectedRoute";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
 import Farm from "../pages/Farm";
@@ -22,13 +22,9 @@ const Routes = () => {
     // Define public routes accessible to all users
     const routesForPublic = [
         // {
-        //     path: "/service",
-        //     element: <div>Service Page</div>,
-        // },
-        // {
-        //     path: "/about-us",
-        //     element: <div>About Us</div>,
-        // },
+        //     path: "/set-token",
+        //     element: <TokenCookieToStorage />,
+        // }
     ];
 
     // Define routes accessible only to authenticated users
@@ -74,7 +70,12 @@ const Routes = () => {
         {
             path: "/signup",
             element: <SignUp />,
+        },
+        {
+            path: "/set-token",
+            element: <TokenCookieToStorage />,
         }
+
     ];
 
     const routeNotFound = {
@@ -100,7 +101,8 @@ const Routes = () => {
         return curr.children ? acc.concat(curr.children.map(child => child.path)) : acc.concat(curr.path);
     }, []);
     const currentPath = window.location.pathname;
-    const showTopbar = currentPath !== "/login" && currentPath !== "/signup" && availablePaths.includes(currentPath);
+    const showTopbar = routesForNotAuthenticatedOnly.every(route => route.path !== currentPath)
+        && availablePaths.includes(currentPath);
 
     routes = [...routes, routeNotFound];
 

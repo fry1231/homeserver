@@ -10,7 +10,10 @@ WORKDIR /react-app
 # install app dependencies
 COPY package.json ./
 COPY package-lock.json ./
-RUN npm install
+
+RUN apk add numactl
+
+RUN numactl --physcpubind=+1 npm install
 #RUN npm install react-scripts@3.4.1 -g
 
 # add app

@@ -33,9 +33,9 @@ class User(ormar.Model):
 
     uuid = ormar_pg_ext.UUID(primary_key=True, default=lambda: uuid4().hex)
     username = String(max_length=256, nullable=False)
-    hashed_password = String(max_length=256)
+    hashed_password = String(max_length=256, nullable=False)
     email = String(max_length=256, nullable=False)
-    is_admin = Boolean(default=False)
+    scopes = String(max_length=256, nullable=True)
 
 
 # ======================  Migraine Models  ====================== #

@@ -1,7 +1,6 @@
-import axios from "axios";
+import axios from "../misc/AxiosInstance";
 import {useEffect, useState} from "react";
 import {useTheme} from "@mui/material";
-import {useAuth} from "../misc/authProvider.jsx";
 import {timeoutAbortSignal} from "../misc/utils";
 import Plot from 'react-plotly.js';
 import {tokens} from "../theme";
@@ -214,7 +213,7 @@ export const FarmChart = ({startDate, endDate}) => {
       overlaying: 'y',
       position: 1,
       fixedrange: true,
-      range: [50, 200],
+      range: [0, 200],
       ...commonAxisLayout,
       gridcolor: colors.grey[200],
     },

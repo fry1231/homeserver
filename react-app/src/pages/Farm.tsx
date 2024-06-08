@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../misc/AxiosInstance";
 import {timeoutAbortSignal} from "../misc/utils";
 import {useEffect, useState} from "react";
 import {Button, Grid} from "@mui/material";

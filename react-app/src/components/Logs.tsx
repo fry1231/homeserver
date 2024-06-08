@@ -6,6 +6,7 @@ import {useAuth} from "../misc/authProvider.jsx";
 import {tokens} from "../theme";
 import {useTheme} from "@mui/material/styles";
 import {addWindow} from "../reducers/draggables";
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 
@@ -213,49 +214,111 @@ export default function Logs({logLevels}) {
     handleScroll(null);
   }, [scrollable.current]);
   
-  // Format the log message, transforming User <id> into a clickable link if necessary
+  /** Format the log message, transforming User <id> into a clickable link if necessary */
   const FormattedMessage = ({message}) => {
     const [isFolded, setIsFolded] = useState(true);
-    const maxLength = 50;
-    const messageParts = message.split(/(User \d+)/);
+    const [rowWidth, setRowWidth] = useState(50000);
+    // Determing the maximum length of the message, fitting the row width
+    const [isOverflowing, setIsOverflowing] = useState(false);
+    const messageRef = useRef(null);
+    useEffect(() => {
+      if (messageRef.current) {
+        // Save the original white-space style
+        const originalWhiteSpace = messageRef.current.style.whiteSpace;
+    
+        // Change the white-space to 'nowrap' and check the height
+        messageRef.current.style.whiteSpace = 'nowrap';
+        const nowrapHeight = messageRef.current.clientHeight;
+    
+        // Change the white-space back to the original style and check the height
+        messageRef.current.style.whiteSpace = originalWhiteSpace;
+        const normalHeight = messageRef.current.clientHeight;
+        
+        const width = messageRef.current.offsetWidth;
+        setRowWidth(width);
+        console.log(width);
+    
+        // If the height increases when the text is wrapped, it means the text is overflowing
+        if (normalHeight > nowrapHeight) {
+          setIsOverflowing(true);
+          setIsFolded(true);
+        }
+      }
+    }, [message]);
+    const maxLength = 500;
+    const messageParts = message.split(/(User \d+|User is None)/).filter(Boolean);
     const toggleFold = () => {
       setIsFolded(!isFolded);
     };
     return (
       <>
         {messageParts.map((part, i) => {
-          if (part.startsWith("User")) {
+          if (part.startsWith("User") && !part.startsWith("User ID cannot")) {
             const userId = parseInt(part.replace("User ", ""));
             return (
               <div key={i}>
                 <Typography variant="h7" color={colors.grey[300]}>User</Typography>
-                <Typography ml={1} variant="h7" color={colors.orangeAccent[300]}
-                                 onClick={() => dispatch(
-                                   addWindow({name: "User", id: parseInt(userId)})
-                                 )}
-                >{userId}</Typography>
+                {
+                  !isNaN(userId)
+                    ? <Typography variant="h7" color={colors.orangeAccent[300]}
+                                  onClick={() => dispatch(
+                                    addWindow({name: "User", id: parseInt(userId)})
+                                  )}
+                    > {userId}</Typography>
+                    : <Typography variant="h7" color={colors.grey[300]}> is None</Typography>
+                }
               </div>
             );
           } else {
             // Display only the first maxLength characters of the message
             const displayText = isFolded && part.length > maxLength ? `${part.substring(0, maxLength)}` : part;
+            // Styles
+            const foldedStyle = {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: `${rowWidth}px`
+            };
+            const unfoldedStyle = {
+              overflowWrap: 'anywhere',
+              // whiteSpace: 'pre-wrap',
+              // maxWidth: `${rowWidth}px`
+            };
+            
             // Split the text into lines on \n
             return displayText.split('\n').map((line, j) => (
                 <Typography
+                  ref={messageRef}
+                  // style={{
+                  //   overflowWrap: 'anywhere',
+                  //   overflow: 'hidden',
+                  //   textOverflow: 'ellipsis',
+                  //   whiteSpace: 'nowrap',
+                  //   maxWidth: `${rowWidth}px`
+                  // }}
+                  style={isFolded ? foldedStyle : unfoldedStyle}
                   ml={(j === 0) && (line.startsWith('.')) ? 0 : 1}
-                  key={`${i}-${j}`} variant="h7" color={colors.grey[300]} component="p"
-                              style={{overflowWrap: 'anywhere'}}>{line}</Typography>
+                  key={`${i}-${j}`}
+                  variant="h7"
+                  color={colors.grey[300]}
+                  component="p">{line}</Typography>
             ));
           }
         })}
         {isFolded && message.length > maxLength &&   // unfold button if the message is longer than maxLength
-            <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}><UnfoldMoreIcon color="secondary" /></Typography>}
+            <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}>
+                <UnfoldMoreIcon color="secondary" />
+            </Typography>}
         {!isFolded && message.length > maxLength &&   // fold button if the message is longer than maxLength
-            <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}><UnfoldLessIcon color="error" /></Typography>}
+            <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}>
+                <UnfoldLessIcon color="error" />
+            </Typography>}
+        {isOverflowing && <MoreHorizIcon />}
+        
       </>
     );
   }
-  
+
   return (
     <Box style={{overflow: 'hidden'}}>
       <Paper ref={scrollable} onScroll={handleScroll} style={{position: 'relative', overflowY: 'scroll', height: '80vh', width: '80vw'}}>

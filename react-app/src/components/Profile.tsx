@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../misc/AxiosInstance";
 import {Button, Typography} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "../misc/authProvider.jsx";

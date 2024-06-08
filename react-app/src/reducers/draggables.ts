@@ -52,6 +52,7 @@ const slice = createSlice({
         return;
       }
       state.entities = state.entities.filter((w) => w.name !== action.payload.name || w.id !== action.payload.id);
+      state.entities = state.entities.filter((w) => w.name !== action.payload.name);
       state.lastPosition = {
         x: state.lastPosition.x + 30,
         y: state.lastPosition.y + 30,    // Consider scroll

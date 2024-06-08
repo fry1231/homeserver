@@ -25,7 +25,7 @@ the irrigation process.
 
 - Backend:
   - **Python**: FastAPI, Pydantic, SQLAlchemy, Ormar, Strawberry
-  - **Databases**: PostgreSQL, Redis
+  - **Databases**: PostgreSQL, Redis, InfluxDB
 - Frontend:
   - React
   - Vite

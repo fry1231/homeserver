@@ -1,7 +1,9 @@
 import asyncio
 import datetime
 import uvicorn
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import FastAPI, Request, HTTPException, Depends, status
+from fastapi.responses import ORJSONResponse
+from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
@@ -35,7 +37,7 @@ async def lifespan(app_: FastAPI):
     await migraine_database.disconnect()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 app.state.database = database
 app.mount("/static", StaticFiles(directory="static"), name="static")
 # app.include_router(tasks.router)
@@ -75,6 +77,18 @@ app.add_middleware(
 )
 app.add_middleware(AntiFloodMiddleware, limit=100, per=datetime.timedelta(minutes=1))
 app.add_middleware(CustomGZipMiddleware, exclude_routes=['/buses/arrivals'], minimum_size=1000)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    All 422 validation errors converts to user friendly details, that can be shown to the user directly
+    """
+    error_messages = [err['msg'].replace('Assertion failed, ', '') for err in exc.errors()]
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="\n".join(error_messages)
+    )
 
 
 class RefreshResponse(BaseModel):

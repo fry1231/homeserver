@@ -14,6 +14,7 @@ import {MarkerProps, Map} from "../components/Map";
 import {UserProps} from "../components/views/UserView";
 import {useDispatch} from "react-redux";
 import {addWindow} from "../reducers/draggables";
+import {PieChart} from '@mui/x-charts';
 
 
 interface timezoneUsers {
@@ -83,6 +84,15 @@ const Statistics = () => {
     fr: [],
     es: []
   }
+  let langData = [
+    {id: 0, value: 0, label: 'en'},
+    {id: 1, value: 0, label: 'ru'},
+    {id: 2, value: 0, label: 'uk'},
+    {id: 3, value: 0, label: 'fr'},
+    {id: 4, value: 0, label: 'es'},
+  ];
+
+  let languageDataLoaded = false;
   Object.entries(usersByLanguage).forEach(([languageCode, arr]) => {
     const {loading, error, data} = useQuery(GET_USERS_SHORT_BY_LANG, {
       variables: {
@@ -91,6 +101,12 @@ const Statistics = () => {
     });
     if (data) {
       usersByLanguage[languageCode] = data.users;
+      langData.forEach((lang) => {
+        if (lang.label === languageCode) {
+          lang.value = data.users.length;
+        }
+      });
+      languageDataLoaded = true;
     }
   });
   
@@ -151,9 +167,20 @@ const Statistics = () => {
         {mapData && <Map userMarkers={userMarkers}/>}
         </Grid>
         <Grid item>
-          <Card>
-            <CardContent>
-              <CardHeader title="Users by language"/>
+          {/*<Card>*/}
+          {/*  <CardContent>*/}
+          {/*    <CardHeader title="Users by language"/>*/}
+          {/*    <Grid container spacing={2}>*/}
+          {/*      {Object.entries(usersByLanguage).map(([languageCode, users]) => (*/}
+          {/*        <Grid item key={languageCode}>*/}
+          {/*          <Typography variant="h6">{languageCode}</Typography>*/}
+          {/*          <Typography>{users.length}</Typography>*/}
+          {/*        </Grid>*/}
+          {/*      ))}*/}
+          {/*    </Grid>*/}
+          {/*  </CardContent>*/}
+          {/*</Card>*/}
+          {languageDataLoaded &&
               <Grid container spacing={2}>
                 {Object.entries(usersByLanguage).map(([languageCode, users]) => (
                   <Grid item key={languageCode}>
@@ -162,8 +189,7 @@ const Statistics = () => {
                   </Grid>
                 ))}
               </Grid>
-            </CardContent>
-          </Card>
+          }
         </Grid>
         <Grid item>
           <Card>

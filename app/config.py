@@ -18,14 +18,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-IS_TESTING = False if os.getenv('IS_TESTING', default='1') == '0' else False
+IS_TESTING = bool(os.getenv('IS_TESTING', default='1'))
 
 DOMAIN = 'localhost' if IS_TESTING else os.getenv('DOMAIN')
-
-# Google OAuth
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-GOOGLE_REDIRECT_URI = f"https://homescreen.{DOMAIN}/users/auth/google"
 
 IDF_TOKEN = os.getenv("IDF_TOKEN")
 

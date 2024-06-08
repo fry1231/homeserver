@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "./AxiosInstance";
 import {createContext, useContext, useEffect, useMemo, useState} from "react";
 
 

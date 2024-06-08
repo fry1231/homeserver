@@ -3,7 +3,8 @@ import {tokens} from "../theme.ts";
 import {useEffect, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {busDataUpdated, speedUpRefresh} from "../reducers/buses";
-import axios from "axios";
+import axios from "../misc/AxiosInstance";
+import axiosClass from "axios";
 import {useAuth} from "../misc/authProvider.jsx";
 
 
@@ -41,25 +42,25 @@ export default function BusArrivals() {
   const dispatch = useDispatch();
   const state = useSelector((state) => state.buses);
   const busData = state.busData;
-  const CancelToken = axios.CancelToken;
+  const CancelToken = axiosClass.CancelToken;
   const source = CancelToken.source();
   const [limitReached, setLimitReached] = useState(false);
   
   useEffect(() => {
+    console.log("Fetching bus data");
     let previousBytes = 0;
     axios.get(
       `/buses/arrivals`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
         responseType: 'stream',
         cancelToken: source.token,
+        // timeout: 0,
         // Update bus data on each chunk of data received
         onDownloadProgress: (progressEvent) => {
           const newBytes = progressEvent.loaded - previousBytes;
           previousBytes = progressEvent.loaded;
           // Access the new chunk of data
           const newChunk = progressEvent.event.currentTarget.response.slice(-newBytes);
+          console.log(newChunk);
           const data: BusResponse = JSON.parse(
             newChunk
             );

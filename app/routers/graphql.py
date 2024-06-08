@@ -2,10 +2,9 @@ import strawberry
 from strawberry.fastapi import GraphQLRouter
 from strawberry.types import Info
 import datetime
-from typing import List, Union, ForwardRef, NewType
-from time import time
+from typing import List, Union, NewType
 
-from misc.security import IsAuthenticated
+from security.security import StrawberryIsAuthenticated
 from db.sql.models import (
     OrmarMigraineUser,
     OrmarSavedUser,
@@ -14,8 +13,6 @@ from db.sql.models import (
     OrmarPressure,
     OrmarStatistics
 )
-from config import logger
-
 
 BigInt = strawberry.scalar(
     # Union[int, str],
@@ -227,12 +224,12 @@ class TimezoneUsers:
 
 @strawberry.type
 class Query:
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field(permission_classes=[StrawberryIsAuthenticated])
     async def user(self, telegram_id: BigInt) -> User:
         user = await OrmarMigraineUser.objects.get(telegram_id=telegram_id)
         return User.from_orm(user)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field(permission_classes=[StrawberryIsAuthenticated])
     async def users(self,
                     telegram_ids: List[BigInt] | None = None,
                     has_coordinates: bool | None = None,
@@ -290,7 +287,7 @@ class Query:
         users = await OrmarMigraineUser.objects.filter(*query_set).all()
         return [User.from_orm(user) for user in users]
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field(permission_classes=[StrawberryIsAuthenticated])
     async def users_by_timezones(self) -> List[TimezoneUsers]:
         users = await OrmarMigraineUser.objects.values([
             'telegram_id',
@@ -311,7 +308,7 @@ class Query:
                                   ) for user in users if user['timezone'] == timezone])
                 for timezone in timezones]
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field(permission_classes=[StrawberryIsAuthenticated])
     async def paincases(self,
                         ids: list[int] | None = None,
                         after_date: datetime.date | None = None,
@@ -328,7 +325,7 @@ class Query:
         paincases = await OrmarPainCase.objects.filter(*query_set).all()
         return [PainCase.from_orm(paincase) for paincase in paincases]
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field(permission_classes=[StrawberryIsAuthenticated])
     async def druguses(self,
                        ids: list[int] | None = None,
                        after_date: datetime.date | None = None,
@@ -345,7 +342,7 @@ class Query:
         druguses = await OrmarDrugUse.objects.filter(*query_set).all()
         return [DrugUse.from_orm(druguse) for druguse in druguses]
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field(permission_classes=[StrawberryIsAuthenticated])
     async def pressures(self,
                         ids: list[int] | None = None,
                         after_date: datetime.date | None = None,
@@ -362,7 +359,7 @@ class Query:
         pressures = await OrmarPressure.objects.filter(*query_set).all()
         return [Pressure.from_orm(pressure) for pressure in pressures]
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field(permission_classes=[StrawberryIsAuthenticated])
     async def statistics(self,
                          after_date: datetime.date,
                          before_date: datetime.date,
@@ -405,7 +402,7 @@ class Query:
             pressures=pressures
         )
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field(permission_classes=[StrawberryIsAuthenticated])
     async def daily_statistics(self,
                                before_date: datetime.date,
                                after_date: datetime.date) -> list[Statistics]:
