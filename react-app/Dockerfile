@@ -11,9 +11,9 @@ WORKDIR /react-app
 COPY package.json ./
 COPY package-lock.json ./
 
-RUN apk add numactl
+RUN apk add util-linux
 
-RUN numactl --physcpubind=+1 npm install
+RUN taskset -c 0 npm install
 #RUN npm install react-scripts@3.4.1 -g
 
 # add app
