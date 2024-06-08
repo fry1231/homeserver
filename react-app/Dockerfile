@@ -9,9 +9,8 @@ COPY package-lock.json ./
 
 RUN apk add util-linux
 
-RUN npm install
+RUN taskset -c 0 npm install --no-audit --fetch-timeout=600000
 #RUN npm install react-scripts@3.4.1 -g
-# taskset -c 0
 
 COPY . ./
 
