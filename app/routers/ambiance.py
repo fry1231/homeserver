@@ -1,15 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from pydantic import BaseModel
 from typing import List, Optional
 import datetime
 
 from db.influx import get_influx_data, write_influx_data
-from misc.dependencies import is_admin, home_client
+from misc.dependencies import home_client
+from security import authorize_user
 
 
 router = APIRouter(
     prefix="/ambiance",
-    dependencies=[Depends(is_admin)]
+    dependencies=[Security(authorize_user, scopes=["ambiance:read"])],
 )
 
 
@@ -44,7 +45,8 @@ def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestamp() - 
 
 
 @router.post('/submit')
-def submit_ambiance_point(data: AmbianceData, influxdb_client=Depends(home_client)):
+def submit_ambiance_point(data: AmbianceData,
+                          influxdb_client=Depends(home_client)):
     write_influx_data(client=influxdb_client,
                       measurement='ambiance',
                       fields=data.model_dump())

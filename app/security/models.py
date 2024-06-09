@@ -80,7 +80,12 @@ class AccessTokenPayload(BaseModel):
     @field_validator('scopes', mode='before')
     @classmethod
     def split_scopes(cls, v):
-        return v.split(' ') if isinstance(v, str) else v
+        if isinstance(v, list):
+            return [str(el) for el in v]
+        elif isinstance(v, str):
+            return v.split(' ')
+        else:
+            raise ValueError(f'Invalid scopes type {type(v)}')
 
     @field_serializer('scopes', when_used='json')
     def join_scopes(v):

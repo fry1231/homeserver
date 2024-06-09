@@ -7,7 +7,8 @@ from db.redis.models import State, States, StateUpdate
 from routers import WebsocketConnectionManager
 from config import logger
 from misc.dependencies import get_redis_conn, injectable
-from security import websocket_authorized, authorize_user
+from security import authorize_user, WebsocketAuthorized
+
 
 router = APIRouter(
     prefix="/states",
@@ -128,18 +129,18 @@ async def get_current_states(redis_conn=Depends(get_redis_conn)):
 
 
 manager = ConnectionManager()
+WSAuth = WebsocketAuthorized(scopes=["statistics:read"])
 # current_states = mock_states_data()
 
 
 @router.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: int, authorized: bool = Depends(websocket_authorized)):
+async def websocket_endpoint(websocket: WebSocket,
+                             client_id: int,
+                             authorized: bool = Depends(WSAuth)):
     """
     Websocket endpoint for receiving updates on user states
     Sends all states disposition on connection OR when received "refresh_states" message
     Otherwise connects to "channel:states" in redis and sends updates on state changes
-    :param websocket:
-    :param client_id:
-    :return:
     """
     try:
         current_states = await get_current_states()

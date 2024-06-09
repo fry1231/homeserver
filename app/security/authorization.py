@@ -51,22 +51,48 @@ def authorize_user(security_scopes: SecurityScopes, token: str = Depends(oauth2_
     return True
 
 
-async def websocket_authorized(
-        websocket: WebSocket,
-        session: Annotated[str | None, Cookie()] = None,
-        token: Annotated[str | None, Query()] = None,
-):
-    """
-    Check if websocket connection is authorized
-    :return: True if authorized, else raises WebSocketException
-    """
-    if session is None and token is None:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    if token:
-        authorized = authorize_user(token)
-        if not authorized:
+def _is_authorized(token: str, require_scopes: list[str], master_scope: str) -> bool:
+    try:
+        payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
+        token_data = AccessTokenPayload(**payload)
+        # Check if token has required scopes
+        if not token_data.scopes:
+            return False
+        # If no scopes are required, authorize user
+        if not require_scopes or require_scopes == []:
+            return True
+        # Check if user has master scope
+        if master_scope in token_data.scopes:
+            return True
+        for scope in require_scopes:
+            if scope not in token_data.scopes:
+                return False
+        return True
+    except (ExpiredSignatureError, InvalidTokenError, ValidationError):
+        return False
+
+
+class WebsocketAuthorized:
+    def __init__(self, scopes: list[str] = None, master_scope: str = None):
+        self.required_scopes = scopes
+        self.master_scope = master_scope
+
+    def __call__(self,
+                 websocket: WebSocket,
+                 token: Annotated[str | None, Query()] = None):
+        """
+        Check if websocket connection is authorized
+        :return: True if authorized, else raises WebSocketException
+        """
+        if token is None:
             raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    return True
+        if token:
+            authorized = _is_authorized(token,
+                                        require_scopes=self.required_scopes,
+                                        master_scope=self.master_scope)
+            if not authorized:
+                raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+        return True
 
 
 class StrawberryIsAuthenticated(BasePermission):
@@ -80,25 +106,5 @@ class StrawberryIsAuthenticated(BasePermission):
         authentication = request.headers["Authorization"]
         if authentication:
             token = authentication.split("Bearer ")[-1]
-            return self._is_authorized(token, require_scopes=["statistics:read"], master_scope="all")
+            return _is_authorized(token, require_scopes=["statistics:read"], master_scope="all")
         return False
-
-    def _is_authorized(self, token: str, require_scopes: list[str], master_scope: str) -> bool:
-        try:
-            payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
-            token_data = AccessTokenPayload(**payload)
-            # Check if token has required scopes
-            if not token_data.scopes:
-                return False
-            # If no scopes are required, authorize user
-            if not require_scopes or require_scopes == []:
-                return True
-            # Check if user has master scope
-            if master_scope in token_data.scopes:
-                return True
-            for scope in require_scopes:
-                if scope not in token_data.scopes:
-                    return False
-            return True
-        except (ExpiredSignatureError, InvalidTokenError, ValidationError):
-            return False

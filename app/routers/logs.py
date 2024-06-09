@@ -7,7 +7,7 @@ from db.redis.models import LogsSnapshot, LogUpdate
 from routers import WebsocketConnectionManager
 from config import logger
 from misc.dependencies import get_redis_conn, injectable
-from security import authorize_user, websocket_authorized
+from security import authorize_user, WebsocketAuthorized
 
 
 router = APIRouter(
@@ -99,18 +99,18 @@ async def get_logs(start: int, end: int, redis_conn=Depends(get_redis_conn)):
 
 
 manager = ConnectionManager()
+WSAuth = WebsocketAuthorized(scopes=["statistics:read"])
 # current_logs = mock_logs_data(0, 10, 0)
 
 
 @router.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: int, authorized: bool = Depends(websocket_authorized)):
+async def websocket_endpoint(websocket: WebSocket,
+                             client_id: int,
+                             authorized: bool = Depends(WSAuth)):
     """
     Websocket endpoint for receiving updates on user states
     Sends logs[0:10] on connection OR logs[start:end] when received "getlogs_{start}_{end}" message
     Otherwise connects to "channel:states" in redis and sends updates on state changes
-    :param websocket:
-    :param client_id:
-    :return:
     """
     try:
         current_logs = await get_logs(0, 50)

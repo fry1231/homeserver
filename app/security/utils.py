@@ -5,7 +5,7 @@ import jwt
 from fastapi import HTTPException, status, Response
 
 from db.sql.models import User
-from security.models import TokensResponse, AccessTokenPayload, RefreshTokenPayload
+from security.models import AccessTokenPayload, RefreshTokenPayload
 from security.config import SECRET, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from security.authentication import get_password_hash
 from security.config import DOMAIN, PATH_PREFIX, SECURE
@@ -74,7 +74,9 @@ async def _create_user(username: str,
     return user
 
 
-def _create_access_token(sub: str, scopes: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES):
+def _create_access_token(sub: str,
+                         scopes: str,
+                         expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES):
     payload = AccessTokenPayload(
         sub=sub,
         scopes=scopes,
@@ -83,7 +85,8 @@ def _create_access_token(sub: str, scopes: str, expire_minutes: int = ACCESS_TOK
     return jwt.encode(payload.model_dump(), key=SECRET, algorithm=ALGORITHM)
 
 
-def _create_refresh_token(sub: str, expire_days: int = REFRESH_TOKEN_EXPIRE_DAYS):
+def _create_refresh_token(sub: str,
+                          expire_days: int = REFRESH_TOKEN_EXPIRE_DAYS):
     payload = RefreshTokenPayload(
         sub=sub,
         exp=datetime.datetime.utcnow() + datetime.timedelta(days=expire_days)
@@ -98,7 +101,9 @@ def _get_tokens(user: UserModel) -> tuple[str, str]:
     return access_token, refresh_token
 
 
-def _add_cookies(response: Response, access_token: str, refresh_token: str) -> Response:
+def _add_cookies(response: Response,
+                 access_token: str,
+                 refresh_token: str) -> Response:
     """
     Add access and refresh tokens to response cookies
     :param response: Starlette Response object

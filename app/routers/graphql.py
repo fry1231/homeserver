@@ -4,7 +4,7 @@ from strawberry.types import Info
 import datetime
 from typing import List, Union, NewType
 
-from security.security import StrawberryIsAuthenticated
+from security import StrawberryIsAuthenticated
 from db.sql.models import (
     OrmarMigraineUser,
     OrmarSavedUser,
