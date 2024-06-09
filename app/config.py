@@ -18,7 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-IS_TESTING = bool(os.getenv('IS_TESTING', default='1'))
+IS_TESTING = bool(int(os.getenv('IS_TESTING', default='1')))
 
 DOMAIN = 'localhost' if IS_TESTING else os.getenv('DOMAIN')
 
