@@ -3,15 +3,21 @@ from uuid import UUID
 import jwt
 
 from fastapi import HTTPException, status, Response
+from passlib.context import CryptContext
 
 from db.sql.models import User
 from security.models import AccessTokenPayload, RefreshTokenPayload
 from security.config import SECRET, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
-from security.authentication import get_password_hash
 from security.config import DOMAIN, PATH_PREFIX, SECURE
 
 
 UserModel = User
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 
 async def create_user(username: str,
