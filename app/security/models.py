@@ -1,7 +1,7 @@
 import datetime
 import re
 
-from pydantic import BaseModel, Field, EmailStr, field_validator, ValidationError
+from pydantic import BaseModel, Field, EmailStr, field_validator,field_serializer
 from fastapi import HTTPException, status
 from fastapi.responses import ORJSONResponse
 
@@ -74,8 +74,17 @@ class TokensResponse(ORJSONResponse):
 
 class AccessTokenPayload(BaseModel):
     sub: str | None = None
-    scopes: str = ""
+    scopes: list[str] = []
     exp: datetime.datetime
+
+    @field_validator('scopes', mode='before')
+    @classmethod
+    def split_scopes(cls, v):
+        return v.split(' ') if isinstance(v, str) else v
+
+    @field_serializer('scopes', when_used='json')
+    def join_scopes(v):
+        return ' '.join(v) if isinstance(v, list) else v
 
 
 class RefreshTokenPayload(BaseModel):

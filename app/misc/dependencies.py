@@ -1,4 +1,4 @@
-from contextlib import AsyncExitStack, asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from functools import wraps
 from typing import Any, Callable, Coroutine, TypeVar, Annotated
 import orjson
@@ -15,7 +15,6 @@ from config import SECRET, logger
 from db.influx import get_influx_client
 from db.redis import redis_pool
 from db.sql.models import User
-from security.security import TokenData
 from security.config import ALGORITHM, oauth2_scheme
 from security.authorization import authorize_user
 
@@ -86,8 +85,22 @@ def injectable(
 
 # ========= database clients
 # influx
-home_client = lambda: get_influx_client('home')
-farm_client = lambda: get_influx_client('farm')
+@contextmanager
+def home_client():
+    client = get_influx_client('home')
+    try:
+        yield client
+    finally:
+        client.close()
+
+
+@contextmanager
+def farm_client():
+    client = get_influx_client('farm')
+    try:
+        yield client
+    finally:
+        client.close()
 
 
 # redis connection from pool
@@ -98,44 +111,3 @@ async def get_redis_conn():
         yield redis_conn
     finally:
         await redis_conn.close()
-
-
-# ========= security dependencies
-async def is_authorized(token: Annotated[str, Depends(oauth2_scheme)]):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
-        user_props = orjson.loads(payload.get("sub"))
-        uuid = user_props.get("uuid")
-        is_admin = user_props.get("is_admin")
-        if uuid is None:
-            raise credentials_exception
-        token_data = TokenData(uuid=uuid, is_admin=is_admin)
-    except JWTError:
-        raise credentials_exception
-    user = await User.objects.get_or_none(uuid=token_data.uuid)
-    if user is None:
-        raise credentials_exception
-    return user
-
-
-async def websocket_authorized(
-        websocket: WebSocket,
-        session: Annotated[str | None, Cookie()] = None,
-        token: Annotated[str | None, Query()] = None,
-):
-    """
-    Check if websocket connection is authorized
-    :return: True if authorized, else raises WebSocketException
-    """
-    if session is None and token is None:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    if token:
-        authorized = authorize_user(token)
-        if not authorized:
-            raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    return True

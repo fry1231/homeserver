@@ -1,16 +1,17 @@
-from fastapi import APIRouter, HTTPException, Depends, Response
+from fastapi import APIRouter, Security, HTTPException, Depends, Response
 from pydantic import BaseModel
 from typing import List
 import datetime
 
-from misc.dependencies import is_admin, farm_client, get_redis_conn
+from security import authorize_user
+from misc.dependencies import farm_client, get_redis_conn
 from db.influx import get_influx_data, write_influx_data
 from misc.data_handling import downsample
 
 
 router = APIRouter(
     prefix="/farm",
-    dependencies=[Depends(is_admin)]
+    # dependencies=[Security(authorize_user,)]
 )
 
 
@@ -34,7 +35,9 @@ class WateringResponseItem(WateringData):
 
 # Submit and get data from farm sensors (temperature, soil moisture, water level)
 @router.post('/sensors/submit-data')
-def submit_farm_data(data: FarmData, influxdb_client=Depends(farm_client)):
+def submit_farm_data(data: FarmData,
+                     influxdb_client=Depends(farm_client),
+                     auth=Security(authorize_user, scopes=["sensors:write"])):
     write_influx_data(client=influxdb_client,
                       measurement='farm',
                       fields=data.model_dump())
@@ -43,8 +46,9 @@ def submit_farm_data(data: FarmData, influxdb_client=Depends(farm_client)):
 
 @router.get('/sensors/data', response_model=List[FarmResponseItem])
 def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
-                        endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
-                        influxdb_client=Depends(farm_client)):
+                  endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
+                  influxdb_client=Depends(farm_client),
+                  auth=Security(authorize_user, scopes=["sensors:read"])):
     data = get_influx_data(client=influxdb_client,
                            measurement='farm',
                            ResponseClass=FarmResponseItem,
@@ -55,7 +59,9 @@ def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600
 
 # Submit and get data about watering pump on/off
 @router.post('/watering/submit-data')
-async def submit_watering(data: WateringData, influxdb_client=Depends(farm_client)):
+async def submit_watering(data: WateringData,
+                          influxdb_client=Depends(farm_client),
+                          auth=Security(authorize_user, scopes=["sensors:write"])):
     write_influx_data(client=influxdb_client,
                       measurement='watering',
                       fields=data.model_dump())
@@ -65,7 +71,8 @@ async def submit_watering(data: WateringData, influxdb_client=Depends(farm_clien
 @router.get('/watering/data', response_model=List[WateringResponseItem])
 async def get_watering_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
                             endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
-                            influxdb_client=Depends(farm_client)):
+                            influxdb_client=Depends(farm_client),
+                            auth=Security(authorize_user, scopes=["sensors:read"])):
     return get_influx_data(client=influxdb_client,
                            measurement='watering',
                            ResponseClass=WateringResponseItem,
@@ -74,7 +81,8 @@ async def get_watering_data(startTS: int = int((datetime.datetime.now().timestam
 
 
 @router.get('/watering/last')
-def get_last_watering_time(influxdb_client=Depends(farm_client)):
+def get_last_watering_time(influxdb_client=Depends(farm_client),
+                           auth=Security(authorize_user, scopes=["sensors:read"])):
     data: list[WateringResponseItem] = get_influx_data(
         client=influxdb_client,
         measurement='watering',
@@ -90,7 +98,8 @@ def get_last_watering_time(influxdb_client=Depends(farm_client)):
 
 
 @router.post('/watering/set-needed')
-async def set_watering_needed(redis_conn=Depends(get_redis_conn)):
+async def set_watering_needed(redis_conn=Depends(get_redis_conn),
+                              auth=Security(authorize_user, scopes=["sensors:write"])):
     if await redis_conn.get('watering_needed') == '1':
         return Response(status_code=208, content='Watering needed flag already set')
     await redis_conn.set('watering_needed', '1')
@@ -98,7 +107,9 @@ async def set_watering_needed(redis_conn=Depends(get_redis_conn)):
 
 
 @router.get('/watering/is-needed')
-async def is_watering_needed(noreset: bool | None = None, redis_conn=Depends(get_redis_conn)):  # , influxdb_client=Depends(farm_client)):
+async def is_watering_needed(noreset: bool | None = None,
+                             redis_conn=Depends(get_redis_conn),
+                             auth=Security(authorize_user, scopes=["sensors:read"])):
     watering_needed = await redis_conn.get('watering_needed')   # '1' or '0' or None
     if watering_needed is not None:
         if watering_needed == '1':

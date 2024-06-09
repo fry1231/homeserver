@@ -10,7 +10,7 @@ from config import POSTGRES_USER, POSTGRES_PASS, DATABASE_NAME, POSTGRES_HOST, P
 # access to the values within the .ini file in use.
 config = context.config
 config.set_main_option('sqlalchemy.url',
-                       f'postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE_NAME}')
+                       f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE_NAME}')
 # config.set_main_option('sqlalchemy.url',
 #                        "sqlite:///db/test.db")
 

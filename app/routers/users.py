@@ -1,18 +1,7 @@
-from fastapi import Depends, HTTPException, status, APIRouter
-from fastapi.responses import RedirectResponse, HTMLResponse
-from pydantic import BaseModel
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import HTTPException, status, APIRouter, Security
 from db.sql.models import User
-from security.security import (
-    authenticate_user,
-    create_access_token
-)
-from security.authorization import get_password_hash
-from security.models import TokensResponse
-from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, DOMAIN, logger
-from typing import Annotated
-import aiohttp
-import traceback
+
+from security import authorize_user
 
 
 router = APIRouter(
@@ -68,8 +57,5 @@ async def check_username(username: str):
 
 
 @router.get("/me", response_model=User)
-async def read_users_me(
-        current_user: Annotated[User, Depends(is_admin)]
-):
-    return current_user
-
+async def read_users_me(user: User = Security(authorize_user, scopes=["default"])):
+    return user

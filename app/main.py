@@ -15,6 +15,7 @@ from config import logger, DOMAIN, templates
 from routers import (
     buses, states, users, logs, ambiance, farm
 )
+from security import auth_router
 from middlewares import AntiFloodMiddleware, CustomGZipMiddleware
 from routers.graphql import graphql_app
 from db.sql import database, migraine_database
@@ -40,6 +41,7 @@ async def lifespan(app_: FastAPI):
 app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 app.state.database = database
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.include_router(auth_router)
 # app.include_router(tasks.router)
 app.include_router(users.router)
 app.include_router(buses.router)

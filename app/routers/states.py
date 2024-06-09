@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, HTTPException, Depends
+from fastapi import APIRouter, Security, WebSocket, WebSocketDisconnect, HTTPException, Depends
 import asyncio
 import async_timeout
 import orjson
@@ -6,12 +6,13 @@ import orjson
 from db.redis.models import State, States, StateUpdate
 from routers import WebsocketConnectionManager
 from config import logger
-from misc.dependencies import websocket_authorized, get_redis_conn, injectable
+from misc.dependencies import get_redis_conn, injectable
+from security import websocket_authorized, authorize_user
 
 router = APIRouter(
     prefix="/states",
     # tags=["items"],
-    # dependencies=[Depends(is_admin)],
+    dependencies=[Security(authorize_user, scopes=["statistics:read"])],
     # responses={404: {"description": "Not found"}},
 )
 

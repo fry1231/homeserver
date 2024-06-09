@@ -10,6 +10,7 @@ from security.config import SECRET, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFR
 from security.authentication import get_password_hash
 from security.config import DOMAIN, PATH_PREFIX, SECURE
 
+
 UserModel = User
 
 

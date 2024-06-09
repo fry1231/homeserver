@@ -36,7 +36,7 @@ async def register_user(form_data: SignupForm):
     username = form_data.username
     password = form_data.password
     email = form_data.email
-    user = await create_user(username, password, email, scopes=['me', 'buses:read'])
+    user = await create_user(username, password, email, scopes=['default'])
     access_token, refresh_token = _get_tokens(user)
     response = RedirectResponse(url=FRONTEND_REDIRECT_URI)
     response = _add_cookies(response, access_token, refresh_token)

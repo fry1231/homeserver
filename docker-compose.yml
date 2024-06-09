@@ -3,7 +3,7 @@ version: '3.8'
 services:
   homescreen:
     container_name: homescreen
-    restart: always
+    restart: no
 #    env_file:
 #      - .env
     environment:

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect, HTTPException, Depends
+from fastapi import APIRouter, Security, Depends
 from fastapi.responses import StreamingResponse, Response
 import aiohttp
 import orjson
@@ -12,14 +12,15 @@ import datetime
 import pytz
 import traceback
 
-from misc.dependencies import is_admin, get_redis_conn, injectable
+from misc.dependencies import get_redis_conn, injectable
 from config import IDF_TOKEN
 from misc.utils import delayed_action
+from security import authorize_user
 
 
 router = APIRouter(
     prefix="/buses",
-    dependencies=[Depends(is_admin)],
+    dependencies=[Security(authorize_user, scopes=["default"])],
 )
 
 
@@ -43,6 +44,8 @@ async def arrivals(redis_conn=Depends(get_redis_conn)):
 async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
     """
     Get bus arrivals, save data to redis 'data' (data['buses']) and submit it to 'channel:buses'
+    Redis key is requested from the old version API with 'refresh' endpoint from main.py
+    Redis channel is used to send data to the react frontend
     """
     logger.info('Starting retrieve_arrivals()')
     while True:
@@ -136,9 +139,9 @@ async def reader(redis_conn):
                     if message is not None:
                         data = message['data']
                         yield reformat_bus_data(orjson.loads(data)['buses'])
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.01)
             except asyncio.TimeoutError:
-                pass
+                await asyncio.sleep(0.01)
     except Exception:
         logger.error(traceback.format_exc())
         raise

@@ -21,7 +21,6 @@ SCOPES_DESCRIPTION = {
     'all': 'Full access to all resources',
     'sensors:write': 'Write sensor data, ask for irrigation',
     'sensors:read': 'Read sensor data',
-    'buses:read': 'Read bus data',
     'statistics:read': 'Read statistics',
 }
 

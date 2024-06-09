@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, Security, WebSocket, WebSocketDisconnect, Depends
 import asyncio
 import async_timeout
 import orjson
@@ -6,13 +6,14 @@ import orjson
 from db.redis.models import LogsSnapshot, LogUpdate
 from routers import WebsocketConnectionManager
 from config import logger
-from misc.dependencies import websocket_authorized, get_redis_conn, injectable
+from misc.dependencies import get_redis_conn, injectable
+from security import authorize_user, websocket_authorized
 
 
 router = APIRouter(
     prefix="/logs",
     # tags=["items"],
-    # dependencies=[Depends(is_admin)],
+    dependencies=[Security(authorize_user, scopes=["statistics:read"])],
     # responses={404: {"description": "Not found"}},
 )
 
