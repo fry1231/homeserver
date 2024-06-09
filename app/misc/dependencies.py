@@ -85,7 +85,6 @@ def injectable(
 
 # ========= database clients
 # influx
-@contextmanager
 def home_client():
     client = get_influx_client('home')
     try:
@@ -94,7 +93,6 @@ def home_client():
         client.close()
 
 
-@contextmanager
 def farm_client():
     client = get_influx_client('farm')
     try:
@@ -104,7 +102,6 @@ def farm_client():
 
 
 # redis connection from pool
-@asynccontextmanager
 async def get_redis_conn():
     redis_conn = aioredis.Redis(connection_pool=redis_pool, decode_responses=True)
     try:
