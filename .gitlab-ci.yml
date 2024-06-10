@@ -52,7 +52,7 @@ migration_auto:
     - cd /usr/homeserver
     - docker compose run homescreen alembic upgrade head
   rules:
-    - if: $CI_COMMIT_MESSAGE =~ /migration/
+    - if: $CI_COMMIT_MESSAGE =~ /[(?i)migration]/
       when: on_success
       needs:
         - build
