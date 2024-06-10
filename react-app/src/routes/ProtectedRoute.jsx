@@ -1,6 +1,5 @@
 import {Navigate, Outlet} from "react-router-dom";
-import {useAuth} from "../misc/authProvider.jsx";
-import axios from "../misc/AxiosInstance";
+import {useAuth} from "../misc/authProvider.tsx";
 import {jwtDecode} from "jwt-decode";
 import {useError} from "../misc/ErrorHandling";
 
@@ -47,7 +46,7 @@ export const ProtectedRoute = () => {
     //     setErrorMessage("You may not have the necessary permissions to access the content of this page.");
     // }
 
-    axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+    // axios.defaults.headers.common["Authorization"] = "Bearer " + token;
     // If authenticated, render the child routes
     return <Outlet/>;
 };

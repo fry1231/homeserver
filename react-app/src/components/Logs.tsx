@@ -2,7 +2,7 @@ import {Box, Grid, LinearProgress, Paper, Radio, Typography} from "@mui/material
 import {useEffect, useState, useRef, createRef } from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {logsRefreshed, logUpdateRecieved, clearLogs} from "../reducers/logs";
-import {useAuth} from "../misc/authProvider.jsx";
+import {useAuth} from "../misc/authProvider";
 import {tokens} from "../theme";
 import {useTheme} from "@mui/material/styles";
 import {addWindow} from "../reducers/draggables";

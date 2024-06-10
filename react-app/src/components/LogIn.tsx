@@ -2,7 +2,6 @@ import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
-// import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
@@ -12,37 +11,41 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
-import axios from "../misc/AxiosInstance";
-import {useAuth} from "../misc/authProvider.jsx";
+import {getAxiosClient} from "../misc/AxiosInstance";
+import {useAuth} from "../misc/authProvider";
 import {useNavigate} from "react-router-dom";
 import GoogleIcon from '@mui/icons-material/Google';
 import TextField from "./global/CustomInputField"
 import {useError} from "../misc/ErrorHandling";
 
 
+
 export default function LogIn() {
   const {setErrorMessage} = useError();
   const {setToken} = useAuth();
   const navigate = useNavigate();
+  const axiosClient = getAxiosClient();
   
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    axios.post('/users/login/form', data, {timeout: 5000})
-      .then((response) => {
-        if (response.status === 200) {
-          const token = response.data.access_token;
-          setToken(token);
-          navigate('/');
-        }})
-      .catch((error) => {
-        console.log(error);
-        if (error.response)
-          setErrorMessage(error.response.data.detail);
-        else
-          setErrorMessage(error.message)
-      });
-  };
+  
+    try {
+      const response = await axiosClient.post('/auth/login/form', data, {timeout: 5000});
+      if (response.status === 200) {
+        const token = response.data.access_token;
+        await setToken(token);
+        axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        navigate('/');
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.response)
+        setErrorMessage(error.response.data.detail);
+      else
+        setErrorMessage(error.message)
+    }
+  }
   
   return (
         <Box

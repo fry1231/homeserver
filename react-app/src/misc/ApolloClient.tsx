@@ -1,5 +1,5 @@
 import {ApolloProvider, ApolloClient, InMemoryCache, gql} from '@apollo/client';
-import {useAuth} from "./authProvider.jsx";
+import {useAuth} from "./authProvider";
 import {useEffect, useState} from "react";
 
 

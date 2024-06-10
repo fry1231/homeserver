@@ -3,7 +3,7 @@ import {useEffect, useState, useRef} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {statesRefreshed, stateUpdateRecieved} from "../reducers/states";
 import stateInstance from "../reducers/states";
-import {useAuth} from "../misc/authProvider.jsx";
+import {useAuth} from "../misc/authProvider";
 import {addWindow} from "../reducers/draggables";
 import {DraggableEntity} from "../reducers/draggables";
 

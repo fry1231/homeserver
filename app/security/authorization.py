@@ -107,9 +107,10 @@ class WebsocketAuthorized:
             authorized = _is_authorized(token,
                                         require_scopes=self.required_scopes,
                                         master_scope=self.master_scope)
-            if not authorized:
+            if authorized:
+                return True
+            else:
                 raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-        return True
 
 
 class StrawberryIsAuthenticated(BasePermission):

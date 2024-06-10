@@ -1,5 +1,5 @@
 import {RouterProvider, createBrowserRouter, useRoutes} from "react-router-dom";
-import {useAuth} from "../misc/authProvider.jsx";
+import {useAuth} from "../misc/authProvider.tsx";
 import {ProtectedRoute, TokenCookieToStorage} from "./ProtectedRoute";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";

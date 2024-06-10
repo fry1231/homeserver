@@ -13,7 +13,7 @@ from security import authorize_user, WebsocketAuthorized
 router = APIRouter(
     prefix="/logs",
     # tags=["items"],
-    dependencies=[Security(authorize_user, scopes=["statistics:read"])],
+    # dependencies=[Security(authorize_user, scopes=["statistics:read"])],
     # responses={404: {"description": "Not found"}},
 )
 
@@ -99,7 +99,7 @@ async def get_logs(start: int, end: int, redis_conn=Depends(get_redis_conn)):
 
 
 manager = ConnectionManager()
-WSAuth = WebsocketAuthorized(scopes=["statistics:read"])
+WSAuth = WebsocketAuthorized(scopes=["statistics:read"], master_scope="all")
 # current_logs = mock_logs_data(0, 10, 0)
 
 

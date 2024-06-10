@@ -1,4 +1,4 @@
-import axios from "../misc/AxiosInstance";
+import {getAxiosClient} from "../misc/AxiosInstance";
 import {timeoutAbortSignal} from "../misc/utils";
 import {useEffect, useState} from "react";
 import {Button, Grid} from "@mui/material";
@@ -15,6 +15,7 @@ export default function Farm() {
   yesterday.setDate(today.getDate() - 1);
   const [startDate, setStartDate] = useState(yesterday);
   const [endDate, setEndDate] = useState(today);
+  const axios = getAxiosClient();
   const requestWatering = () => {
     axios.post(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/set-needed`, null, {
       signal: timeoutAbortSignal(5000)

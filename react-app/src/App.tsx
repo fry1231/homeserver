@@ -7,11 +7,11 @@ import stateReducer from './reducers/states';
 import usersReducer from './reducers/users';
 import logsReducer from './reducers/logs';
 import positionsReducer from './reducers/draggables';
-import AuthProvider from "./misc/authProvider.jsx";
+import AuthProvider from "./misc/authProvider";
 import Routes from "./routes";
-import axios from "../misc/AxiosInstance";
-import {ApolloWrapper} from "./misc/ApolloClient";
 import {ErrorProvider} from "./misc/ErrorHandling";
+import AxiosProvider from "./misc/AxiosInstance";
+import {ApolloWrapper} from "./misc/ApolloClient";
 
 // Redux store
 const store = configureStore({
@@ -29,26 +29,30 @@ function App() {
   const [theme, colorMode] = useMode();
   return (
     <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline/>
-        <Provider store={store}>
-          <AuthProvider>
-            <Container>
-              <ApolloWrapper>
-                <ErrorProvider>
-                  {/*<Helmet>*/}
-                  {/*  <meta name="apple-mobile-web-app-capable" content="yes"/>*/}
-                  {/*  <meta httpEquiv="Content-Security-Policy"*/}
-                  {/*        content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;"/>*/}
-                  {/*  <title>HomeServer</title>*/}
-                  {/*</Helmet>*/}
-                  <Routes/>
-                </ErrorProvider>
-              </ApolloWrapper>
-            </Container>
-          </AuthProvider>
-        </Provider>
-      </ThemeProvider>
+      <ErrorProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline/>
+          <Provider store={store}>
+            <AxiosProvider>
+            <AuthProvider>
+              <Container>
+                <ApolloWrapper>
+                  
+                    {/*<Helmet>*/}
+                    {/*  <meta name="apple-mobile-web-app-capable" content="yes"/>*/}
+                    {/*  <meta httpEquiv="Content-Security-Policy"*/}
+                    {/*        content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;"/>*/}
+                    {/*  <title>HomeServer</title>*/}
+                    {/*</Helmet>*/}
+                    <Routes/>
+                  
+                </ApolloWrapper>
+              </Container>
+            </AuthProvider>
+              </AxiosProvider>
+          </Provider>
+        </ThemeProvider>
+      </ErrorProvider>
     </ColorModeContext.Provider>
   )
 }

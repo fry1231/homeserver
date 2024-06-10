@@ -1,9 +1,9 @@
-import axios from "../misc/AxiosInstance";
 import {useEffect, useState} from "react";
 import {useTheme} from "@mui/material";
 import {timeoutAbortSignal} from "../misc/utils";
 import Plot from 'react-plotly.js';
 import {tokens} from "../theme";
+import {getAxiosClient} from "../misc/AxiosInstance";
 
 
 interface SensorsDataPoint {
@@ -101,6 +101,7 @@ const combinedChart = (sensorsData: SensorsDataPoint[],
 export const FarmChart = ({startDate, endDate}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const client = getAxiosClient();
   
   // const dispatch = useDispatch();
   // const stateLocal = useSelector((state) => state.dates);
@@ -132,7 +133,7 @@ export const FarmChart = ({startDate, endDate}) => {
     // Get chart data every minute
     const getData = setInterval(function _() {
       // Sensors data
-      axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data?startTS=${startDayTS_}&endTS=${endDayTS_}`, {
+      client.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data?startTS=${startDayTS_}&endTS=${endDayTS_}`, {
         signal: timeoutAbortSignal(5000)
       })
       .then(r => {
@@ -147,7 +148,7 @@ export const FarmChart = ({startDate, endDate}) => {
         // }
         
         // Watering data
-        axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/data?startTS=${startDayTS_}&endTS=${endDayTS_}`)
+        client.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/data?startTS=${startDayTS_}&endTS=${endDayTS_}`)
         .then(r => {
           wateringData = r.data;
           wateringData.length = 0;    // ==============================================

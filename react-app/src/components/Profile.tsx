@@ -1,21 +1,20 @@
-import axios from "../misc/AxiosInstance";
 import {Button, Typography} from "@mui/material";
 import {useNavigate} from "react-router-dom";
-import {useAuth} from "../misc/authProvider.jsx";
+import {useAuth} from "../misc/authProvider";
 import {useEffect} from "react";
 import {setUser} from "../reducers/users";
 import {useDispatch, useSelector} from "react-redux";
 
 
 export default function Profile() {
-  const {token, setToken} = useAuth();
+  const {token, setToken, axiosClient} = useAuth();
   const navigate = useNavigate();
   const state = useSelector((state) => state.users);
   const dispatch = useDispatch();
   
   // Get current user in /users/me
   useEffect(() => {
-    axios.get('/users/me')
+    axiosClient.get('/users/me')
       .then((response) => {
         dispatch(setUser(response.data));
       })

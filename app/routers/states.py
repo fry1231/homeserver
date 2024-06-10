@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Security, WebSocket, WebSocketDisconnect, HTTPException, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 import asyncio
 import async_timeout
 import orjson
@@ -7,14 +7,11 @@ from db.redis.models import State, States, StateUpdate
 from routers import WebsocketConnectionManager
 from config import logger
 from misc.dependencies import get_redis_conn, injectable
-from security import authorize_user, WebsocketAuthorized
+from security import WebsocketAuthorized
 
 
 router = APIRouter(
     prefix="/states",
-    # tags=["items"],
-    dependencies=[Security(authorize_user, scopes=["statistics:read"])],
-    # responses={404: {"description": "Not found"}},
 )
 
 
@@ -32,10 +29,8 @@ class ConnectionManager(WebsocketConnectionManager):
 
     async def subscribe_to_states(self):
         await self.init_redis_conn()
-        logger.debug("Subscribing to channel:states")
         channel = self.redis_conn.pubsub()
         await channel.subscribe('channel:states')
-        logger.debug("Subscribed to channel:states")
         while True:
             try:
                 async with async_timeout.timeout(1):
@@ -85,52 +80,8 @@ async def get_current_states(redis_conn=Depends(get_redis_conn)):
     return States(states=states, incr_value=incr_value)
 
 
-# def mock_states_data():
-#     import random
-#     states = [State(state_name=f"AddPainCaseForm:{i}:add_medications",
-#                     user_ids=[random.randint(1, 10) for _ in range(random.randint(0, 3))]) for i in range(10)]
-#     states += [State(state_name="AddDrugForm:0:single_step",
-#                      user_ids=[random.randint(1, 10) for _ in range(random.randint(0, 2))]),
-#                State(state_name="AddSmth:0:add_pressure",
-#                      user_ids=[random.randint(1, 10) for _ in range(random.randint(0, 4))]),
-#                State(state_name="AddSmth:1:add_drugname",
-#                      user_ids=[random.randint(1, 10) for _ in range(random.randint(0, 5))])]
-#     return States(
-#         states=states,
-#         incr_value=0
-#     )
-#
-#
-# def mock_state_update_data(mocked_incr_val: int):
-#     import random
-#     random_state = random.choice(current_states.states)
-#     try:
-#         random_user = random.choice(random_state.user_ids)
-#         upd = StateUpdate(
-#             user_id=random_user,
-#             user_state=random_state.state_name,
-#             action="unset",
-#             incr_value=mocked_incr_val + 1
-#         )
-#     except IndexError:
-#         upd = StateUpdate(
-#             user_id=random.randint(1, 10),
-#             user_state=random_state.state_name,
-#             action="set",
-#             incr_value=mocked_incr_val + 1
-#         )
-#     finally:
-#         current_states.incr_value = mocked_incr_val + 1
-#         if upd.action == "set":
-#             current_states.states[current_states.states.index(random_state)].user_ids.append(upd.user_id)
-#         else:
-#             current_states.states[current_states.states.index(random_state)].user_ids.remove(upd.user_id)
-#         return upd
-
-
 manager = ConnectionManager()
 WSAuth = WebsocketAuthorized(scopes=["statistics:read"])
-# current_states = mock_states_data()
 
 
 @router.websocket("/ws/{client_id}")
