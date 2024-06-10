@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status, APIRouter, Security
 from db.sql.models import User
 
-from security import authorize_user
+from security import get_authorized_user
 
 
 router = APIRouter(
@@ -57,5 +57,5 @@ async def check_username(username: str):
 
 
 @router.get("/me", response_model=User)
-async def read_users_me(user: User = Security(authorize_user, scopes=["default"])):
+async def read_users_me(user: User = Security(get_authorized_user, scopes=["default"])):
     return user

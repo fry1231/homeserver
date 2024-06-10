@@ -10,12 +10,13 @@ from starlette.websockets import WebSocket
 from strawberry.permission import BasePermission
 from strawberry.types import Info
 
-from config import SECRET
-from security.config import ALGORITHM, oauth2_scheme
+from security.config import ALGORITHM, oauth2_scheme, SECRET
 from security.models import AuthenticationError401, AuthorizationError403, AccessTokenPayload
+from security.utils import UserModel
 
 
-def authorize_user(security_scopes: SecurityScopes, token: str = Depends(oauth2_scheme)) -> True:
+def authorize_user(security_scopes: SecurityScopes,
+                   token: str = Depends(oauth2_scheme)) -> True:
     """
     Authorize user if:
         - token has required scopes
@@ -70,6 +71,14 @@ def _is_authorized(token: str, require_scopes: list[str], master_scope: str) -> 
         return True
     except (ExpiredSignatureError, InvalidTokenError, ValidationError):
         return False
+
+
+async def get_authorized_user(security_scopes: SecurityScopes,
+                              token: str = Depends(oauth2_scheme)) -> UserModel:
+    _is_authorized(token, require_scopes=security_scopes.scopes, master_scope="all")
+    payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
+    token_data = AccessTokenPayload(**payload)
+    return UserModel(**token_data.model_dump())
 
 
 class WebsocketAuthorized:
