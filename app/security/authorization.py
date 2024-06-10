@@ -12,7 +12,7 @@ from strawberry.types import Info
 
 from security.config import ALGORITHM, oauth2_scheme, SECRET
 from security.models import AuthenticationError401, AuthorizationError403, AccessTokenPayload
-from security.utils import UserModel
+from security.utils import UserModel, get_user_or_none
 
 
 def authorize_user(security_scopes: SecurityScopes,
@@ -35,7 +35,7 @@ def authorize_user(security_scopes: SecurityScopes,
         token_data = AccessTokenPayload(**payload)
         # Check if token has required scopes
         if not token_data.scopes:
-            raise AuthorizationError403("Token has no scopes")
+            raise AuthorizationError403("Access token has no scopes")
         # If no scopes are required, authorize user
         if not security_scopes.scopes or security_scopes.scopes == []:
             return True
@@ -44,15 +44,20 @@ def authorize_user(security_scopes: SecurityScopes,
             return True
         for scope in security_scopes.scopes:
             if scope not in token_data.scopes:
-                raise AuthorizationError403(f"Not enough permissions, {security_scopes.scope_str} required")
+                raise AuthorizationError403(f"Not enough permissions, {security_scopes.scope_str} are required")
     except ExpiredSignatureError:
-        raise AuthenticationError401("Token has expired", authenticate_value)
+        raise AuthenticationError401("Access token has expired", authenticate_value)
     except (InvalidTokenError, ValidationError):
         raise AuthenticationError401("Could not validate credentials", authenticate_value)
     return True
 
 
 def _is_authorized(token: str, require_scopes: list[str], master_scope: str) -> bool:
+    """
+    Check if user is authorized
+    Does not raise exceptions
+    Does not check whether the user exists
+    """
     try:
         payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
         token_data = AccessTokenPayload(**payload)
@@ -75,10 +80,13 @@ def _is_authorized(token: str, require_scopes: list[str], master_scope: str) -> 
 
 async def get_authorized_user(security_scopes: SecurityScopes,
                               token: str = Depends(oauth2_scheme)) -> UserModel:
-    _is_authorized(token, require_scopes=security_scopes.scopes, master_scope="all")
+    authorize_user(security_scopes, token)
     payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
     token_data = AccessTokenPayload(**payload)
-    return UserModel(**token_data.model_dump())
+    user = await get_user_or_none(uuid=token_data.sub)
+    if user is None:
+        raise AuthenticationError401("Could not validate credentials")
+    return user
 
 
 class WebsocketAuthorized:

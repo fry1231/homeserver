@@ -9,7 +9,7 @@ router = APIRouter(
 )
 
 
-async def get_user(username: str = None, email: str = None) -> User:
+async def get_user(username: str = None, email: str = None) -> User | None:
     """
     Get user by username or email
     If username provided, email is ignored
@@ -40,7 +40,7 @@ async def validate_username(username: str) -> None:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username must be at most 50 characters long"
         )
-    if get_user(username=username):
+    if await get_user(username=username) is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already registered"
