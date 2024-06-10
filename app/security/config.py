@@ -24,7 +24,7 @@ SCOPES_DESCRIPTION = {
     'statistics:read': 'Read statistics',
 }
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PATH_PREFIX}/token", scopes=SCOPES_DESCRIPTION)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PATH_PREFIX}/login/form", scopes=SCOPES_DESCRIPTION)
 
 # Google OAuth
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')

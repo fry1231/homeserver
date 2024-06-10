@@ -1,22 +1,16 @@
-from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
+from contextlib import AsyncExitStack
 from functools import wraps
-from typing import Any, Callable, Coroutine, TypeVar, Annotated
-import orjson
+from typing import Any, Callable, Coroutine, TypeVar
 import aioredis
-from fastapi import Request, Depends, HTTPException, Cookie, Query, WebSocketException
+from fastapi import Request
 from fastapi.dependencies.models import Dependant
 from fastapi.dependencies.utils import get_dependant, solve_dependencies
-from jose import jwt, JWTError
-from starlette import status
-from starlette.websockets import WebSocket
 import inspect
 
-from config import SECRET, logger
+from config import logger
 from db.influx import get_influx_client
 from db.redis import redis_pool
-from db.sql.models import User
-from security.config import ALGORITHM, oauth2_scheme
-from security.authorization import authorize_user
+
 
 T = TypeVar("T")
 

@@ -5,14 +5,13 @@ import orjson
 import jwt
 from jose import JWTError
 
-from fastapi import APIRouter, HTTPException, status, Depends, Response, Cookie
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, HTTPException, status, Depends, Cookie
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import ValidationError
 
 from security.utils import create_user, get_user_or_none, _get_tokens, _add_cookies
 from security.authentication import authenticate_user
-from security.models import TokensResponse, SignupForm, AuthenticationError401, AuthorizationError403
+from security.models import TokensResponse, SignupForm, AuthenticationError401
 from config import logger
 from security.config import (
     PATH_PREFIX,
@@ -51,8 +50,7 @@ async def login_for_access_token(
     if not user:
         raise AuthenticationError401("Incorrect username or password")
     access_token, refresh_token = _get_tokens(user)
-    response = TokensResponse(access_token, refresh_token)
-    return response
+    return TokensResponse(access_token, refresh_token)
 
 
 @router.get("/login/google")
