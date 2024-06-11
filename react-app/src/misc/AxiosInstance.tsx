@@ -31,6 +31,9 @@ const AxiosProvider = ({children}) => {
       const parsedError = JSON.parse(error.response.data);
       setErrorMessage(parsedError.detail);
     }
+    if (error.code === "ECONNABORTED") {
+      setErrorMessage('Internal server error');
+    }
   });
 
   return (

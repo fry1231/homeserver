@@ -1,7 +1,6 @@
 import {Navigate, Outlet} from "react-router-dom";
-import {useAuth} from "../misc/authProvider.tsx";
+import {useAuth} from "../misc/authProvider";
 import {jwtDecode} from "jwt-decode";
-import {useError} from "../misc/ErrorHandling";
 
 
 function getCookie(name) {
@@ -24,7 +23,6 @@ export const TokenCookieToStorage = () => {
 
 export const ProtectedRoute = () => {
     const {token, setToken} = useAuth();
-    const {setErrorMessage} = useError();
     console.log("ProtectedRoute token: ", token)
     // Check if the user is authenticated
     if (!token) {
