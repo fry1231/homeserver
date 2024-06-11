@@ -38,13 +38,7 @@ export const ProtectedRoute = () => {
         setToken(null);
         return <Navigate to="/login"/>;
     }
-
-    // If user is not admin - display an error
-    // if (!decodedToken.isAdmin) {
-    //     setErrorMessage("You may not have the necessary permissions to access the content of this page.");
-    // }
-
-    // axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+    
     // If authenticated, render the child routes
     return <Outlet/>;
 };

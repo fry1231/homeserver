@@ -34,7 +34,7 @@ class WateringResponseItem(WateringData):
 
 
 # Submit and get data from farm sensors (temperature, soil moisture, water level)
-@router.post('/sensors/submit-data')
+@router.post('/sensors/submit')
 def submit_farm_data(data: FarmData,
                      influxdb_client=Depends(farm_client),
                      auth=Security(authorize_user, scopes=["sensors:write"])):
@@ -58,7 +58,7 @@ def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600
 
 
 # Submit and get data about watering pump on/off
-@router.post('/watering/submit-data')
+@router.post('/watering/submit')
 async def submit_watering(data: WateringData,
                           influxdb_client=Depends(farm_client),
                           auth=Security(authorize_user, scopes=["sensors:write"])):
@@ -97,24 +97,25 @@ def get_last_watering_time(influxdb_client=Depends(farm_client),
     return str(int(time.timestamp()))
 
 
-@router.post('/watering/set-needed')
-async def set_watering_needed(redis_conn=Depends(get_redis_conn),
+@router.post('/watering/set-seconds')
+async def set_watering_needed(seconds: int,
+                              redis_conn=Depends(get_redis_conn),
                               auth=Security(authorize_user, scopes=["sensors:write"])):
-    if await redis_conn.get('watering_needed') == '1':
+    if await redis_conn.get('watering_seconds') != '0':
         return Response(status_code=208, content='Watering needed flag already set')
-    await redis_conn.set('watering_needed', '1')
+    await redis_conn.set('watering_seconds', str(seconds))
     return Response(status_code=202, content='Watering needed flag set')
 
 
-@router.get('/watering/is-needed')
+@router.get('/watering/seconds')
 async def is_watering_needed(noreset: bool | None = None,
                              redis_conn=Depends(get_redis_conn),
-                             auth=Security(authorize_user, scopes=["sensors:read"])):
-    watering_needed = await redis_conn.get('watering_needed')   # '1' or '0' or None
-    if watering_needed is not None:
-        if watering_needed == '1':
+                             auth=Security(authorize_user, scopes=["sensors:read"])) -> int:
+    watering_seconds = await redis_conn.get('watering_seconds')
+    if watering_seconds is not None:
+        if watering_seconds != '0':
             if noreset is None:
                 await redis_conn.set('watering_needed', '0')    # Water once and reset the flag
-        return watering_needed
+        return int(watering_seconds)
     else:
-        return '0'
+        return 0

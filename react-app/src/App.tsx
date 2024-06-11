@@ -7,6 +7,7 @@ import stateReducer from './reducers/states';
 import usersReducer from './reducers/users';
 import logsReducer from './reducers/logs';
 import positionsReducer from './reducers/draggables';
+import authReducer from './reducers/auth';
 import AuthProvider from "./misc/authProvider";
 import Routes from "./routes";
 import {ErrorProvider} from "./misc/ErrorHandling";
@@ -21,6 +22,7 @@ const store = configureStore({
       users: usersReducer,
       logs: logsReducer,
       positions: positionsReducer,
+      auth: authReducer,
     },
   devTools: import.meta.env.VITE_REACT_APP_IN_PRODUCTION == '0',
 });
@@ -34,22 +36,22 @@ function App() {
           <CssBaseline/>
           <Provider store={store}>
             <AxiosProvider>
-            <AuthProvider>
-              <Container>
-                <ApolloWrapper>
-                  
-                    {/*<Helmet>*/}
-                    {/*  <meta name="apple-mobile-web-app-capable" content="yes"/>*/}
-                    {/*  <meta httpEquiv="Content-Security-Policy"*/}
-                    {/*        content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;"/>*/}
-                    {/*  <title>HomeServer</title>*/}
-                    {/*</Helmet>*/}
-                    <Routes/>
-                  
-                </ApolloWrapper>
-              </Container>
-            </AuthProvider>
-              </AxiosProvider>
+              <AuthProvider>
+                <Container>
+                  <ApolloWrapper>
+                    
+                      {/*<Helmet>*/}
+                      {/*  <meta name="apple-mobile-web-app-capable" content="yes"/>*/}
+                      {/*  <meta httpEquiv="Content-Security-Policy"*/}
+                      {/*        content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;"/>*/}
+                      {/*  <title>HomeServer</title>*/}
+                      {/*</Helmet>*/}
+                      <Routes/>
+                    
+                  </ApolloWrapper>
+                </Container>
+              </AuthProvider>
+            </AxiosProvider>
           </Provider>
         </ThemeProvider>
       </ErrorProvider>

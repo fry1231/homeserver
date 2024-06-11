@@ -17,15 +17,10 @@ export default function Profile() {
   
   // Get current user in /users/me
   useEffect(() => {
-    
     axiosClient.get('/users/me')
       .then((response) => {
         dispatch(setUser(response.data));
       })
-      .catch((error) => {
-        console.log(error);
-      }
-    );
   }, []);
   
   const decodedToken = jwtDecode(token);
@@ -44,7 +39,7 @@ export default function Profile() {
           <Typography variant="h5">Access token expires: {expirationTime.toLocaleString()}</Typography>
           <Button variant="contained" color="secondary" onClick={() => {
             // refresh access token using refresh token
-            axiosClient.get('/auth/refresh')
+            axiosClient.get('/auth/refresh', {withCredentials: true})
               .then((response) => {
                 setToken(response.data.access_token);
               })

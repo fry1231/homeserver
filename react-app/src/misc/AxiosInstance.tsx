@@ -16,6 +16,7 @@ const AxiosProvider = ({children}) => {
     baseURL: `${protocol}://${import.meta.env.VITE_REACT_APP_HOST}`,
     timeout: 2000,
   });
+  // instance.defaults.headers.common["Access-Control-Allow-Origin"] = "http://localhost:3000";
   instance.interceptors.request.use(function (config) {
     console.log('request', config);
     return config;
@@ -27,11 +28,15 @@ const AxiosProvider = ({children}) => {
     return response;
   }, function (error) {
     console.log('error response', error);
-    if (error.code === 401 || error.code === 403) {
+    if (error.code === 401) {
       const parsedError = JSON.parse(error.response.data);
       setErrorMessage(parsedError.detail);
-    }
-    if (error.code === "ECONNABORTED") {
+    } else if (error.code === 403) {
+      instance.get('/auth/refresh', {withCredentials: true})
+      .then((response) => {
+        setToken(response.data.access_token);
+      })
+    } else if (error.code === "ECONNABORTED") {
       setErrorMessage('Internal server error');
     }
   });
