@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, EmailStr, field_validator,field_serialize
 from fastapi import HTTPException, status
 from fastapi.responses import ORJSONResponse
 
-from security.config import REFRESH_TOKEN_EXPIRE_DAYS, SECURE, PATH_PREFIX
+from security.config import DOMAIN, REFRESH_TOKEN_EXPIRE_DAYS, PATH_PREFIX, SECURE
 
 
 class AuthenticationError401(HTTPException):
@@ -62,6 +62,7 @@ class TokensResponse(ORJSONResponse):
             "access_token": access_token
         })
         self.set_cookie(
+            domain=DOMAIN,
             key="refresh_token",
             value=refresh_token,
             httponly=True,
