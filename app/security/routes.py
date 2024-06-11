@@ -113,6 +113,7 @@ async def refresh_access_token(
         refresh_token: str = Cookie(None)
 ):
     try:
+        logger.debug(f"Received refresh token: {refresh_token}")
         payload = jwt.decode(refresh_token, SECRET, algorithms=[ALGORITHM])
         uuid = payload.get("sub")
         user = await get_user_or_none(uuid=uuid)
