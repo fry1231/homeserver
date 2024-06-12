@@ -101,21 +101,22 @@ def get_last_watering_time(influxdb_client=Depends(farm_client),
 async def set_watering_needed(seconds: int,
                               redis_conn=Depends(get_redis_conn),
                               auth=Security(authorize_user, scopes=["sensors:write"])):
-    if await redis_conn.get('watering_seconds') != '0':
-        return Response(status_code=208, content='Watering needed flag already set')
+    prev_value = await redis_conn.get('watering_seconds')
     await redis_conn.set('watering_seconds', str(seconds))
-    return Response(status_code=202, content='Watering needed flag set')
+    if prev_value is not None and prev_value != '0':
+        return Response(status_code=208, content='Set new watering time, but previous was not finished yet')
+    return Response(status_code=202, content='New watering time set')
 
 
 @router.get('/watering/seconds')
-async def is_watering_needed(noreset: bool | None = None,
+async def is_watering_needed(noreset: bool = False,
                              redis_conn=Depends(get_redis_conn),
                              auth=Security(authorize_user, scopes=["sensors:read"])) -> int:
     watering_seconds = await redis_conn.get('watering_seconds')
     if watering_seconds is not None:
         if watering_seconds != '0':
             if noreset is None:
-                await redis_conn.set('watering_needed', '0')    # Water once and reset the flag
+                await redis_conn.set('watering_seconds', '0')    # Water once and reset the flag
         return int(watering_seconds)
     else:
         return 0
