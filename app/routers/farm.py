@@ -115,7 +115,7 @@ async def is_watering_needed(noreset: bool = False,
     watering_seconds = await redis_conn.get('watering_seconds')
     if watering_seconds is not None:
         if watering_seconds != '0':
-            if noreset is None:
+            if not noreset:
                 await redis_conn.set('watering_seconds', '0')    # Water once and reset the flag
         return int(watering_seconds)
     else:
