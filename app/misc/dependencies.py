@@ -100,9 +100,9 @@ def farm_client():
 async def get_redis_conn():
     redis_conn = aioredis.Redis(connection_pool=redis_pool, decode_responses=True)
     t = time()
-    logger.debug(f'Redis conn #{t}')
+    logger.debug(f'Redis conn #{t}/{len(redis_conn.connection_pool._available_connections)}')
     try:
         yield redis_conn
     finally:
         await redis_conn.close()
-        logger.debug(f'Redis conn #{t} released')
+        logger.debug(f'Redis conn #{t}/{len(redis_conn.connection_pool._available_connections)} released')

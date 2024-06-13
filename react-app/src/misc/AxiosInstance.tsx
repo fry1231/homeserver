@@ -12,18 +12,13 @@ interface RetryQueueItem {
   config: AxiosRequestConfig;
 }
 
-const refreshAccessToken = async (instance: AxiosInstance, dispatch: any) => {
+const refreshAccessToken = async (instance: AxiosInstance) => {
   try {
-    const response = await instance.get('/auth/refresh', {
-      withCredentials: true,
-      headers: {
-        'Access-Control-Allow-Origin': 'http://localhost:3000'
-      }
-    });
-    dispatch(setToken(response.data.access_token));
-    return response.data.access_token;
-  } catch (error) {
-    throw error;
+    const response = await instance.get('/auth/refresh', {withCredentials: true});
+    return response.data;
+  }
+  catch (error) {
+    return Promise.reject(error);
   }
 }
 
@@ -37,7 +32,7 @@ const AxiosContext = createContext<AxiosInstance>(
 const AxiosProvider = ({children}) => {
   const {token} = useSelector((state) => state.auth);
   let isRefreshing: boolean = false;
-  const callStack = {};
+  const postponedRequests: RetryQueueItem[] = [];
   const dispatch = useDispatch();
   const setErrorMessage = (message: string) => dispatch(setErrorMessage_(message));
   const navigate = useNavigate();
@@ -54,18 +49,15 @@ const AxiosProvider = ({children}) => {
     instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }, [token]);
   
-  // instance.defaults.headers.common["Access-Control-Allow-Origin"] = "http://localhost:3000";
-  instance.interceptors.request.use(function (config) {
-    console.log('request', config);
+  instance.interceptors.request.use( (config) => {
+    console.log('request' + config.url, config);
     return config;
-  }, function (error) {
+  }, (error) => {
     console.error('error request', error);
   });
   
-  instance.interceptors.response.use(function (response) {
-    return response;
-  }, function (error) {
-    console.log('error response', error);
+  instance.interceptors.response.use( (response) => response,
+    async (error) => {
     if (
       error.response &&
       error.response.status &&
@@ -74,48 +66,58 @@ const AxiosProvider = ({children}) => {
       console.log('Authorization error, trying to refresh token');
       // Refresh token if not already refreshing
       if (!isRefreshing) {
-        isRefreshing = true;
-        instance.get('/auth/refresh', {
-          withCredentials: true,
-          headers: {
-            'Access-Control-Allow-Origin': 'http://localhost:3000'
-          }
-        })
-        .then((response) => {
-          dispatch(setToken(response.data.access_token));
-          console.log('Token refreshed:', response.data.access_token);
-          // Retry the postponed requests
-          Object.values(callStack).flat().forEach((reqConfig) => {
-            console.log('Retrying postponed request', reqConfig.url);
-            instance.request(reqConfig);
-          })
-          isRefreshing = false;
-        })
-        .catch((error) => {
+        try {
+          isRefreshing = true;
+          
+          // refresh token
+          const newToken = await refreshAccessToken(instance);
+          dispatch(setToken(newToken));
+          
+          // Set new token in original request
+          const originalRequest = error.config;
+          originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+          
+          // Retry postponed requests
+          postponedRequests.forEach(({config, resolve, reject}) => {
+            instance.request(config).then(resolve, reject);
+          });
+          postponedRequests.length = 0;
+          
+          // Retry the original request
+          return instance(originalRequest);
+        }
+        catch (refreshError) {
           console.log('Error refreshing token', error);
           navigate('/login');
-        });
+        }
+        finally {
+          isRefreshing = false;
+        }
       }
+      
       // If refreshing in process, postpone the request
       if (isRefreshing) {
         console.log('Postponing request ', error.config.url)
         const originalRequest = error.config;
         const url = originalRequest.url;
+        
         // If /auth/refresh in url, then something is wrong, navigate to login
         if (url.includes('/auth/refresh')) {
           // Clear callStack
-          for (const prop of Object.getOwnPropertyNames(callStack)) {
-            delete callStack[prop];
-          }
+          postponedRequests.length = 0;
           navigate('/login');
         } else {
-          callStack[url] = []  //  Save only the last request for the URL             callStack[url] || [];
-          callStack[url].push(originalRequest);
+          return new Promise<void>((resolve, reject) => {
+            postponedRequests.push({config: originalRequest, resolve, reject});
+          });
         }
       }
       
+    // Other errors
     } else if (error.code === "ECONNABORTED") {
       setErrorMessage('Internal server error');
+    } else if (error.code === "ERR_CANCELED") { // Cancelled on unmount
+      console.log('Request cancelled: ', error.message);
     } else {
       return Promise.reject(error);
     }
