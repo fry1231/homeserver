@@ -100,9 +100,10 @@ def farm_client():
 async def get_redis_conn():
     redis_conn = aioredis.Redis(connection_pool=redis_pool, decode_responses=True)
     t = time()
-    logger.debug(f'Redis conn #{t} executed in {inspect.stack()[2].function} at {inspect.stack()[2].filename}')
+    logger.debug(f'Redis conn #{t} executed in {inspect.stack()[3].function} at {inspect.stack()[3].filename}')
+    logger.debug(f'Stack: {inspect.stack()}')
     try:
         yield redis_conn
     finally:
         await redis_conn.close()
-        logger.debug(f'Redis conn #{t} released in {inspect.stack()[2].function} at {inspect.stack()[2].filename}')
+        logger.debug(f'Redis conn #{t} released in {inspect.stack()[3].function} at {inspect.stack()[3].filename}')
