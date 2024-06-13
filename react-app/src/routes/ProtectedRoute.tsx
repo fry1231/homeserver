@@ -1,5 +1,8 @@
 import {Navigate, Outlet} from "react-router-dom";
-import {useAuth} from "../misc/authProvider";
+import {clearToken} from "../reducers/auth";
+import {useSelector, useDispatch} from "react-redux";
+import {setToken} from "../reducers/auth";
+import {getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
 
 
@@ -22,20 +25,22 @@ export const TokenCookieToStorage = () => {
 
 
 export const ProtectedRoute = () => {
-    const {token, setToken} = useAuth();
-    console.log("ProtectedRoute token: ", token)
+    const {token} = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+
     // Check if the user is authenticated
     if (!token) {
         // If not authenticated, redirect to the login page
         return <Navigate to="/login"/>;
     }
-
+    
     // Check if token is expired
     const decodedToken = jwtDecode(token);
     console.log("ProtectedRoute decodedToken: ", decodedToken)
     const currentTime = Date.now() / 1000; // Convert to seconds
+    // If so, refresh the token using the refresh token cookie
     if (decodedToken.exp < currentTime) {
-        setToken(null);
+        dispatch(clearToken());
         return <Navigate to="/login"/>;
     }
     

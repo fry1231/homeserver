@@ -1,10 +1,10 @@
 import {ApolloProvider, ApolloClient, InMemoryCache, gql} from '@apollo/client';
-import {useAuth} from "./authProvider";
+import {useDispatch, useSelector} from "react-redux";
 import {useEffect, useState} from "react";
 
 
 export const ApolloWrapper = ({children}) => {
-  const {token, setToken} = useAuth();
+  const {token} = useSelector((state) => state.auth)
   const [client, setClient] = useState(null);
   useEffect(() => {
     const client = new ApolloClient({

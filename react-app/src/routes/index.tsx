@@ -1,5 +1,4 @@
 import {RouterProvider, createBrowserRouter, useRoutes} from "react-router-dom";
-import {useAuth} from "../misc/authProvider.tsx";
 import {ProtectedRoute, TokenCookieToStorage} from "./ProtectedRoute";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
@@ -13,10 +12,11 @@ import States from "../pages/States";
 import Logs from "../components/Logs";
 
 import DraggableContainer from "../components/global/DraggableContainer";
+import {useSelector} from "react-redux";
 
 
 const Routes = () => {
-    const {token} = useAuth();
+    const {token} = useSelector((state) => state.auth);
 
     // Define public routes accessible to all users
     const routesForPublic = [

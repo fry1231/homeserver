@@ -12,39 +12,30 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import {getAxiosClient} from "../misc/AxiosInstance";
-import {useAuth} from "../misc/authProvider";
 import {useNavigate} from "react-router-dom";
 import GoogleIcon from '@mui/icons-material/Google';
 import TextField from "./global/CustomInputField"
-import {useError} from "../misc/ErrorHandling";
-
+import {useDispatch} from "react-redux";
+import {setToken as setToken_} from "../reducers/auth";
 
 
 export default function LogIn() {
-  const {setErrorMessage} = useError();
-  const {setToken} = useAuth();
+  const dispatch = useDispatch();
+  const setToken = (token: string) => dispatch(setToken_(token));
   const navigate = useNavigate();
   const axiosClient = getAxiosClient();
   
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-  
-    try {
-      const response = await axiosClient.post('/auth/login/form', data, {timeout: 5000});
-      if (response.status === 200) {
-        const token = response.data.access_token;
-        await setToken(token);
-        axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        navigate('/');
-      }
-    } catch (error) {
-      console.log(error);
-      if (error.response)
-        setErrorMessage(error.response.data.detail);
-      else
-        setErrorMessage(error.message)
-    }
+    axiosClient.post('/auth/login/form', data, {timeout: 5000})
+      .then((response) => {
+        if (response.status === 200) {
+          const token = response.data.access_token;
+          setToken(token);
+          navigate('/');
+        }
+      });
   }
   
   return (

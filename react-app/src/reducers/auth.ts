@@ -1,7 +1,7 @@
 import {createSlice} from "@reduxjs/toolkit";
 
-const initialState: {token: null | string} = {
-  token: null,
+const initialState: { token: string | null } = {
+  token: localStorage.getItem("token"),
 }
 
 const slice = createSlice({
@@ -9,11 +9,15 @@ const slice = createSlice({
   initialState,
   reducers: {
     setToken(state, action) {
-      state.token = action.payload.token;
+      const token = action.payload;
+      console.log("setting token", token);
+      state.token = token;
+      localStorage.setItem("token", token);
     },
     clearToken(state) {
       state.token = null;
-    }
+      localStorage.removeItem("token");
+    },
   }
 });
 

@@ -6,7 +6,7 @@ interface User {
   username: string;
   hashed_password: string;
   email: string;
-  is_admin: boolean;
+  scopes: string;
 }
 
 const initialState = {

@@ -4,13 +4,14 @@ import {useAuth} from "../misc/authProvider";
 import {useEffect, useState} from "react";
 import {setUser} from "../reducers/users";
 import {useDispatch, useSelector} from "react-redux";
+import {setToken, clearToken} from "../reducers/auth";
 import {getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
 
 
 export default function Profile() {
-  const {token, setToken} = useAuth();
   const navigate = useNavigate();
+  const {token} = useSelector((state) => state.auth)
   const state = useSelector((state) => state.users);
   const dispatch = useDispatch();
   const axiosClient = getAxiosClient();
@@ -41,12 +42,12 @@ export default function Profile() {
             // refresh access token using refresh token
             axiosClient.get('/auth/refresh', {withCredentials: true})
               .then((response) => {
-                setToken(response.data.access_token);
+                dispatch(setToken(response.data.access_token));
               })
           }}>Refresh Token</Button>
           <Divider/>
           <Button variant="contained" color="error" onClick={() => {
-            setToken("");
+            dispatch(clearToken());
             navigate("/login");
           }}>Logout</Button>
         </>

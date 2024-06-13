@@ -1,41 +1,37 @@
-import {createContext, useState, useContext, useEffect} from 'react';
 import {Alert, Typography} from "@mui/material";
+import {useSelector, useDispatch} from "react-redux";
+import {clearErrorMessage} from "../reducers/errors";
+import {useEffect, useState} from "react";
 
 
-const ErrorContext = createContext({
-  errorMessage: '',
-  setErrorMessage: (value) => {
-  },
-});
-
-export const useError = () => {
-  const context = useContext(ErrorContext);
-  const {errorMessage, setErrorMessage} = context;
-  
+export const ErrorWrapper = ({children}) => {
+  const {errorMessage, incr} = useSelector((state) => state.errors);
+  const dispatch = useDispatch();
+  const [timer, setTimer] = useState<NodeJS.Timeout | string | number | undefined>();
   useEffect(() => {
-    errorMessage && setTimeout(() => setErrorMessage(''), 5000);
-  }, [errorMessage, setErrorMessage]);
-  
-  return context;
-};
-
-export const ErrorProvider = ({children}) => {
-  const [errorMessage, setErrorMessage] = useState('');
-  
+    if (errorMessage) {
+      const newTimer = setTimeout(() => {
+        dispatch(clearErrorMessage());
+      }, 5000);
+      clearTimeout(timer);
+      setTimer(newTimer);
+      return () => clearTimeout(timer);
+    }
+  }, [incr]);
   return (
-    <ErrorContext.Provider value={{errorMessage, setErrorMessage}}>
+    <>
       {errorMessage && (
-        <Alert severity="error" onClose={() => setErrorMessage('')}>
+        <Alert severity="error" onClose={() => dispatch(clearErrorMessage())}>
           {
             errorMessage.split('\n')
-                        .map(
-                          (line: string, i: number) =>
-                          <Typography key={i}>{line}</Typography>
-                        )
+            .map(
+              (line: string, i: number) =>
+                <Typography key={i}>{line}</Typography>
+            )
           }
         </Alert>
       )}
       {children}
-    </ErrorContext.Provider>
+    </>
   );
 };

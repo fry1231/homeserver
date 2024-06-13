@@ -6,6 +6,7 @@ from fastapi import Request
 from fastapi.dependencies.models import Dependant
 from fastapi.dependencies.utils import get_dependant, solve_dependencies
 import inspect
+from time import time
 
 from config import logger
 from db.influx import get_influx_client
@@ -98,7 +99,10 @@ def farm_client():
 # redis connection from pool
 async def get_redis_conn():
     redis_conn = aioredis.Redis(connection_pool=redis_pool, decode_responses=True)
+    t = time()
+    logger.debug(f'Redis conn #{t} executed in {inspect.stack()[1].function} at {inspect.stack()[1].filename}')
     try:
         yield redis_conn
     finally:
         await redis_conn.close()
+        logger.debug(f'Redis conn #{t} released in {inspect.stack()[1].function} at {inspect.stack()[1].filename}')

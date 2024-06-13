@@ -122,7 +122,10 @@ async def refresh_access_token(
         access_token, refresh_token = _get_tokens(user)
         response = TokensResponse(access_token, refresh_token)
         return response
-    except (JWTError, jwt.exceptions.DecodeError, jwt.exceptions.ExpiredSignatureError):
-        logger.error(f"Could not validate credentials: {refresh_token}"
-                     f"\n{traceback.format_exc()}")
-        raise AuthenticationError401("Could not validate credentials")
+    except jwt.exceptions.ExpiredSignatureError:
+        raise AuthenticationError401("Refresh token expired")
+    except (JWTError, jwt.exceptions.DecodeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Wrong token format"
+        )

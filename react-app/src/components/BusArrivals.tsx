@@ -3,9 +3,8 @@ import {tokens} from "../theme.ts";
 import {useEffect, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {busDataUpdated, speedUpRefresh} from "../reducers/buses";
-// import axios from "../misc/AxiosInstance";
 import axiosClass from "axios";
-import {useAuth} from "../misc/authProvider";
+import {getAxiosClient} from "../misc/AxiosInstance";
 
 
 interface BusResponse {
@@ -38,18 +37,18 @@ const timeToBus = (eta: string) => {
 }
 
 export default function BusArrivals() {
-  const {token, axiosClient} = useAuth();
   const dispatch = useDispatch();
   const state = useSelector((state) => state.buses);
   const busData = state.busData;
   const CancelToken = axiosClass.CancelToken;
   const source = CancelToken.source();
   const [limitReached, setLimitReached] = useState(false);
+  const client = getAxiosClient();
   
   useEffect(() => {
     console.log("Fetching bus data");
     let previousBytes = 0;
-    axiosClient && axiosClient.get(
+    client.get(
       `/buses/arrivals`, {
         responseType: 'stream',
         cancelToken: source.token,

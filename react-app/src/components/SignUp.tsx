@@ -12,11 +12,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import {Tooltip} from "@mui/material";
-import {useError} from "../misc/ErrorHandling";
+import {setErrorMessage as setErrorMessage_} from "../reducers/errors";
+import {useDispatch} from "react-redux";
 
 
 export default function SignUp() {
-  const {setErrorMessage} = useError();
+  const dispatch = useDispatch();
+  const setErrorMessage = (message: string) => dispatch(setErrorMessage_(message));
   const [username, setUsername] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [valid, setValid] = useState<boolean>(false);

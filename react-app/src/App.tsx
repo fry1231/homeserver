@@ -9,10 +9,11 @@ import logsReducer from './reducers/logs';
 import positionsReducer from './reducers/draggables';
 import authReducer from './reducers/auth';
 import AuthProvider from "./misc/authProvider";
-import Routes from "./routes";
-import {ErrorProvider} from "./misc/ErrorHandling";
+import Routes from "./routes/index";
+import {ErrorWrapper} from "./misc/ErrorHandling";
 import AxiosProvider from "./misc/AxiosInstance";
 import {ApolloWrapper} from "./misc/ApolloClient";
+import errorsReducer from "./reducers/errors";
 
 // Redux store
 const store = configureStore({
@@ -23,6 +24,7 @@ const store = configureStore({
       logs: logsReducer,
       positions: positionsReducer,
       auth: authReducer,
+      errors: errorsReducer,
     },
   devTools: import.meta.env.VITE_REACT_APP_IN_PRODUCTION == '0',
 });
@@ -31,15 +33,13 @@ function App() {
   const [theme, colorMode] = useMode();
   return (
     <ColorModeContext.Provider value={colorMode}>
-      <ErrorProvider>
         <ThemeProvider theme={theme}>
           <CssBaseline/>
           <Provider store={store}>
-            <AxiosProvider>
-              <AuthProvider>
+            <ErrorWrapper>
+              <AxiosProvider>
                 <Container>
                   <ApolloWrapper>
-                    
                       {/*<Helmet>*/}
                       {/*  <meta name="apple-mobile-web-app-capable" content="yes"/>*/}
                       {/*  <meta httpEquiv="Content-Security-Policy"*/}
@@ -47,14 +47,12 @@ function App() {
                       {/*  <title>HomeServer</title>*/}
                       {/*</Helmet>*/}
                       <Routes/>
-                    
                   </ApolloWrapper>
                 </Container>
-              </AuthProvider>
-            </AxiosProvider>
+              </AxiosProvider>
+            </ErrorWrapper>
           </Provider>
         </ThemeProvider>
-      </ErrorProvider>
     </ColorModeContext.Provider>
   )
 }
