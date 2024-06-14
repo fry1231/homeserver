@@ -9,6 +9,9 @@ import {addWindow} from "../reducers/draggables";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
+import {useNavigate} from "react-router-dom";
+import {getAxiosClient, refreshAccessToken} from "../misc/AxiosInstance";
+import {setToken} from "../reducers/auth";
 
 
 /**
@@ -26,6 +29,7 @@ const localizedTime = (timeString: string) => {
 
 
 export default function Logs({logLevels}) {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.logs);
   let protocol: string;
@@ -35,9 +39,10 @@ export default function Logs({logLevels}) {
   const [waitingToReconnect, setWaitingToReconnect] = useState(null);
   const [incomingMessage, setIncomingMessage] = useState();
   const [isOpen, setIsOpen] = useState(false);
-  const {token} = useAuth();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const {token} = useSelector((state) => state.auth);
+  const axiosClient = getAxiosClient();
   
   const [maxWidth, setMaxWidth] = useState(0);
   const logLevelRefs = useRef([]);
@@ -104,7 +109,17 @@ export default function Logs({logLevels}) {
       const client = new WebSocket(`${protocol}://${import.meta.env.VITE_REACT_APP_HOST}/logs/ws/${Date.now()}?token=${token}`);
       clientRef.current = client;
       
-      client.onerror = (e) => console.error(e);
+      client.onerror = (e) => {
+        const refresh = async () => {
+          try {
+            const newToken = await refreshAccessToken(axiosClient);
+            dispatch(setToken(newToken));
+          } catch (error) {
+            navigate('/login');
+          }
+        }
+        refresh();
+      };
       
       client.onopen = () => {
         setIsOpen(true);
@@ -236,7 +251,6 @@ export default function Logs({logLevels}) {
         
         const width = messageRef.current.offsetWidth;
         setRowWidth(width);
-        console.log(width);
     
         // If the height increases when the text is wrapped, it means the text is overflowing
         if (normalHeight > nowrapHeight) {

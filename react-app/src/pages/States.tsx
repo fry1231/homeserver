@@ -3,24 +3,27 @@ import {useEffect, useState, useRef} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {statesRefreshed, stateUpdateRecieved} from "../reducers/states";
 import stateInstance from "../reducers/states";
-import {useAuth} from "../misc/authProvider";
+import {setToken} from "../reducers/auth";
+import {getAxiosClient, refreshAccessToken} from "../misc/AxiosInstance";
 import {addWindow} from "../reducers/draggables";
 import {DraggableEntity} from "../reducers/draggables";
+import {useNavigate} from "react-router-dom";
 
 
 export default function States() {
-  
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.states);
   const statePositions = useSelector((state) => state.positions);
   let protocol: string;
   import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? protocol = "wss" : protocol = "ws";
   
-  const clientRef = useRef(null);
+  const clientRef = useRef<WebSocket | null>(null);
   const [waitingToReconnect, setWaitingToReconnect] = useState(null);
   const [incomingMessage, setIncomingMessage] = useState();
   const [isOpen, setIsOpen] = useState(false);
-  const {token} = useAuth();
+  const {token} = useSelector((state) => state.auth);
+  const axiosClient = getAxiosClient();
   
   useEffect(() => {
     
@@ -32,7 +35,17 @@ export default function States() {
       const client = new WebSocket(`${protocol}://${import.meta.env.VITE_REACT_APP_HOST}/states/ws/${Date.now()}?token=${token}`);
       clientRef.current = client;
       
-      client.onerror = (e) => console.error(e);
+      client.onerror = (e) => {
+        const refresh = async () => {
+          try {
+            const newToken = await refreshAccessToken(axiosClient);
+            dispatch(setToken(newToken));
+          } catch (error) {
+            navigate('/login');
+          }
+        }
+        refresh();
+      }
       
       client.onopen = () => {
         setIsOpen(true);
@@ -77,7 +90,7 @@ export default function States() {
       }
     }
     
-  }, []);
+  }, [token]);
   
   useEffect(() => {
     if (incomingMessage) {
@@ -128,8 +141,6 @@ export default function States() {
   
   return (
     <>
-      <Typography onClick={() => dispatch(addWindow({name: "User", id: 358774905}))
-      }>OPEN USER</Typography>
       {
         waitingToReconnect
         ? <Box><Radio color="default" checked={true} />Connecting...</Box>

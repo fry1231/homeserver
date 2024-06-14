@@ -81,7 +81,7 @@ async def get_current_states(redis_conn=Depends(get_redis_conn)):
 
 
 manager = ConnectionManager()
-WSAuth = WebsocketAuthorized(scopes=["statistics:read"])
+WSAuth = WebsocketAuthorized(scopes=["statistics:read"], master_scope="all")
 
 
 @router.websocket("/ws/{client_id}")

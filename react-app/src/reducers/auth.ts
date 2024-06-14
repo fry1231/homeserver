@@ -10,7 +10,6 @@ const slice = createSlice({
   reducers: {
     setToken(state, action) {
       const token = action.payload;
-      console.log("setting token", token);
       state.token = token;
       localStorage.setItem("token", token);
     },
