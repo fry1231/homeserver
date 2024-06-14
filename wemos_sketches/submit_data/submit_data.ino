@@ -9,8 +9,8 @@
 
 #define DHTPIN 12
 
-const char* ssid = "phone";
-const char* password = "122222322";
+const char* ssid = "ssid";
+const char* password = "123456789";
 
 // JWT auth
 char secret[] = "secret";
