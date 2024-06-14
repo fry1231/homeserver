@@ -2,7 +2,7 @@ import {Navigate, Outlet} from "react-router-dom";
 import {clearToken} from "../reducers/auth";
 import {useSelector, useDispatch} from "react-redux";
 import {setToken} from "../reducers/auth";
-import {getAxiosClient} from "../misc/AxiosInstance";
+import {refreshAccessToken, getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
 
 
@@ -16,6 +16,7 @@ function getCookie(name) {
 export const TokenCookieToStorage = () => {
     const access_token = getCookie("access_token");
     if (!access_token) {
+        console.log("No access token found in cookies");
         return <Navigate to="/"/>;
     }
     localStorage.setItem("token", access_token);
@@ -27,21 +28,28 @@ export const TokenCookieToStorage = () => {
 export const ProtectedRoute = () => {
     const {token} = useSelector((state) => state.auth);
     const dispatch = useDispatch();
+    const axiosClient = getAxiosClient();
 
     // Check if the user is authenticated
     if (!token) {
-        // If not authenticated, redirect to the login page
         return <Navigate to="/login"/>;
     }
     
     // Check if token is expired
     const decodedToken = jwtDecode(token);
-    console.log("ProtectedRoute decodedToken: ", decodedToken)
     const currentTime = Date.now() / 1000; // Convert to seconds
-    // If so, refresh the token using the refresh token cookie
+    // If so, try to refresh the token using the refresh token cookie
     if (decodedToken.exp < currentTime) {
-        dispatch(clearToken());
-        return <Navigate to="/login"/>;
+        const refreshToken = async () => {
+            try {
+                const newToken = await refreshAccessToken(axiosClient);
+                dispatch(setToken(newToken));
+            } catch (error) {
+                console.error("ProtectedRoute error: ", error);
+                return <Navigate to="/login"/>;
+            }
+        }
+        refreshToken();
     }
     
     // If authenticated, render the child routes

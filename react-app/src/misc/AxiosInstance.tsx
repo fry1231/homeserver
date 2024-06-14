@@ -12,10 +12,11 @@ interface RetryQueueItem {
   config: AxiosRequestConfig;
 }
 
-const refreshAccessToken = async (instance: AxiosInstance) => {
+
+export const refreshAccessToken = async (instance: AxiosInstance) => {
   try {
     const response = await instance.get('/auth/refresh', {withCredentials: true});
-    return response.data;
+    return response.data.access_token;
   }
   catch (error) {
     return Promise.reject(error);
@@ -79,6 +80,7 @@ const AxiosProvider = ({children}) => {
           
           // Retry postponed requests
           postponedRequests.forEach(({config, resolve, reject}) => {
+            console.log('Retrying postponed request ', config.url);
             instance.request(config).then(resolve, reject);
           });
           postponedRequests.length = 0;
@@ -121,7 +123,6 @@ const AxiosProvider = ({children}) => {
     } else {
       return Promise.reject(error);
     }
-    
   });
 
   return (

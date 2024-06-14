@@ -13,9 +13,9 @@ const char* ssid = "phone";
 const char* password = "122222322";
 
 // JWT auth
-char secret[] = "hatka_bobra";
-const char* uuid = "db5fb3ab409845a2b16f94f835e15559";
-const char* url = "https://homescreen.fry1231.net/ambiance/submit";
+char secret[] = "secret";
+const char* uuid = "uuid";
+const char* url = "https://api.example.com/api/v1/room1/state/";
 const int interval = 1000 * 60 * 5;
 
 DHT dht(DHTPIN, DHT22);
