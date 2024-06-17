@@ -121,7 +121,7 @@ def _add_cookies(response: Response,
         "domain": DOMAIN,
         "path": PATH_PREFIX,
         "secure": True if SECURE else False,
-        "samesite": "lax",
+        "samesite": "lax" if SECURE else "none",
     }
     response.set_cookie(
         key="refresh_token",

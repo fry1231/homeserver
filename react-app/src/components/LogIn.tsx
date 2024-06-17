@@ -91,7 +91,7 @@ export default function LogIn() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href={`https://${import.meta.env.VITE_REACT_APP_HOST}/users/login/google`} color="#fff"
+                <Link href={`https://${import.meta.env.VITE_REACT_APP_HOST}/auth/login/google`} color="#fff"
                       variant="body2">
                   <Box sx={{display: 'flex', alignItems: 'center'}}>
                     <GoogleIcon/>
