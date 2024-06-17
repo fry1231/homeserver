@@ -119,7 +119,7 @@ def _add_cookies(response: Response,
     """
     cookie_settings = {
         "domain": DOMAIN,
-        "path": PATH_PREFIX,
+        "path": '/set-token',
         "secure": True if SECURE else False,
         "samesite": "lax" if SECURE else "none",
     }
