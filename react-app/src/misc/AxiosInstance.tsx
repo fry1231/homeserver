@@ -69,57 +69,56 @@ const AxiosProvider = ({children}) => {
       if (!isRefreshing) {
         try {
           isRefreshing = true;
-          
+      
           // refresh token
           const newToken = await refreshAccessToken(instance);
           dispatch(setToken(newToken));
-          
+      
           // Set new token in original request
           const originalRequest = error.config;
           originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-          
+      
           // Retry postponed requests
           postponedRequests.forEach(({config, resolve, reject}) => {
             console.log('Retrying postponed request ', config.url);
             instance.request(config).then(resolve, reject);
           });
           postponedRequests.length = 0;
-          
+      
           // Retry the original request
           return instance(originalRequest);
-        }
-        catch (refreshError) {
+        } catch (refreshError) {
           console.log('Error refreshing token', error);
           navigate('/login');
-        }
-        finally {
+        } finally {
           isRefreshing = false;
         }
       }
-      
+    }
       // If refreshing in process, postpone the request
-      if (isRefreshing) {
-        console.log('Postponing request ', error.config.url)
-        const originalRequest = error.config;
-        const url = originalRequest.url;
-        
-        // If /auth/refresh in url, then something is wrong, navigate to login
-        if (url.includes('/auth/refresh')) {
-          // Clear callStack
-          postponedRequests.length = 0;
-          navigate('/login');
-        } else {
-          return new Promise<void>((resolve, reject) => {
-            postponedRequests.push({config: originalRequest, resolve, reject});
-          });
-        }
+    if (isRefreshing) {
+      console.log('Postponing request ', error.config.url)
+      const originalRequest = error.config;
+      const url = originalRequest.url;
+      
+      // If /auth/refresh in url, then something is wrong, navigate to login
+      if (url.includes('/auth/refresh')) {
+        console.log('Error refreshing token, navigating to login');
+        // Clear callStack
+        postponedRequests.length = 0;
+        navigate('/login');
+      } else {
+        return new Promise<void>((resolve, reject) => {
+          postponedRequests.push({config: originalRequest, resolve, reject});
+        });
       }
+    }
       
     // Other errors
-    } else if (error.code === "ECONNABORTED") {
+    if (error.code === "ECONNABORTED") {
       setErrorMessage('Internal server error');
     } else if (error.code === "ERR_CANCELED") { // Cancelled on unmount
-      console.log('Request cancelled: ', error.message);
+      console.log('Request cancelled on unmount.', error.message);
     } else {
       return Promise.reject(error);
     }

@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi.responses import ORJSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from collections import defaultdict
@@ -21,7 +21,9 @@ class AntiFloodMiddleware(BaseHTTPMiddleware):
         ]
 
         if len(self.requests[client]) >= self.limit:
-            raise HTTPException(429, "Too many requests")
+            return ORJSONResponse(
+                {"detail": "Too many requests, retry in 1 minute"}, status_code=429
+            )
 
         self.requests[client].append(now)
 
