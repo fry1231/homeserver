@@ -11,7 +11,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from security.utils import create_user, get_user_or_none, _get_tokens, _add_cookies
 from security.authentication import authenticate_user
-from security.models import TokensResponse, SignupForm, AuthenticationError401
+from security.models import TokensResponse, SignupForm, AuthenticationError401, RefreshTokenPayload
 from config import logger
 from security.config import (
     PATH_PREFIX,
@@ -115,10 +115,16 @@ async def refresh_access_token(
     try:
         logger.debug(f"Received refresh token: {refresh_token}")
         payload = jwt.decode(refresh_token, SECRET, algorithms=[ALGORITHM])
-        uuid = payload.get("sub")
+        payload = RefreshTokenPayload(**payload)
+        uuid = payload.sub
+        prev_incr = payload.incr
         user = await get_user_or_none(uuid=uuid)
+        # Check if user exists
         if user is None:
             raise AuthenticationError401
+        # Check if refresh token is valid (increments are equal)
+        if prev_incr != user.incr - 1:
+            raise AuthenticationError401("Refresh token is not valid")
         access_token, refresh_token = await _get_tokens(user)
         response = TokensResponse(access_token, refresh_token)
         return response

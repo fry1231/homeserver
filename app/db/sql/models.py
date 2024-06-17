@@ -36,7 +36,7 @@ class User(ormar.Model):
     hashed_password = String(max_length=256, nullable=False)
     email = String(max_length=256, nullable=False)
     scopes = String(max_length=256, nullable=True)
-    refresh_token_incr = Integer(default=0)
+    refresh_token_incr = Integer(default=0, nullable=False)
 
 
 # ======================  Migraine Models  ====================== #

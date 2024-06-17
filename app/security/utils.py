@@ -38,7 +38,7 @@ async def update_user_incr(user: UserModel) -> UserModel:
     """
     CRUD operation to update user incr
     """
-    user.incr += 1
+    user.refresh_token_incr += 1
     user = await user.update()
     return user
 
