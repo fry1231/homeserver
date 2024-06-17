@@ -1,5 +1,4 @@
 import {Navigate, Outlet} from "react-router-dom";
-import {clearToken} from "../reducers/auth";
 import {useSelector, useDispatch} from "react-redux";
 import {setToken} from "../reducers/auth";
 import {setErrorMessage} from "../reducers/errors";
@@ -7,6 +6,7 @@ import {getNewAcessToken, getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
 import {useNavigate} from "react-router-dom";
 import {Typography} from "@mui/material";
+import {useEffect, useState} from "react";
 
 
 function getCookie(name) {
@@ -35,7 +35,8 @@ export const TokenCookieToStorage = () => {
 
 
 export const ProtectedRoute = () => {
-    const {token} = useSelector((state) => state.auth);
+    const {token, isRefreshing} = useSelector((state) => state.auth);
+    const [isExpired, setIsExpired] = useState(false);
     const dispatch = useDispatch();
     const axiosClient = getAxiosClient();
 
@@ -45,23 +46,30 @@ export const ProtectedRoute = () => {
     }
     
     // Check if token is expired
-    const decodedToken = jwtDecode(token);
-    const currentTime = Date.now() / 1000; // Convert to seconds
-    // If so, try to refresh the token using the refresh token cookie
-    if (decodedToken.exp < currentTime) {
-        const refreshToken = async () => {
-            try {
-                console.log('refreshing in protected route')
-                const newToken = await getNewAcessToken(axiosClient);
-                dispatch(setToken(newToken));
-            } catch (error) {
-                console.error("ProtectedRoute error: ", error);
-                return <Navigate to="/login"/>;
-            }
-        }
-        refreshToken();
-    }
+    useEffect(() => {
+        if (!isRefreshing) {
+            const decodedToken = jwtDecode(token);
+            const currentTime = Date.now() / 1000; // Convert to seconds
+            if (decodedToken.exp < currentTime) {
+                setIsExpired(true);
+                const refreshToken = async () => {
+                    try {
+                        console.log('refreshing in protected route')
+                        const newToken = await getNewAcessToken(axiosClient);
+                        dispatch(setToken(newToken));
+                        setIsExpired(false);
+                    } catch (error) {
+                        console.error("ProtectedRoute error: ", error);
+                        return <Navigate to="/login"/>;
+                    }
+                }
+                refreshToken();
+            }}
+            
+        }, [token]);
     
     // If authenticated, render the child routes
-    return <Outlet/>;
+    if (!isExpired) {
+        return <Outlet/>;
+    }
 };

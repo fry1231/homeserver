@@ -75,7 +75,7 @@ class TokensResponse(ORJSONResponse):
 
 class AccessTokenPayload(BaseModel):
     sub: str | None = None
-    scopes: list[str] = []
+    scopes: list[str] | str = []
     exp: datetime.datetime
 
     @field_validator('scopes', mode='before')
@@ -96,3 +96,4 @@ class AccessTokenPayload(BaseModel):
 class RefreshTokenPayload(BaseModel):
     sub: str | None   # user's uuid
     exp: datetime.datetime
+    incr: int

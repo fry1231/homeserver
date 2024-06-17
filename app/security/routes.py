@@ -36,7 +36,7 @@ async def register_user(form_data: SignupForm):
     password = form_data.password
     email = form_data.email
     user = await create_user(username, password, email, scopes=['default'])
-    access_token, refresh_token = _get_tokens(user)
+    access_token, refresh_token = await _get_tokens(user)
     response = RedirectResponse(url=FRONTEND_REDIRECT_URI)
     response = _add_cookies(response, access_token, refresh_token)
     return response
@@ -49,7 +49,7 @@ async def login_for_access_token(
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise AuthenticationError401("Incorrect username or password")
-    access_token, refresh_token = _get_tokens(user)
+    access_token, refresh_token = await _get_tokens(user)
     return TokensResponse(access_token, refresh_token)
 
 
@@ -96,7 +96,7 @@ async def google_login(code: str):
                     user = await get_user_or_none(email=email)
                     if user is None:
                         user = await create_user(username, password, email, scopes=['default'])
-                    access_token, refresh_token = _get_tokens(user)
+                    access_token, refresh_token = await _get_tokens(user)
                     response = RedirectResponse(url=FRONTEND_REDIRECT_URI)
                     response = _add_cookies(response, access_token, refresh_token)
                     return response
@@ -119,7 +119,7 @@ async def refresh_access_token(
         user = await get_user_or_none(uuid=uuid)
         if user is None:
             raise AuthenticationError401
-        access_token, refresh_token = _get_tokens(user)
+        access_token, refresh_token = await _get_tokens(user)
         response = TokensResponse(access_token, refresh_token)
         return response
     except jwt.exceptions.ExpiredSignatureError:

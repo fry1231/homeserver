@@ -34,6 +34,15 @@ async def create_user(username: str,
     return user
 
 
+async def update_user_incr(user: UserModel) -> UserModel:
+    """
+    CRUD operation to update user incr
+    """
+    user.incr += 1
+    user = await user.update()
+    return user
+
+
 async def get_user_or_none(uuid: UUID = None,
                            username: str = None,
                            email: str = None) -> User | None:
@@ -92,18 +101,21 @@ def _create_access_token(sub: str,
 
 
 def _create_refresh_token(sub: str,
-                          expire_days: int = REFRESH_TOKEN_EXPIRE_DAYS):
+                          incr: int,
+                          expire_days: int = REFRESH_TOKEN_EXPIRE_DAYS,):
     payload = RefreshTokenPayload(
         sub=sub,
-        exp=datetime.datetime.utcnow() + datetime.timedelta(days=expire_days)
+        exp=datetime.datetime.utcnow() + datetime.timedelta(days=expire_days),
+        incr=incr
     )
     return jwt.encode(payload.model_dump(), key=SECRET, algorithm=ALGORITHM)
 
 
-def _get_tokens(user: UserModel) -> tuple[str, str]:
+async def _get_tokens(user: UserModel) -> tuple[str, str]:
     scopes = user.scopes
     access_token = _create_access_token(user.uuid.hex, scopes)
-    refresh_token = _create_refresh_token(user.uuid.hex)
+    refresh_token = _create_refresh_token(user.uuid.hex, user.incr)
+    await update_user_incr(user)
     return access_token, refresh_token
 
 

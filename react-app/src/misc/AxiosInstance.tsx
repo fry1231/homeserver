@@ -92,6 +92,7 @@ const AxiosProvider = ({children}) => {
           return instance(originalRequest);
         } catch (refreshError) {
           console.log('Error refreshing token', error);
+          postponedRequests.length = 0;
           navigate('/login');
         } finally {
           dispatch(setIsRefreshing(false));
@@ -118,6 +119,7 @@ const AxiosProvider = ({children}) => {
     } else if (error.code === "ERR_CANCELED") { // Cancelled on unmount
       console.log('Request cancelled on unmount.', error.message);
     } else {
+      console.log('Some other error');
       return Promise.reject(error);
     }
   });

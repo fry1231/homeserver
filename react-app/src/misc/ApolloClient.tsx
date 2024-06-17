@@ -4,7 +4,7 @@ import {useEffect, useState} from "react";
 
 
 export const ApolloWrapper = ({children}) => {
-  const {token} = useSelector((state) => state.auth)
+  const {token, isRefreshing} = useSelector((state) => state.auth)
   const [client, setClient] = useState(null);
   useEffect(() => {
     const client = new ApolloClient({
