@@ -42,6 +42,7 @@ export const ProtectedRoute = () => {
     if (decodedToken.exp < currentTime) {
         const refreshToken = async () => {
             try {
+                console.log('refreshing in protected route')
                 const newToken = await refreshAccessToken(axiosClient);
                 dispatch(setToken(newToken));
             } catch (error) {

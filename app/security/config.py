@@ -3,7 +3,7 @@ import os
 
 
 IS_TESTING = bool(os.getenv('IS_TESTING', default='1'))
-SECURE = False
+SECURE = True
 PATH_PREFIX = "/auth"
 ALGORITHM = "HS256"
 SECRET = os.getenv("SECRET", default='secret')

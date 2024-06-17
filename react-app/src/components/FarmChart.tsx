@@ -154,15 +154,8 @@ export const FarmChart = ({startDate, endDate}) => {
           wateringData.length = 0;    // ==============================================
           const combined = combinedChart(sensorsData, wateringData, endDate);
           setChartData(combined);
-        })
-        .catch(e => {
-            console.error(e);
-          }
-        );
+        });
       })
-      .catch(e => {
-        console.error(e);
-      });
       return _;
     }(), 1000 * 60);
     // setPrevEndDate(endDate);

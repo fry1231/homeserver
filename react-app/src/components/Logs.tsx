@@ -105,7 +105,8 @@ export default function Logs({logLevels}) {
       return;
     }
     // Only set up the websocket once
-    if (!clientRef.current && token) {
+    if (token && !clientRef.current) {
+      console.log('token', token);
       const client = new WebSocket(`${protocol}://${import.meta.env.VITE_REACT_APP_HOST}/logs/ws/${Date.now()}?token=${token}`);
       clientRef.current = client;
       
@@ -114,6 +115,7 @@ export default function Logs({logLevels}) {
           try {
             const newToken = await refreshAccessToken(axiosClient);
             dispatch(setToken(newToken));
+            console.log('new token', newToken);
           } catch (error) {
             navigate('/login');
           }
@@ -148,17 +150,16 @@ export default function Logs({logLevels}) {
         // Setting this will trigger a r-erun of the effect,
         // cleaning up the current websocket, but not setting
         // up a new one right away
-        setWaitingToReconnect(true);
+        // setWaitingToReconnect(true);
         
         // This will trigger another re-run, and because it is false,
         // the socket will be set up again
-        setTimeout(() => setWaitingToReconnect(null), 5000);
+        // setTimeout(() => setWaitingToReconnect(null), 500);
       };
       
       client.onmessage = message => {
         setIncomingMessage(message.data);
       };
-      
       
       return () => {
         console.log('Cleanup');
@@ -169,7 +170,7 @@ export default function Logs({logLevels}) {
       }
     }
     
-  }, []);
+  }, [token]);
   
   // Handle incoming messages
   useEffect(() => {
@@ -236,30 +237,32 @@ export default function Logs({logLevels}) {
     // Determing the maximum length of the message, fitting the row width
     const [isOverflowing, setIsOverflowing] = useState(false);
     const messageRef = useRef(null);
-    useEffect(() => {
-      if (messageRef.current) {
-        // Save the original white-space style
-        const originalWhiteSpace = messageRef.current.style.whiteSpace;
-    
-        // Change the white-space to 'nowrap' and check the height
-        messageRef.current.style.whiteSpace = 'nowrap';
-        const nowrapHeight = messageRef.current.clientHeight;
-    
-        // Change the white-space back to the original style and check the height
-        messageRef.current.style.whiteSpace = originalWhiteSpace;
-        const normalHeight = messageRef.current.clientHeight;
-        
-        const width = messageRef.current.offsetWidth;
-        setRowWidth(width);
-    
-        // If the height increases when the text is wrapped, it means the text is overflowing
-        if (normalHeight > nowrapHeight) {
-          setIsOverflowing(true);
-          setIsFolded(true);
-        }
-      }
-    }, [message]);
-    const maxLength = 500;
+    // useEffect(() => {
+    //   if (messageRef.current) {
+    //     const currMessage = messageRef.current;
+    //
+    //     // Save the original white-space style
+    //     const originalWhiteSpace = currMessage.style.whiteSpace;
+    //
+    //     // Change the white-space to 'nowrap' and check the height
+    //     currMessage.style.whiteSpace = 'nowrap';
+    //     const nowrapHeight = currMessage.clientHeight;
+    //
+    //     // Change the white-space back to the original style and check the height
+    //     currMessage.style.whiteSpace = originalWhiteSpace;
+    //     const normalHeight = currMessage.clientHeight;
+    //
+    //     const width = currMessage.offsetWidth;
+    //     setRowWidth(width);
+    //
+    //     // If the height increases when the text is wrapped, it means the text is overflowing
+    //     if (normalHeight > nowrapHeight) {
+    //       setIsOverflowing(true);
+    //       setIsFolded(true);
+    //     }
+    //   }
+    // }, [message]);
+    const maxLength = 150;
     const messageParts = message.split(/(User \d+|User is None)/).filter(Boolean);
     const toggleFold = () => {
       setIsFolded(!isFolded);
@@ -319,15 +322,15 @@ export default function Logs({logLevels}) {
             ));
           }
         })}
-        {isFolded && message.length > maxLength &&   // unfold button if the message is longer than maxLength
-            <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}>
-                <UnfoldMoreIcon color="secondary" />
-            </Typography>}
-        {!isFolded && message.length > maxLength &&   // fold button if the message is longer than maxLength
-            <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}>
-                <UnfoldLessIcon color="error" />
-            </Typography>}
-        {isOverflowing && <MoreHorizIcon />}
+        {/*{isFolded && message.length > maxLength &&   // unfold button if the message is longer than maxLength*/}
+        {/*    <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}>*/}
+        {/*        <UnfoldMoreIcon color="secondary" />*/}
+        {/*    </Typography>}*/}
+        {/*{!isFolded && message.length > maxLength &&   // fold button if the message is longer than maxLength*/}
+        {/*    <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}>*/}
+        {/*        <UnfoldLessIcon color="error" />*/}
+        {/*    </Typography>}*/}
+        {isFolded && <MoreHorizIcon onClick={toggleFold} />}
         
       </>
     );
