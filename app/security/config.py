@@ -2,7 +2,7 @@ from fastapi.security import OAuth2PasswordBearer
 import os
 
 
-IS_TESTING = bool(os.getenv('IS_TESTING', default='1'))
+IS_TESTING = bool(int(os.getenv('IS_TESTING', default='1')))
 SECURE = True
 PATH_PREFIX = "/auth"
 ALGORITHM = "HS256"
