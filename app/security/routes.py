@@ -112,6 +112,8 @@ async def google_login(code: str):
 async def refresh_access_token(
         refresh_token: str = Cookie(None)
 ):
+    if refresh_token is None:
+        raise AuthenticationError401("Refresh token not provided")
     try:
         logger.debug(f"Received refresh token: {refresh_token}")
         payload = jwt.decode(refresh_token, SECRET, algorithms=[ALGORITHM])

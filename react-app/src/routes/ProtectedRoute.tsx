@@ -6,7 +6,6 @@ import {getNewAcessToken, getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
 import {useNavigate} from "react-router-dom";
 import {Typography} from "@mui/material";
-import {useEffect, useState} from "react";
 
 
 function getCookie(name) {

@@ -58,11 +58,13 @@ class SignupForm(BaseModel):
 
 class TokensResponse(ORJSONResponse):
     def __init__(self, access_token: str, refresh_token: str):
-        super().__init__({
-            "access_token": access_token
-        })
+        super().__init__(
+            {
+                "access_token": access_token
+            }
+        )
         self.set_cookie(
-            domain=DOMAIN,
+            domain=f'.{DOMAIN}',
             key="refresh_token",
             value=refresh_token,
             httponly=True,

@@ -15,14 +15,10 @@ interface RetryQueueItem {
 
 export const getNewAcessToken = async (instance: AxiosInstance) => {
   const dispatch = useDispatch();
-  try {
-    dispatch(setIsRefreshing(true));
-    const response = await instance.get('/auth/refresh', {withCredentials: true});
-    return response.data.access_token;
-  }
-  catch (error) {
-    return null;
-  }
+  dispatch(setIsRefreshing(true));
+  console.log('Refreshing token in getNewAcessToken');
+  const response = await instance.get('/auth/refresh', {withCredentials: true});
+  return response.data.access_token;
 }
 
 
@@ -110,7 +106,7 @@ const AxiosProvider = ({children}) => {
     
     // 400 errors
     if (error.response && error.response.status === 400 && error.response.data.detail) {
-        setErrorMessage('Bad request');
+        setErrorMessage(error.response.data.detail);
     }
     
     // Other errors
