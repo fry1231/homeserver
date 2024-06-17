@@ -1,6 +1,6 @@
 import axiosBase, {AxiosInstance, AxiosRequestConfig} from "axios";
 import {createContext, useContext, useEffect} from "react";
-import {setToken} from "../reducers/auth";
+import {setToken, clearToken} from "../reducers/auth";
 import {setErrorMessage as setErrorMessage_} from "../reducers/errors";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -19,7 +19,7 @@ export const refreshAccessToken = async (instance: AxiosInstance) => {
     return response.data.access_token;
   }
   catch (error) {
-    return Promise.reject(error);
+    return null;
   }
 }
 
@@ -72,6 +72,10 @@ const AxiosProvider = ({children}) => {
       
           // refresh token
           const newToken = await refreshAccessToken(instance);
+          if (!newToken) {
+            setErrorMessage('Not enough permissions');
+            return;
+          }
           dispatch(setToken(newToken));
       
           // Set new token in original request
@@ -113,7 +117,7 @@ const AxiosProvider = ({children}) => {
         });
       }
     }
-      
+    
     // Other errors
     if (error.code === "ECONNABORTED") {
       setErrorMessage('Internal server error');

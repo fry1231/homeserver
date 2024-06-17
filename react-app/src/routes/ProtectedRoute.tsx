@@ -17,11 +17,11 @@ export const TokenCookieToStorage = () => {
     const access_token = getCookie("access_token");
     if (!access_token) {
         console.log("No access token found in cookies");
-        return <Navigate to="/"/>;
+        return <Navigate to="/" />;
     }
     localStorage.setItem("token", access_token);
     console.log("Token stored in local storage: ", localStorage.getItem("token"));
-    return <Navigate to="/"/>;
+    return <Navigate to="/" />;
 }
 
 
