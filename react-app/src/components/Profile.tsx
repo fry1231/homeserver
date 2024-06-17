@@ -5,7 +5,7 @@ import {useEffect, useState} from "react";
 import {setUser} from "../reducers/users";
 import {useDispatch, useSelector} from "react-redux";
 import {setToken, clearToken} from "../reducers/auth";
-import {getAxiosClient, getNewAcessToken} from "../misc/AxiosInstance";
+import {getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
 
 
@@ -40,10 +40,10 @@ export default function Profile() {
           <Typography variant="h5">Access token expires: {expirationTime.toLocaleString()}</Typography>
           <Button variant="contained" color="secondary" onClick={() => {
             // refresh access token using refresh token
-            getNewAcessToken(axiosClient)
-              .then((newToken) => {
-                dispatch(setToken(newToken));
-              });
+            axiosClient.get('/auth/refresh', {withCredentials: true})
+              .then((response) => {
+                dispatch(setToken(response.data.access_token));
+              })
           }}>Refresh Token</Button>
           <Divider/>
           <Button variant="contained" color="error" onClick={() => {
