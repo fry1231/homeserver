@@ -114,7 +114,7 @@ def _create_refresh_token(sub: str,
 async def _get_tokens(user: UserModel) -> tuple[str, str]:
     scopes = user.scopes
     access_token = _create_access_token(user.uuid.hex, scopes)
-    refresh_token = _create_refresh_token(user.uuid.hex, user.incr)
+    refresh_token = _create_refresh_token(user.uuid.hex, user.refresh_token_incr)
     await update_user_incr(user)
     return access_token, refresh_token
 
