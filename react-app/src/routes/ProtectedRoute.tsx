@@ -2,8 +2,11 @@ import {Navigate, Outlet} from "react-router-dom";
 import {clearToken} from "../reducers/auth";
 import {useSelector, useDispatch} from "react-redux";
 import {setToken} from "../reducers/auth";
-import {refreshAccessToken, getAxiosClient} from "../misc/AxiosInstance";
+import {setErrorMessage} from "../reducers/errors";
+import {getNewAcessToken, getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
+import {useNavigate} from "react-router-dom";
+import {Typography} from "@mui/material";
 
 
 function getCookie(name) {
@@ -14,14 +17,20 @@ function getCookie(name) {
 
 
 export const TokenCookieToStorage = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
     const access_token = getCookie("access_token");
     if (!access_token) {
         console.log("No access token found in cookies");
-        return <Navigate to="/" />;
+        dispatch(setErrorMessage("Could not authenticate via Google. Please try again."));
+        navigate("/login");
     }
-    localStorage.setItem("token", access_token);
+    dispatch(setToken(access_token));
     console.log("Token stored in local storage: ", localStorage.getItem("token"));
-    return <Navigate to="/" />;
+    setTimeout(() => { // Redirect after 1 second
+        navigate("/");
+    }, 1000);
+    return <Typography>Logged in, redirecting...</Typography>;
 }
 
 
@@ -43,7 +52,7 @@ export const ProtectedRoute = () => {
         const refreshToken = async () => {
             try {
                 console.log('refreshing in protected route')
-                const newToken = await refreshAccessToken(axiosClient);
+                const newToken = await getNewAcessToken(axiosClient);
                 dispatch(setToken(newToken));
             } catch (error) {
                 console.error("ProtectedRoute error: ", error);

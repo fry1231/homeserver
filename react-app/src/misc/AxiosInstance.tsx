@@ -1,6 +1,6 @@
 import axiosBase, {AxiosInstance, AxiosRequestConfig} from "axios";
 import {createContext, useContext, useEffect} from "react";
-import {setToken, clearToken} from "../reducers/auth";
+import {setToken, setIsRefreshing} from "../reducers/auth";
 import {setErrorMessage as setErrorMessage_} from "../reducers/errors";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -13,8 +13,10 @@ interface RetryQueueItem {
 }
 
 
-export const refreshAccessToken = async (instance: AxiosInstance) => {
+export const getNewAcessToken = async (instance: AxiosInstance) => {
+  const dispatch = useDispatch();
   try {
+    dispatch(setIsRefreshing(true));
     const response = await instance.get('/auth/refresh', {withCredentials: true});
     return response.data.access_token;
   }
@@ -31,8 +33,7 @@ const AxiosContext = createContext<AxiosInstance>(
 );
 
 const AxiosProvider = ({children}) => {
-  const {token} = useSelector((state) => state.auth);
-  let isRefreshing: boolean = false;
+  const {token, isRefreshing} = useSelector((state) => state.auth);
   const postponedRequests: RetryQueueItem[] = [];
   const dispatch = useDispatch();
   const setErrorMessage = (message: string) => dispatch(setErrorMessage_(message));
@@ -68,10 +69,8 @@ const AxiosProvider = ({children}) => {
       // Refresh token if not already refreshing
       if (!isRefreshing) {
         try {
-          isRefreshing = true;
-      
           // refresh token
-          const newToken = await refreshAccessToken(instance);
+          const newToken = await getNewAcessToken(instance);
           if (!newToken) {
             setErrorMessage('Not enough permissions');
             return;
@@ -95,7 +94,7 @@ const AxiosProvider = ({children}) => {
           console.log('Error refreshing token', error);
           navigate('/login');
         } finally {
-          isRefreshing = false;
+          dispatch(setIsRefreshing(false));
         }
       }
     }
@@ -103,19 +102,14 @@ const AxiosProvider = ({children}) => {
     if (isRefreshing) {
       console.log('Postponing request ', error.config.url)
       const originalRequest = error.config;
-      const url = originalRequest.url;
-      
-      // If /auth/refresh in url, then something is wrong, navigate to login
-      if (url.includes('/auth/refresh')) {
-        console.log('Error refreshing token, navigating to login');
-        // Clear callStack
-        postponedRequests.length = 0;
-        navigate('/login');
-      } else {
-        return new Promise<void>((resolve, reject) => {
-          postponedRequests.push({config: originalRequest, resolve, reject});
-        });
-      }
+      return new Promise<void>((resolve, reject) => {
+        postponedRequests.push({config: originalRequest, resolve, reject});
+      });
+    }
+    
+    // 400 errors
+    if (error.response && error.response.status === 400 && error.response.data.detail) {
+        setErrorMessage('Bad request');
     }
     
     // Other errors
