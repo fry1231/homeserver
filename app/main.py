@@ -65,6 +65,7 @@ origins = [
     f"https://{DOMAIN}",
     f"https://{DOMAIN}:8000",
     f"https://{DOMAIN}:3000",
+    "http://localhost:3000",
     f"https://hs.{DOMAIN}",
     f"https://homescreen.{DOMAIN}",
 ]
@@ -72,7 +73,7 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     # allow_origins=origins,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

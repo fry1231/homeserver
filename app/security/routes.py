@@ -91,7 +91,7 @@ async def google_login(code: str):
                     data = await userinfo_response.json()
                     email = data.get("email")
                     username = data.get("name")
-                    password = data.get("id")  # every time different
+                    password = data.get("id")  # note: every time different
 
                     user = await get_user_or_none(email=email)
                     if user is None:

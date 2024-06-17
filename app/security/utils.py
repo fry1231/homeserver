@@ -102,7 +102,7 @@ def _create_access_token(sub: str,
 
 def _create_refresh_token(sub: str,
                           incr: int,
-                          expire_days: int = REFRESH_TOKEN_EXPIRE_DAYS,):
+                          expire_days: int = REFRESH_TOKEN_EXPIRE_DAYS):
     payload = RefreshTokenPayload(
         sub=sub,
         exp=datetime.datetime.utcnow() + datetime.timedelta(days=expire_days),
