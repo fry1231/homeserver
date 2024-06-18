@@ -20,10 +20,10 @@ const Routes = () => {
 
     // Define public routes accessible to all users
     const routesForPublic = [
-        // {
-        //     path: "/set-token",
-        //     element: <TokenCookieToStorage />,
-        // }
+        {
+            path: "/set-token",
+            element: <TokenCookieToStorage />,
+        }
     ];
 
     // Define routes accessible only to authenticated users
@@ -69,10 +69,6 @@ const Routes = () => {
         {
             path: "/signup",
             element: <SignUp />,
-        },
-        {
-            path: "/set-token",
-            element: <TokenCookieToStorage />,
         }
     ];
 
