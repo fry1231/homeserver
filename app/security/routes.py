@@ -126,7 +126,7 @@ async def refresh_access_token(
         if user is None:
             raise AuthenticationError401
         # Check if refresh token is valid (increments are equal)
-        if prev_incr != user.incr - 1:
+        if prev_incr != user.refresh_token_incr - 1:
             raise AuthenticationError401("Refresh token is not valid")
         access_token, refresh_token = await _get_tokens(user)
         response = TokensResponse(access_token, refresh_token)
