@@ -57,21 +57,11 @@ class SignupForm(BaseModel):
 
 
 class TokensResponse(ORJSONResponse):
-    def __init__(self, access_token: str, refresh_token: str):
+    def __init__(self, access_token: str):
         super().__init__(
             {
                 "access_token": access_token
             }
-        )
-        self.set_cookie(
-            domain=DOMAIN,
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-            path=PATH_PREFIX,
-            secure=SECURE,
-            # samesite="lax" if SECURE else "none",
         )
 
 

@@ -38,19 +38,18 @@ async def register_user(form_data: SignupForm):
     user = await create_user(username, password, email, scopes=['default'])
     access_token, refresh_token = await _get_tokens(user)
     response = RedirectResponse(url=FRONTEND_REDIRECT_URI)
-    response = _add_cookies(response, access_token, refresh_token)
+    response = _add_cookies(response, refresh_token, access_token)
     return response
 
 
 @router.post("/login/form")
-async def login_for_access_token(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-) -> TokensResponse:
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise AuthenticationError401("Incorrect username or password")
     access_token, refresh_token = await _get_tokens(user)
-    response = TokensResponse(access_token, refresh_token)
+    response = TokensResponse(access_token)
+    response = _add_cookies(response, refresh_token)
     return response
 
 
@@ -99,7 +98,7 @@ async def google_login(code: str):
                         user = await create_user(username, password, email, scopes=['default'])
                     access_token, refresh_token = await _get_tokens(user)
                     response = RedirectResponse(url=FRONTEND_REDIRECT_URI)
-                    response = _add_cookies(response, access_token, refresh_token)
+                    response = _add_cookies(response, refresh_token, access_token)
                     return response
     except Exception:
         logger.error(traceback.format_exc())
@@ -129,7 +128,8 @@ async def refresh_access_token(
         if prev_incr != user.refresh_token_incr - 1:
             raise AuthenticationError401("Refresh token is not valid")
         access_token, refresh_token = await _get_tokens(user)
-        response = TokensResponse(access_token, refresh_token)
+        response = TokensResponse(access_token)
+        response = _add_cookies(response, refresh_token)
         return response
     except jwt.exceptions.ExpiredSignatureError:
         raise AuthenticationError401("Refresh token expired")

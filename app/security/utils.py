@@ -6,7 +6,7 @@ from fastapi import HTTPException, status, Response
 from passlib.context import CryptContext
 
 from db.sql.models import User
-from security.models import AccessTokenPayload, RefreshTokenPayload
+from security.models import AccessTokenPayload, RefreshTokenPayload, TokensResponse
 from security.config import SECRET, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from security.config import DOMAIN, PATH_PREFIX, SECURE
 
@@ -119,9 +119,9 @@ async def _get_tokens(user: UserModel) -> tuple[str, str]:
     return access_token, refresh_token
 
 
-def _add_cookies(response: Response,
-                 access_token: str,
-                 refresh_token: str) -> Response:
+def _add_cookies(response: Response | TokensResponse,
+                 refresh_token: str,
+                 access_token: str = None) -> Response | TokensResponse:
     """
     Add access and refresh tokens to response cookies
     :param response: Starlette Response object
@@ -142,12 +142,13 @@ def _add_cookies(response: Response,
         httponly=True,
         **cookie_settings
     )
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        path='/set-token',
-        max_age=60,
-        httponly=False,
-        **cookie_settings
-    )
+    if access_token:
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            path='/set-token',
+            max_age=60,
+            httponly=False,
+            **cookie_settings
+        )
     return response
