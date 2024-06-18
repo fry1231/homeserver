@@ -131,13 +131,13 @@ def _add_cookies(response: Response,
     """
     cookie_settings = {
         "domain": DOMAIN,
-        "path": '/set-token',
         "secure": True if SECURE else False,
         "samesite": "lax" if SECURE else "none",
     }
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
+        path=PATH_PREFIX,
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         httponly=True,
         **cookie_settings
@@ -145,6 +145,7 @@ def _add_cookies(response: Response,
     response.set_cookie(
         key="access_token",
         value=access_token,
+        path='/set-token',
         max_age=60,
         httponly=False,
         **cookie_settings
