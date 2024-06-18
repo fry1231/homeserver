@@ -16,14 +16,9 @@ interface RetryQueueItem {
 export const getNewAcessToken = async (instance: AxiosInstance) => {
   const dispatch = useDispatch();
   dispatch(setIsRefreshing(true));
-  try {
-    console.log('Refreshing token in getNewAcessToken');
-    const response = await instance.get('/auth/refresh', {withCredentials: true});
-    return response.data.access_token;
-  } catch (error) {
-    console.error('Error refreshing token', error);
-    return null;
-  }
+  console.log('Refreshing token in getNewAcessToken');
+  const response = await instance.get('/auth/refresh', {withCredentials: true});
+  return response.data.access_token;
 }
 
 

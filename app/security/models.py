@@ -67,9 +67,9 @@ class TokensResponse(ORJSONResponse):
             domain=DOMAIN,
             key="refresh_token",
             value=refresh_token,
-            httponly=False,
+            httponly=True,
             max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-            path='/',
+            path=PATH_PREFIX,
             secure=SECURE,
             samesite="lax" if SECURE else "none",
         )

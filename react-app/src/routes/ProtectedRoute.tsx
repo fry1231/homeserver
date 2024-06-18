@@ -4,7 +4,6 @@ import {setToken, clearToken} from "../reducers/auth";
 import {setErrorMessage} from "../reducers/errors";
 import {getNewAcessToken, getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
-import {useNavigate} from "react-router-dom";
 import {Typography} from "@mui/material";
 
 
@@ -17,17 +16,16 @@ function getCookie(name) {
 
 export const TokenCookieToStorage = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const access_token = getCookie("access_token");
   if (!access_token) {
     console.log("No access token found in cookies");
     dispatch(setErrorMessage("Could not authenticate via Google. Please try again."));
-    navigate("/login");
+    return <Navigate to="/login"/>;
   }
   dispatch(setToken(access_token));
   console.log("Token stored in local storage: ", localStorage.getItem("token"));
   setTimeout(() => { // Redirect after 1 second
-    navigate("/");
+    return <Navigate to="/"/>;
   }, 1000);
   return <Typography>Logged in, redirecting...</Typography>;
 }

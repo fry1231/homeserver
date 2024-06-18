@@ -50,7 +50,8 @@ async def login_for_access_token(
     if not user:
         raise AuthenticationError401("Incorrect username or password")
     access_token, refresh_token = await _get_tokens(user)
-    return TokensResponse(access_token, refresh_token)
+    response = TokensResponse(access_token, refresh_token)
+    return response
 
 
 @router.get("/login/google")
