@@ -70,7 +70,7 @@ class TokensResponse(ORJSONResponse):
             httponly=False,
             max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
             path='/',
-            secure=False,
+            secure=SECURE,
             samesite="lax" if SECURE else "none",
         )
 

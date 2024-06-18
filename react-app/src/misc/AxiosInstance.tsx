@@ -102,11 +102,13 @@ const AxiosProvider = ({children}) => {
     }
       // If refreshing in process, postpone the request
     if (isRefreshing) {
-      console.log('Postponing request ', error.config.url)
-      const originalRequest = error.config;
-      return new Promise<void>((resolve, reject) => {
-        postponedRequests.push({config: originalRequest, resolve, reject});
-      });
+      if (error.config.url !== '/auth/refresh') {
+        console.log('Postponing request ', error.config.url)
+        const originalRequest = error.config;
+        return new Promise<void>((resolve, reject) => {
+          postponedRequests.push({config: originalRequest, resolve, reject});
+        });
+      }
     }
     
     // 400 errors
