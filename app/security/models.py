@@ -1,6 +1,7 @@
 import datetime
 import re
 
+import orjson
 from pydantic import BaseModel, Field, EmailStr, field_validator,field_serializer
 from fastapi import HTTPException, status, Response
 from fastapi.responses import ORJSONResponse
@@ -59,15 +60,16 @@ class SignupForm(BaseModel):
 class TokensResponse(Response):
     def __init__(self, refresh_token: str, access_token: str = None):
         super().__init__(
-            content={"access_token": access_token},
-            headers={
-                "Set-Cookie": f"refresh_token={refresh_token}; "
-                              f"Path={PATH_PREFIX}; "
-                              f"Max-Age={REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60}; "
-                              f"Secure; HttpOnly; "
-                              f"SameSite=Strict; "
-                              f"Domain={DOMAIN}"
-            }
+            content=orjson.dumps({'access_token': access_token}),
+        )
+        self.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            path=PATH_PREFIX,
+            max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+            domain=DOMAIN,
+            secure=SECURE,
+            httponly=True,
         )
 
 
