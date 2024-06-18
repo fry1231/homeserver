@@ -50,7 +50,6 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     access_token, refresh_token = await _get_tokens(user)
     response = TokensResponse(refresh_token, access_token)
     logger.info(f'Response: {response}')
-    logger.info(f'Response content: {response.content}')
     logger.info(f'Response headers: {response.headers}')
     return response
 
@@ -102,7 +101,6 @@ async def google_login(code: str):
                     response = RedirectResponse(url=FRONTEND_REDIRECT_URI)
                     response = _add_cookies(response, refresh_token, access_token)
                     logger.info(f'Response: {response}')
-                    logger.info(f'Response content: {response.content}')
                     logger.info(f'Response headers: {response.headers}')
                     return response
     except Exception:
