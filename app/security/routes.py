@@ -49,8 +49,6 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         raise AuthenticationError401("Incorrect username or password")
     access_token, refresh_token = await _get_tokens(user)
     response = TokensResponse(refresh_token, access_token)
-    logger.info(f'Response: {response}')
-    logger.info(f'Response headers: {response.headers}')
     return response
 
 

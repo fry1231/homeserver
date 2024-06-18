@@ -28,7 +28,7 @@ export default function LogIn() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    axiosClient.post('/auth/login/form', data, {timeout: 5000})
+    axiosClient.post('/auth/login/form', data, {timeout: 5000, withCredentials: true})
       .then((response) => {
         if (response.status === 200) {
           const token = response.data.access_token;

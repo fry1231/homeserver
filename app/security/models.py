@@ -68,8 +68,8 @@ class TokensResponse(Response):
                               f"Max-Age={REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60}; "
                               f"Secure; "
                               f"HttpOnly; "
-                              f"SameSite=Lax; "
-                              f"Domain=.{DOMAIN}"
+                              f"SameSite=None; "
+                              f"Domain={DOMAIN}"
             },
         )
 
