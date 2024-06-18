@@ -64,7 +64,7 @@ class TokensResponse(ORJSONResponse):
             }
         )
         self.set_cookie(
-            domain=DOMAIN,
+            domain=f'hs.{DOMAIN}',
             key="refresh_token",
             value=refresh_token,
             httponly=False,
