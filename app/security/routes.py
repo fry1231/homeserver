@@ -6,7 +6,7 @@ import jwt
 from jose import JWTError
 
 from fastapi import APIRouter, HTTPException, status, Depends, Cookie
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, ORJSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
 from security.utils import create_user, get_user_or_none, _get_tokens, _add_cookies
@@ -48,7 +48,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     if not user:
         raise AuthenticationError401("Incorrect username or password")
     access_token, refresh_token = await _get_tokens(user)
-    response = TokensResponse(access_token)
+    response = ORJSONResponse({"access_token": access_token})
     response = _add_cookies(response, refresh_token)
     return response
 
