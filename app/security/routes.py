@@ -43,13 +43,12 @@ async def register_user(form_data: SignupForm):
 
 
 @router.post("/login/form")
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> TokensResponse:
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise AuthenticationError401("Incorrect username or password")
     access_token, refresh_token = await _get_tokens(user)
-    response = ORJSONResponse({"access_token": access_token})
-    response = _add_cookies(response, refresh_token)
+    response = TokensResponse(refresh_token, access_token)
     return response
 
 
@@ -109,9 +108,7 @@ async def google_login(code: str):
 
 
 @router.get("/refresh")
-async def refresh_access_token(
-        refresh_token: str = Cookie(None)
-):
+async def refresh_access_token(refresh_token: str = Cookie(None)) -> TokensResponse:
     if refresh_token is None:
         raise AuthenticationError401("Refresh token not provided")
     try:
@@ -128,8 +125,7 @@ async def refresh_access_token(
         if prev_incr != user.refresh_token_incr - 1:
             raise AuthenticationError401("Refresh token is not valid")
         access_token, refresh_token = await _get_tokens(user)
-        response = TokensResponse(access_token)
-        response = _add_cookies(response, refresh_token)
+        response = TokensResponse(refresh_token, access_token)
         return response
     except jwt.exceptions.ExpiredSignatureError:
         raise AuthenticationError401("Refresh token expired")
