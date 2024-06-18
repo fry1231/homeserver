@@ -95,7 +95,7 @@ def _create_access_token(sub: str,
     payload = AccessTokenPayload(
         sub=sub,
         scopes=scopes,
-        exp=datetime.datetime.utcnow() + datetime.timedelta(minutes=expire_minutes)
+        exp=datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
     )
     return jwt.encode(payload.model_dump(), key=SECRET, algorithm=ALGORITHM)
 

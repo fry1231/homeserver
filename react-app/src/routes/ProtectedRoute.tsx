@@ -1,6 +1,6 @@
 import {Navigate, Outlet} from "react-router-dom";
 import {useSelector, useDispatch} from "react-redux";
-import {setToken, clearToken} from "../reducers/auth";
+import {setToken, clearToken, setIsRefreshing} from "../reducers/auth";
 import {setErrorMessage} from "../reducers/errors";
 import {getNewAcessToken, getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
@@ -31,31 +31,29 @@ export const TokenCookieToStorage = () => {
 
 
 export const ProtectedRoute = () => {
+  console.log('In protected route component')
   const {token, isRefreshing} = useSelector((state) => state.auth);
-  let isExpired = false;
   const dispatch = useDispatch();
   const axiosClient = getAxiosClient();
   
-  const checkExpiration = () => {
+  /** Check if the token is expired */
+  const tokenExpired = (token: string): boolean => {
     let decodedToken;
     try {
       decodedToken = jwtDecode(token);
     } catch (error) {
       if (error.name === 'InvalidTokenError') {
-        dispatch(clearToken());
-        console.log('Invalid token, redirecting to login');
-        return <Navigate to="/login"/>;
+        return true;
       }
     }
     const currentTime = Date.now() / 1000; // Convert to seconds
-    isExpired = decodedToken.exp < currentTime;
+    return decodedToken.exp < currentTime;
   }
   
   const refreshExpiredToken = async () => {
     console.log('refreshing in protected route')
     const newToken = await getNewAcessToken(axiosClient);
     dispatch(setToken(newToken));
-    isExpired = false;
   }
   
   // Check if the user is authenticated
@@ -63,32 +61,22 @@ export const ProtectedRoute = () => {
     return <Navigate to="/login"/>;
   }
   
-  // Check if token is expired
-  checkExpiration();
-  if (!isRefreshing && isExpired) {
+  // If not expired, render the child routes
+  if (!tokenExpired(token)) {
+    return <Outlet/>;
+  }
+  
+  if (!isRefreshing) {
     refreshExpiredToken()
     .then(() => {
-      setTimeout(() => {
-        checkExpiration();
-      }, 100);
+      dispatch(setIsRefreshing(false));
+      return <Outlet/>;
     })
     .catch((error) => {
       // If refresh fails, redirect to login
+      dispatch(clearToken());
       dispatch(setErrorMessage("Could not refresh token. Please log in again."));
       return <Navigate to="/login"/>;
     });
-  } else {
-    setTimeout(() => {
-      checkExpiration();
-    }, 1000);
-  }
-  
-  // If authenticated, render the child routes
-  if (!isExpired) {
-    return <Outlet/>;
-  } else {
-    // If not - redirect to login
-    dispatch(clearToken());
-    return <Navigate to="/login"/>;
   }
 };

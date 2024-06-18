@@ -13,12 +13,20 @@ interface RetryQueueItem {
 }
 
 
-export const getNewAcessToken = async (instance: AxiosInstance) => {
+export const getNewAcessToken = (instance: AxiosInstance): string | null => {
   const dispatch = useDispatch();
+  let newToken: string | null = null;
   dispatch(setIsRefreshing(true));
   console.log('Refreshing token in getNewAcessToken');
-  const response = await instance.get('/auth/refresh', {withCredentials: true});
-  return response.data.access_token;
+  instance.get('/auth/refresh', {withCredentials: true})
+    .then((response) => {
+      console.log('Got new token', response.data.access_token);
+      newToken = response.data.access_token;
+    })
+    .catch((error) => {
+      console.log('Error refreshing token', error);
+    });
+  return newToken;
 }
 
 
@@ -55,24 +63,27 @@ const AxiosProvider = ({children}) => {
   });
   
   instance.interceptors.response.use( (response) => response,
-    async (error) => {
+    (error) => {
     if (
       error.response &&
       error.response.status &&
       (error.response.status === 401 || error.response.status === 403)
     ) {
       console.log('Authorization error, trying to refresh token');
+      console.log('Is refreshing: ', isRefreshing);
       // Refresh token if not already refreshing
       if (!isRefreshing) {
         try {
           // refresh token
-          const newToken = await getNewAcessToken(instance);
+          console.log('Refreshing token')
+          const newToken = getNewAcessToken(instance);
+          console.log('New token: ', newToken);
           if (!newToken) {
             setErrorMessage('Not enough permissions');
             return;
           }
           dispatch(setToken(newToken));
-      
+          console.log('Token refreshed', token);
           // Set new token in original request
           const originalRequest = error.config;
           originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
@@ -83,7 +94,8 @@ const AxiosProvider = ({children}) => {
             instance.request(config).then(resolve, reject);
           });
           postponedRequests.length = 0;
-      
+          
+          console.log('Retrying original request ', originalRequest.url)
           // Retry the original request
           return instance(originalRequest);
         } catch (refreshError) {

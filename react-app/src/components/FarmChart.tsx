@@ -133,9 +133,7 @@ export const FarmChart = ({startDate, endDate}) => {
     // Get chart data every minute
     const getData = setInterval(function _() {
       // Sensors data
-      client.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data?startTS=${startDayTS_}&endTS=${endDayTS_}`, {
-        signal: timeoutAbortSignal(5000)
-      })
+      client.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data?startTS=${startDayTS_}&endTS=${endDayTS_}`)
       .then(r => {
         sensorsData = r.data;
         const thisDayEnd = new Date();
