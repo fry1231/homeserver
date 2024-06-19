@@ -155,7 +155,7 @@ export const FarmChart = ({startDate, endDate}) => {
         });
       })
       return _;
-    }(), 1000 * 60);
+    }(), 1000 * 10);
     // setPrevEndDate(endDate);
     return () => clearInterval(getData);
   }, [startDate, endDate]);

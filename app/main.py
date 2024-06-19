@@ -41,16 +41,6 @@ async def lifespan(app_: FastAPI):
 app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 app.state.database = database
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.include_router(auth_router)
-# app.include_router(tasks.router)
-app.include_router(users.router)
-app.include_router(buses.router)
-app.include_router(states.router)
-app.include_router(logs.router)
-app.include_router(graphql_app, prefix="/graphql", include_in_schema=False)
-# app.include_router(calendar.router)
-app.include_router(ambiance.router)
-app.include_router(farm.router)
 
 # Middlewares
 # @app.middleware("http")
@@ -73,13 +63,23 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    # allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 app.add_middleware(AntiFloodMiddleware, limit=100, per=datetime.timedelta(minutes=1))
 app.add_middleware(CustomGZipMiddleware, exclude_routes=['/buses/arrivals'], minimum_size=1000)
+
+app.include_router(auth_router)
+# app.include_router(tasks.router)
+app.include_router(users.router)
+app.include_router(buses.router)
+app.include_router(states.router)
+app.include_router(logs.router)
+app.include_router(graphql_app, prefix="/graphql", include_in_schema=False)
+# app.include_router(calendar.router)
+app.include_router(ambiance.router)
+app.include_router(farm.router)
 
 
 @app.exception_handler(RequestValidationError)

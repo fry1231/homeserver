@@ -122,9 +122,11 @@ async def refresh_access_token(refresh_token: str = Cookie(None)) -> TokensRespo
         user = await get_user_or_none(uuid=uuid)
         # Check if user exists
         if user is None:
+            logger.warning(f"User with uuid {uuid} not found")
             raise AuthenticationError401
         # Check if refresh token is valid (increments are equal)
         if prev_incr != user.refresh_token_incr - 1:
+            logger.warning(f"Refresh token increments do not match")
             raise AuthenticationError401("Refresh token is not valid")
         access_token, refresh_token = await _get_tokens(user)
         response = TokensResponse(refresh_token, access_token)

@@ -1,8 +1,7 @@
 import {createSlice} from "@reduxjs/toolkit";
 
-const initialState: { token: string | null, isRefreshing: boolean } = {
+const initialState: { token: string | null } = {
   token: localStorage.getItem("token"),
-  isRefreshing: false,
 }
 
 const slice = createSlice({
@@ -12,16 +11,13 @@ const slice = createSlice({
     setToken(state, action) {
       const token = action.payload;
       state.token = token;
-      localStorage.setItem("token", token);
-      state.isRefreshing = false;
+      if (token)
+        localStorage.setItem("token", token);
     },
     clearToken(state) {
       state.token = null;
       localStorage.removeItem("token");
     },
-    setIsRefreshing(state, action) {
-      state.isRefreshing = action.payload;
-    }
   }
 });
 

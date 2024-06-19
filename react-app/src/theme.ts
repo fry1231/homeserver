@@ -247,13 +247,17 @@ export const themeSettings = (mode) => {
   };
 };
 
+interface ColorModeContextProps {
+  toggleColorMode: () => void;
+}
+
 // context for color mode
-export const ColorModeContext = createContext({
+export const ColorModeContext = createContext<ColorModeContextProps>({
   toggleColorMode: () => {},
 });
 
 export const useMode = () => {
-  const [mode, setMode] = useState("dark");
+  const [mode, setMode] = useState<'light' | 'dark'>("dark");
 
   const colorMode = useMemo(
     () => ({

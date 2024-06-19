@@ -1,7 +1,6 @@
 import {Button, Divider, Typography} from "@mui/material";
 import {useNavigate} from "react-router-dom";
-import {useAuth} from "../misc/authProvider";
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import {setUser} from "../reducers/users";
 import {useDispatch, useSelector} from "react-redux";
 import {setToken, clearToken} from "../reducers/auth";

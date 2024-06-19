@@ -1,10 +1,9 @@
 import {Navigate, Outlet} from "react-router-dom";
 import {useSelector, useDispatch} from "react-redux";
-import {setToken, clearToken, setIsRefreshing} from "../reducers/auth";
+import {setToken, clearToken} from "../reducers/auth";
 import {setErrorMessage} from "../reducers/errors";
-import {getNewAcessToken, getAxiosClient} from "../misc/AxiosInstance";
+import {getNewAccessToken, getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
-import {Typography} from "@mui/material";
 
 
 function getCookie(name) {
@@ -31,8 +30,8 @@ export const TokenCookieToStorage = () => {
 
 
 export const ProtectedRoute = () => {
-  console.log('In protected route component')
-  const {token, isRefreshing} = useSelector((state) => state.auth);
+  let isRefreshing: boolean = false;
+  const {token} = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const axiosClient = getAxiosClient();
   
@@ -52,7 +51,7 @@ export const ProtectedRoute = () => {
   
   const refreshExpiredToken = async () => {
     console.log('refreshing in protected route')
-    const newToken = await getNewAcessToken(axiosClient);
+    const newToken = await getNewAccessToken();
     dispatch(setToken(newToken));
   }
   
@@ -67,16 +66,19 @@ export const ProtectedRoute = () => {
   }
   
   if (!isRefreshing) {
+    isRefreshing = true;
     refreshExpiredToken()
-    .then(() => {
-      dispatch(setIsRefreshing(false));
-      return <Outlet/>;
-    })
-    .catch((error) => {
-      // If refresh fails, redirect to login
-      dispatch(clearToken());
-      dispatch(setErrorMessage("Could not refresh token. Please log in again."));
-      return <Navigate to="/login"/>;
-    });
+      .then(() => {
+        return <Outlet/>;
+      })
+      .catch((error) => {
+        // If refresh fails, redirect to login
+        dispatch(clearToken());
+        dispatch(setErrorMessage("Could not refresh token. Please log in again."));
+        return <Navigate to="/login"/>;
+      })
+      .finally(() => {
+        isRefreshing = false;
+      });
   }
 };

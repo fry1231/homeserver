@@ -4,7 +4,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {statesRefreshed, stateUpdateRecieved} from "../reducers/states";
 import stateInstance from "../reducers/states";
 import {setToken} from "../reducers/auth";
-import {getAxiosClient, getNewAcessToken} from "../misc/AxiosInstance";
+import {getNewAccessToken} from "../misc/AxiosInstance";
 import {addWindow} from "../reducers/draggables";
 import {DraggableEntity} from "../reducers/draggables";
 import {useNavigate} from "react-router-dom";
@@ -22,8 +22,7 @@ export default function States() {
   const [waitingToReconnect, setWaitingToReconnect] = useState(null);
   const [incomingMessage, setIncomingMessage] = useState();
   const [isOpen, setIsOpen] = useState(false);
-  const {token} = useSelector((state) => state.auth);
-  const axiosClient = getAxiosClient();
+  const token = localStorage.getItem("token");
   
   useEffect(() => {
     
@@ -38,7 +37,7 @@ export default function States() {
       client.onerror = (e) => {
         const refresh = async () => {
           try {
-            const newToken = await getNewAcessToken(axiosClient);
+            const newToken = await getNewAccessToken();
             dispatch(setToken(newToken));
           } catch (error) {
             navigate('/login');
@@ -90,7 +89,7 @@ export default function States() {
       }
     }
     
-  }, [token]);
+  }, []);
   
   useEffect(() => {
     if (incomingMessage) {

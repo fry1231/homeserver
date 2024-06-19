@@ -1,6 +1,6 @@
 import axiosBase, {AxiosInstance, AxiosRequestConfig} from "axios";
 import {createContext, useContext, useEffect} from "react";
-import {setToken, setIsRefreshing} from "../reducers/auth";
+import {setToken} from "../reducers/auth";
 import {setErrorMessage as setErrorMessage_} from "../reducers/errors";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -13,20 +13,15 @@ interface RetryQueueItem {
 }
 
 
-export const getNewAcessToken = (instance: AxiosInstance): string | null => {
-  const dispatch = useDispatch();
-  let newToken: string | null = null;
-  dispatch(setIsRefreshing(true));
-  console.log('Refreshing token in getNewAcessToken');
-  instance.get('/auth/refresh', {withCredentials: true})
-    .then((response) => {
-      console.log('Got new token', response.data.access_token);
-      newToken = response.data.access_token;
-    })
-    .catch((error) => {
-      console.log('Error refreshing token', error);
-    });
-  return newToken;
+export const getNewAccessToken = async () => {
+  const response = await fetch(`https://${import.meta.env.VITE_REACT_APP_HOST}/auth/refresh`, {
+    method: 'GET',
+    credentials: 'include',
+    timeout: 2000,
+  });
+  const data = await response.json();
+  console.log('Refreshing token in ApolloWrapper', data.access_token)
+  return data.access_token;
 }
 
 
@@ -37,7 +32,10 @@ const AxiosContext = createContext<AxiosInstance>(
 );
 
 const AxiosProvider = ({children}) => {
-  const {token, isRefreshing} = useSelector((state) => state.auth);
+  const {token} = useSelector((state) => state.auth);
+  console.log('AxiosProvider');
+  let isRefreshing = false;
+  let newToken = null;
   const postponedRequests: RetryQueueItem[] = [];
   const dispatch = useDispatch();
   const setErrorMessage = (message: string) => dispatch(setErrorMessage_(message));
@@ -56,14 +54,18 @@ const AxiosProvider = ({children}) => {
   }, [token]);
   
   instance.interceptors.request.use( (config) => {
-    console.log('request' + config.url, config);
+    console.log('request ' + config.url, config);
+    // If newToken is available, but have not yet updated in the redux store, set it in the request explicitly
+    if (newToken && config.headers.Authorization && !config.headers.Authorization.includes(newToken)) {
+      config.headers['Authorization'] = `Bearer ${newToken}`;
+    }
     return config;
   }, (error) => {
     console.error('error request', error);
   });
   
   instance.interceptors.response.use( (response) => response,
-    (error) => {
+    async (error) => {
     if (
       error.response &&
       error.response.status &&
@@ -75,12 +77,13 @@ const AxiosProvider = ({children}) => {
       if (!isRefreshing) {
         try {
           // refresh token
-          console.log('Refreshing token')
-          const newToken = getNewAcessToken(instance);
+          isRefreshing = true;
+          console.log('Refreshing token, ', token)
+          newToken = await getNewAccessToken();
           console.log('New token: ', newToken);
           if (!newToken) {
             setErrorMessage('Not enough permissions');
-            return;
+            navigate('/login');
           }
           dispatch(setToken(newToken));
           console.log('Token refreshed', token);
@@ -96,14 +99,13 @@ const AxiosProvider = ({children}) => {
           postponedRequests.length = 0;
           
           console.log('Retrying original request ', originalRequest.url)
-          // Retry the original request
           return instance(originalRequest);
         } catch (refreshError) {
           console.log('Error refreshing token', error);
           postponedRequests.length = 0;
           navigate('/login');
         } finally {
-          dispatch(setIsRefreshing(false));
+          isRefreshing = false;
         }
       }
     }

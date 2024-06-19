@@ -2,7 +2,6 @@ import {Box, Grid, LinearProgress, Paper, Radio, Typography} from "@mui/material
 import {useEffect, useState, useRef, createRef } from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {logsRefreshed, logUpdateRecieved, clearLogs} from "../reducers/logs";
-import {useAuth} from "../misc/authProvider";
 import {tokens} from "../theme";
 import {useTheme} from "@mui/material/styles";
 import {addWindow} from "../reducers/draggables";
@@ -10,7 +9,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import {useNavigate} from "react-router-dom";
-import {getAxiosClient, getNewAcessToken} from "../misc/AxiosInstance";
+import {getNewAccessToken} from "../misc/AxiosInstance";
 import {setToken} from "../reducers/auth";
 
 
@@ -41,8 +40,7 @@ export default function Logs({logLevels}) {
   const [isOpen, setIsOpen] = useState(false);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const {token} = useSelector((state) => state.auth);
-  const axiosClient = getAxiosClient();
+  const token = localStorage.getItem("token");
   
   const [maxWidth, setMaxWidth] = useState(0);
   const logLevelRefs = useRef([]);
@@ -113,7 +111,7 @@ export default function Logs({logLevels}) {
       client.onerror = (e) => {
         const refresh = async () => {
           try {
-            const newToken = await getNewAcessToken(axiosClient);
+            const newToken = await getNewAccessToken();
             dispatch(setToken(newToken));
             console.log('new token', newToken);
           } catch (error) {
@@ -170,7 +168,7 @@ export default function Logs({logLevels}) {
       }
     }
     
-  }, [token]);
+  }, []);
   
   // Handle incoming messages
   useEffect(() => {

@@ -8,7 +8,6 @@ import usersReducer from './reducers/users';
 import logsReducer from './reducers/logs';
 import positionsReducer from './reducers/draggables';
 import authReducer from './reducers/auth';
-import AuthProvider from "./misc/authProvider";
 import Routes from "./routes/index";
 import {ErrorWrapper} from "./misc/ErrorHandling";
 import AxiosProvider from "./misc/AxiosInstance";

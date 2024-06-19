@@ -1,9 +1,9 @@
 import {useDispatch, useSelector} from "react-redux";
-import {changeWindowPos, addWindow, DraggableEntity} from "../../reducers/draggables";
-import {PaincaseProps, PaincaseView} from "../views/PaincaseView";
-import {DruguseProps, DruguseView} from "../views/DruguseView";
-import {PressureProps, PressureView} from "../views/PressureView";
-import {UserProps, UserView} from "../views/UserView";
+import {changeWindowPos, DraggableEntity} from "../../reducers/draggables";
+import {PaincaseView} from "../views/PaincaseView";
+import {DruguseView} from "../views/DruguseView";
+import {PressureView} from "../views/PressureView";
+import {UserView} from "../views/UserView";
 import {ListView} from "../views/ListView";
 import {MapView} from "../views/MapView";
 import {CardHeader} from "../common/CardHeader";
@@ -36,7 +36,7 @@ export default function DraggableContainer() {
             handle=".handle"
           >
             <Card sx={{
-              position: "absolute",
+              position: "fixed",
               zIndex: entity.pos?.z,
               backgroundColor: colors.primary[400],
               color: colors.grey[100],
