@@ -7,6 +7,7 @@ from fastapi import HTTPException, status, Response
 from fastapi.responses import ORJSONResponse
 
 from security.config import DOMAIN, REFRESH_TOKEN_EXPIRE_DAYS, PATH_PREFIX, SECURE
+from security.cookies import _add_cookies
 
 
 class AuthenticationError401(HTTPException):
@@ -62,16 +63,19 @@ class TokensResponse(Response):
         super().__init__(
             content=orjson.dumps({'access_token': access_token}),
             media_type='application/json',
-            headers={
-                'Set-Cookie': f"refresh_token={refresh_token}; "
-                              f"Path={PATH_PREFIX}; "
-                              f"Max-Age={REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60}; "
-                              f"Secure; "
-                              f"HttpOnly; "
-                              f"SameSite=None; "
-                              f"Domain={DOMAIN}"
-            },
+            # headers={
+            #     'Set-Cookie': f"refresh_token={refresh_token}; "
+            #                   f"Path={PATH_PREFIX}; "
+            #                   f"Max-Age={REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60}; "
+            #                   f"Secure; "
+            #                   f"HttpOnly; "
+            #                   f"SameSite=None; "
+            #                   f"Domain={DOMAIN}",
+            # },
         )
+        _add_cookies(self, refresh_token)
+
+
 
 
 class AccessTokenPayload(BaseModel):

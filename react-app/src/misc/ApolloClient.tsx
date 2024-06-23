@@ -3,8 +3,7 @@ import {onError} from '@apollo/client/link/error';
 import {setContext} from '@apollo/client/link/context';
 import {jwtDecode} from 'jwt-decode';
 import {useDispatch, useSelector} from 'react-redux';
-import {getNewAccessToken} from "./AxiosInstance";
-import {setToken} from "../reducers/auth";
+// import {getNewAccessToken, setToken} from "../reducers/auth";
 import {useEffect, useState} from 'react';
 
 
@@ -17,6 +16,7 @@ const createApolloClient = (token, setNewToken) => {
     if (accessToken) {
       const {exp} = jwtDecode(accessToken);
       if (Date.now() >= exp * 1000) {
+        console.log('Refreshing in ApolloClient');
         accessToken = await getNewAccessToken();
         setNewToken(accessToken);
       }
@@ -66,20 +66,28 @@ const createApolloClient = (token, setNewToken) => {
 };
 
 export const ApolloWrapper = ({children}) => {
-  const dispatch = useDispatch();
-  const {token} = useSelector((state) => state.auth);
+  // const {token, isRefreshing} = useSelector((state) => state.auth);
   const [client, setClient] = useState(null);
+  const dispatch = useDispatch();
   
-  useEffect(() => {
-    const client = createApolloClient(token, (newToken) => dispatch(setToken(newToken)));
-    setClient(client);
-  }, [token]);
+  // if (!isRefreshing) {
+  //   if (token)
+  //     console.log('ApolloWrapper, token is ', token.slice(-5));
+    
+    // const setNewToken = (newToken) => dispatch(setToken(newToken));
+    
+    // useEffect(() => {
+    //   const client = createApolloClient(token, setNewToken);
+    //   setClient(client);
+    // }, [token]);
   
-  if (!client) return <></>;
+    if (!client) return <></>;
   
-  return (
-    <ApolloProvider client={client}>
-      {children}
-    </ApolloProvider>
-  );
+    return (
+      <ApolloProvider client={client}>
+        {children}
+      </ApolloProvider>
+    );
+  // }
+  
 };

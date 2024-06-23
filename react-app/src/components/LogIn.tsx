@@ -1,29 +1,33 @@
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import {createTheme, ThemeProvider} from '@mui/material/styles';
-import {getAxiosClient} from "../misc/AxiosInstance";
+import axiosClient from "../misc/AxiosInstance";
 import {useNavigate} from "react-router-dom";
 import GoogleIcon from '@mui/icons-material/Google';
 import TextField from "./global/CustomInputField"
 import {useDispatch} from "react-redux";
-import {setToken as setToken_} from "../reducers/auth";
+import {setAuthToken} from "../reducers/auth";
+import {setErrorMessage} from "../reducers/errors";
 
 
 export default function LogIn() {
   const dispatch = useDispatch();
-  const setToken = (token: string) => dispatch(setToken_(token));
+  const setToken = (token: string) => dispatch(setAuthToken(token));
   const navigate = useNavigate();
-  const axiosClient = getAxiosClient();
+  
+  console.log('Fetching data')
+  axiosClient.get('/users/me', {timeout: 5000})
+    .then((response) => {
+      console.log('Got response', response.data)
+    })
+    .catch((error) => {
+      console.log('Error fetching data: ', error)
+    });
   
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -35,6 +39,9 @@ export default function LogIn() {
           setToken(token);
           navigate('/');
         }
+      })
+      .catch((error) => {
+        dispatch(setErrorMessage('Invalid username or password'));
       });
   }
   
@@ -76,10 +83,6 @@ export default function LogIn() {
               autoComplete="current-password"
               enterKeyHint="go"
             />
-            {/*<FormControlLabel*/}
-            {/*  control={<Checkbox value="remember" color="primary"/>}*/}
-            {/*  label="Remember me"*/}
-            {/*/>*/}
             <Button
               type="submit"
               fullWidth

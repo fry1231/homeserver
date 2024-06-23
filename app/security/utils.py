@@ -2,14 +2,12 @@ import datetime
 from uuid import UUID
 import jwt
 
-from fastapi import HTTPException, status, Response
+from fastapi import HTTPException, status
 from passlib.context import CryptContext
 
 from db.sql.models import User
-from security.models import AccessTokenPayload, RefreshTokenPayload, TokensResponse
+from security.models import AccessTokenPayload, RefreshTokenPayload
 from security.config import SECRET, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
-from security.config import DOMAIN, PATH_PREFIX, SECURE
-
 
 UserModel = User
 
@@ -117,38 +115,3 @@ async def _get_tokens(user: UserModel) -> tuple[str, str]:
     refresh_token = _create_refresh_token(user.uuid.hex, user.refresh_token_incr)
     await update_user_incr(user)
     return access_token, refresh_token
-
-
-def _add_cookies(response: Response | TokensResponse,
-                 refresh_token: str,
-                 access_token: str = None) -> Response | TokensResponse:
-    """
-    Add access and refresh tokens to response cookies
-    :param response: Starlette Response object
-    :param access_token: set as cookie for 60 seconds
-    :param refresh_token: set as httpOnly cookie for REFRESH_TOKEN_EXPIRE_DAYS days
-    :return: modified response object
-    """
-    cookie_settings = {
-        "domain": DOMAIN,
-        "secure": True if SECURE else False,
-        # "samesite": "lax" if SECURE else "none",
-    }
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        path=PATH_PREFIX,
-        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        httponly=True,
-        **cookie_settings
-    )
-    if access_token:
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            path='/set-token',
-            max_age=60,
-            httponly=False,
-            **cookie_settings
-        )
-    return response

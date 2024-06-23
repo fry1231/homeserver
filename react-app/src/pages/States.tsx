@@ -3,8 +3,7 @@ import {useEffect, useState, useRef} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {statesRefreshed, stateUpdateRecieved} from "../reducers/states";
 import stateInstance from "../reducers/states";
-import {setToken} from "../reducers/auth";
-import {getNewAccessToken} from "../misc/AxiosInstance";
+import {setAuthToken, refreshAuthToken} from "../reducers/auth";
 import {addWindow} from "../reducers/draggables";
 import {DraggableEntity} from "../reducers/draggables";
 import {useNavigate} from "react-router-dom";
@@ -35,15 +34,15 @@ export default function States() {
       clientRef.current = client;
       
       client.onerror = (e) => {
-        const refresh = async () => {
-          try {
-            const newToken = await getNewAccessToken();
-            dispatch(setToken(newToken));
-          } catch (error) {
-            navigate('/login');
-          }
-        }
-        refresh();
+        // const refresh = async () => {
+        //   try {
+        //     const newToken = await getNewAccessToken();
+        //     dispatch(setAuthToken(newToken));
+        //   } catch (error) {
+        //     navigate('/login');
+        //   }
+        // }
+        // refresh();
       }
       
       client.onopen = () => {

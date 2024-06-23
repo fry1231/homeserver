@@ -1,5 +1,5 @@
-import {RouterProvider, createBrowserRouter, useRoutes} from "react-router-dom";
-import {ProtectedRoute, TokenCookieToStorage} from "./ProtectedRoute";
+import {useRoutes} from "react-router-dom";
+import ProtectedRoute, {TokenCookieToStorage} from "./ProtectedRoute";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
 import Farm from "../pages/Farm";
@@ -12,14 +12,20 @@ import States from "../pages/States";
 import Logs from "../components/Logs";
 
 import DraggableContainer from "../components/global/DraggableContainer";
-import {useSelector} from "react-redux";
+import {store} from "../Store";
 
+
+interface Route {
+    path: string;
+    element: JSX.Element;
+    children?: Route[];
+}
 
 const Routes = () => {
-    const {token} = useSelector((state) => state.auth);
+    const token = store.getState().auth.token;
 
     // Define public routes accessible to all users
-    const routesForPublic = [
+    const routesForPublic: Route[] = [
         {
             path: "/set-token",
             element: <TokenCookieToStorage />,
@@ -27,7 +33,7 @@ const Routes = () => {
     ];
 
     // Define routes accessible only to authenticated users
-    const routesForAuthenticatedOnly = [
+    const routesForAuthenticatedOnly: Route[] = [
         {
             path: "/",
             element: <ProtectedRoute/>, // Wrap the component in ProtectedRoute
@@ -61,7 +67,7 @@ const Routes = () => {
     ];
 
     // Define routes accessible only to non-authenticated users
-    const routesForNotAuthenticatedOnly = [
+    const routesForNotAuthenticatedOnly: Route[] = [
         {
             path: "/login",
             element: <LogIn />,
@@ -84,18 +90,18 @@ const Routes = () => {
     //     ...routesForAuthenticatedOnly,
     // ]);
 
-    let routes = [
+    let routes: Route[] = [
         ...routesForPublic,
         ...(!token ? routesForNotAuthenticatedOnly : []),
         ...routesForAuthenticatedOnly
     ];
 
     // Conditionally render Topbar if not /login or 404 page
-    const availablePaths = routes.reduce((acc, curr) => {
+    const availablePaths: string[] = routes.reduce((acc: string[], curr: Route) => {
         return curr.children ? acc.concat(curr.children.map(child => child.path)) : acc.concat(curr.path);
     }, []);
-    const currentPath = window.location.pathname;
-    const showTopbar = routesForNotAuthenticatedOnly.every(route => route.path !== currentPath)
+    const currentPath: string = window.location.pathname;
+    const showTopbar: boolean = routesForNotAuthenticatedOnly.every(route => route.path !== currentPath)
         && availablePaths.includes(currentPath);
 
     routes = [...routes, routeNotFound];

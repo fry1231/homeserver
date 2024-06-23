@@ -9,8 +9,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import {useNavigate} from "react-router-dom";
-import {getNewAccessToken} from "../misc/AxiosInstance";
-import {setToken} from "../reducers/auth";
+import {setAuthToken} from "../reducers/auth";
 
 
 /**
@@ -109,16 +108,16 @@ export default function Logs({logLevels}) {
       clientRef.current = client;
       
       client.onerror = (e) => {
-        const refresh = async () => {
-          try {
-            const newToken = await getNewAccessToken();
-            dispatch(setToken(newToken));
-            console.log('new token', newToken);
-          } catch (error) {
-            navigate('/login');
-          }
-        }
-        refresh();
+        // const refresh = async () => {
+        //   try {
+        //     const newToken = await getNewAccessToken();
+        //     dispatch(setAuthToken(newToken));
+        //     console.log('new token', newToken);
+        //   } catch (error) {
+        //     navigate('/login');
+        //   }
+        // }
+        // refresh();
       };
       
       client.onopen = () => {

@@ -9,7 +9,8 @@ from fastapi import APIRouter, HTTPException, status, Depends, Cookie
 from fastapi.responses import RedirectResponse, ORJSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
-from security.utils import create_user, get_user_or_none, _get_tokens, _add_cookies
+from security.utils import create_user, get_user_or_none, _get_tokens
+from security.cookies import _add_cookies
 from security.authentication import authenticate_user
 from security.models import TokensResponse, SignupForm, AuthenticationError401, RefreshTokenPayload
 from config import logger
@@ -110,8 +111,9 @@ async def google_login(code: str):
 
 
 @router.get("/refresh")
-async def refresh_access_token(refresh_token: str = Cookie(None)) -> TokensResponse:
-    if refresh_token is None:
+async def refresh_access_token(refresh_token: str = Cookie(None),
+                               use_refresh_token: str = Cookie(None)) -> TokensResponse:
+    if refresh_token is None or use_refresh_token is None or use_refresh_token != "true":
         raise AuthenticationError401("Refresh token not provided")
     try:
         logger.debug(f"Received refresh token: {refresh_token}")
