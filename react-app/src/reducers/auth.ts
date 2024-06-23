@@ -13,6 +13,18 @@ export const refreshAuthToken = createAsyncThunk<string, void, { state: { auth: 
   return data.access_token;
 });
 
+function deleteCookie(name, path, domain) {
+  if (path === undefined) {
+    path = '/';
+  }
+  if (domain === undefined) {
+    domain = location.host;
+  }
+  
+  // Set the cookie with an expired date
+  document.cookie = `${name}=; Path=${path}; Domain=${domain}; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure;`;
+}
+
 
 interface TokenPayload extends JwtPayload {
   scopes: string[];
@@ -50,6 +62,8 @@ const slice = createSlice({
     clearAuthToken(state: AuthState) {
       state.token = null;
       state.scopes.length = 0;
+      state.isFirstEntry = true;
+      deleteCookie("use_refresh_token", "/auth", import.meta.env.VITE_REACT_APP_DOMAIN);
       localStorage.removeItem("token");
     },
     addToRequestQueue(state: AuthState, action: PayloadAction<InternalAxiosRequestConfig>) {
@@ -89,6 +103,7 @@ const slice = createSlice({
       state.scopes.length = 0;
       state.token = null;
       localStorage.removeItem("token");
+      document.location.href = "/login";
     });
   }
 });

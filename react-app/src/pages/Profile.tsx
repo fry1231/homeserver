@@ -6,12 +6,19 @@ import {useDispatch, useSelector} from "react-redux";
 import {setAuthToken, clearAuthToken} from "../reducers/auth";
 import {getAxiosClient} from "../misc/AxiosInstance";
 import {jwtDecode} from "jwt-decode";
+import {setErrorMessage} from "../reducers/errors";
+import {JwtPayload} from "jwt-decode/build/esm";
 
+
+interface TokenPayload extends JwtPayload {
+  scopes: string[];
+  exp: number;
+}
 
 export default function Profile() {
   const navigate = useNavigate();
   const {token} = useSelector((state) => state.auth)
-  const state = useSelector((state) => state.users);
+  const {currentUser} = useSelector((state) => state.users);
   const dispatch = useDispatch();
   const axiosClient = getAxiosClient();
   
@@ -23,18 +30,25 @@ export default function Profile() {
       })
   }, []);
   
-  const decodedToken = jwtDecode(token);
+  let decodedToken: TokenPayload;
+  try{
+    decodedToken = jwtDecode<TokenPayload>(token);
+  }
+  catch(error){
+    dispatch(setErrorMessage('Could not decode token'));
+  }
+  
   const expirationTime = new Date(decodedToken.exp * 1000);
   
   return (
     <>
       <Typography variant="h3">Profile</Typography>
-      { state.currentUser && (
+      { currentUser && (
         <>
-          <Typography variant="h5">Username: {state.currentUser.username}</Typography>
-          <Typography variant="h5">Email: {state.currentUser.email}</Typography>
-          <Typography variant="h5">Admin: {state.currentUser.is_admin ? "Yes" : "No"}</Typography>
-          <Typography variant="h5">UUID: {state.currentUser.uuid}</Typography>
+          <Typography variant="h5">Username: {currentUser.username}</Typography>
+          <Typography variant="h5">Email: {currentUser.email}</Typography>
+          <Typography variant="h5">Scopes: {currentUser.scopes}</Typography>
+          <Typography variant="h5">UUID: {currentUser.uuid}</Typography>
           <Divider/>
           <Typography variant="h5">Access token expires: {expirationTime.toLocaleString()}</Typography>
           <Button variant="contained" color="secondary" onClick={() => {
@@ -43,6 +57,9 @@ export default function Profile() {
               .then((response) => {
                 dispatch(setAuthToken(response.data.access_token));
               })
+              .catch((error) => {
+                dispatch(setErrorMessage('Could not refresh token'));
+              });
           }}>Refresh Token</Button>
           <Divider/>
           <Button variant="contained" color="error" onClick={() => {

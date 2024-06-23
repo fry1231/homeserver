@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import axiosClient from "../misc/AxiosInstance";
 import {useNavigate} from "react-router-dom";
 import GoogleIcon from '@mui/icons-material/Google';
-import TextField from "./global/CustomInputField"
+import TextField from "../components/global/CustomInputField"
 import {useDispatch} from "react-redux";
 import {setAuthToken} from "../reducers/auth";
 import {setErrorMessage} from "../reducers/errors";
@@ -19,15 +19,6 @@ export default function LogIn() {
   const dispatch = useDispatch();
   const setToken = (token: string) => dispatch(setAuthToken(token));
   const navigate = useNavigate();
-  
-  console.log('Fetching data')
-  axiosClient.get('/users/me', {timeout: 5000})
-    .then((response) => {
-      console.log('Got response', response.data)
-    })
-    .catch((error) => {
-      console.log('Error fetching data: ', error)
-    });
   
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

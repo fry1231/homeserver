@@ -1,8 +1,9 @@
 import {getAxiosClient} from "../misc/AxiosInstance";
 import {useEffect, useState} from "react";
 import {Button, Grid} from "@mui/material";
-import FarmChart from "../components/FarmChart";
-import DateRangePicker from "../components/DateRangePicker";
+import FarmChart from "../components/PageFarm/FarmChart";
+import DateRangePicker from "../components/common/DateRangePicker";
+import IrrigationTimer from "../components/PageFarm/IrrigationTimer";
 
 
 export default function Farm() {
@@ -62,6 +63,9 @@ export default function Farm() {
         >
           Request Watering
         </Button>
+      </Grid>
+      <Grid item>
+        <IrrigationTimer/>
       </Grid>
     </Grid>
   );

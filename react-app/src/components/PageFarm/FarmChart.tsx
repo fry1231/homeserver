@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
 import {useTheme} from "@mui/material";
 import Plot from 'react-plotly.js';
-import {tokens} from "../theme";
-import {getAxiosClient} from "../misc/AxiosInstance";
+import {tokens} from "../../theme";
+import {getAxiosClient} from "../../misc/AxiosInstance";
 
 
 interface SensorsDataPoint {

@@ -1,8 +1,8 @@
 import Plot from 'react-plotly.js';
 import {useQuery} from '@apollo/client';
-import {GET_DAILY_STATISTICS_BETWEEN} from '../misc/gqlQueries';
+import {GET_DAILY_STATISTICS_BETWEEN} from '../../misc/gqlQueries';
 import {LinearProgress, useTheme} from "@mui/material";
-import {tokens} from "../theme";
+import {tokens} from "../../theme";
 
 
 interface DataPoint {

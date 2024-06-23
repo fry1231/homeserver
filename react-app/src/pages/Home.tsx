@@ -1,4 +1,4 @@
-import BusArrivals from "../components/BusArrivals";
+import BusArrivals from "../components/PageMain/BusArrivals";
 import {Box, Button, Grid} from "@mui/material";
 import {useDispatch} from "react-redux";
 import {setErrorMessage} from "../reducers/errors";

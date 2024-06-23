@@ -3,9 +3,9 @@ import {TileLayer} from 'react-leaflet/TileLayer'
 import {useMap} from 'react-leaflet/hooks'
 import {Marker, Popup} from "react-leaflet";
 import {Box, Link, Typography} from "@mui/material";
-import {addWindow} from "../reducers/draggables";
+import {addWindow} from "../../reducers/draggables";
 import {useDispatch} from "react-redux";
-import {tokens} from "../theme";
+import {tokens} from "../../theme";
 import {useTheme} from "@mui/material";
 import {useEffect, useRef} from "react";
 import "leaflet/dist/leaflet.css";

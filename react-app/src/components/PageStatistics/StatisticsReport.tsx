@@ -1,8 +1,8 @@
 import {IconButton, LinearProgress, Paper, Typography} from "@mui/material";
-import {GET_DETAILED_STATISTICS_BETWEEN, GET_SUM_STATISTICS_BETWEEN} from "../misc/gqlQueries";
+import {GET_DETAILED_STATISTICS_BETWEEN, GET_SUM_STATISTICS_BETWEEN} from "../../misc/gqlQueries";
 import {ApolloError, useQuery} from "@apollo/client";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import {addWindow} from "../reducers/draggables";
+import {addWindow} from "../../reducers/draggables";
 import {useDispatch, useSelector} from "react-redux";
 // import useStyles from "./global/Flicker";
 

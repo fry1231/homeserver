@@ -1,6 +1,6 @@
 import axiosBase, {InternalAxiosRequestConfig, AxiosInstance, AxiosResponse, AxiosError} from "axios";
 import {createContext, useContext} from "react";
-import {addToRequestQueue, clearRequestQueue, refreshAuthToken} from "../reducers/auth";
+import {addToRequestQueue, clearAuthToken, clearRequestQueue, refreshAuthToken} from "../reducers/auth";
 import {setErrorMessage as setErrorMessage_} from "../reducers/errors";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -60,23 +60,27 @@ axiosInstance.interceptors.response.use(
         } catch (refreshError) {
           console.log('Error refreshing token');
           store.dispatch(clearRequestQueue());
+          store.dispatch(setErrorMessage_('Could not refresh token. Please log in again.'));
+          store.dispatch(clearAuthToken());
           return Promise.reject(refreshError);
         }
       } else {
-        console.log('Postponing request ', originalRequest.url);
-        return new Promise((resolve, reject) => {
-          store.dispatch(addToRequestQueue({
-            ...originalRequest,
-            resolve,
-            reject
-          }));
-        }).then(
-          console.log('Retrying postponed request ', originalRequest.url),
-          token => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return axiosInstance(originalRequest);
-          }
-        );
+        if (originalRequest.url !== '/auth/refresh') {
+          console.log('Postponing request ', originalRequest.url);
+          return new Promise((resolve, reject) => {
+            store.dispatch(addToRequestQueue({
+              ...originalRequest,
+              resolve,
+              reject
+            }));
+          }).then(
+            console.log('Retrying postponed request ', originalRequest.url),
+            token => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return axiosInstance(originalRequest);
+            }
+          );
+        }
       }
     }
     return Promise.reject(error);

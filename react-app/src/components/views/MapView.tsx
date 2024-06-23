@@ -1,6 +1,6 @@
 import {CardContent} from "@mui/material";
 import {UserProps} from "./UserView";
-import {Map, MarkerProps} from "../Map";
+import {Map, MarkerProps} from "../common/Map";
 import {DraggableEntity} from "../../reducers/draggables";
 
 

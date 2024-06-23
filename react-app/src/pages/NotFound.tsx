@@ -28,7 +28,7 @@ export default function NotFound() {
         The page you’re looking for doesn’t exist.
       </Typography>
       <Button variant="contained"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/')}
               style={{marginTop: '20px'}}
       >Back Home</Button>
     </Box>

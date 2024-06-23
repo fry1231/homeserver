@@ -8,7 +8,7 @@ import {CardHeader} from "../common/CardHeader";
 import {CardRow} from "../common/CardRow";
 import {useQuery} from "@apollo/client";
 import {GET_USER_BY_ID} from "../../misc/gqlQueries";
-import {MarkerProps} from "../Map";
+import {MarkerProps} from "../common/Map";
 
 
 export interface UserProps {

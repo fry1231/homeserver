@@ -1,10 +1,10 @@
 import {Box, Button, Grid, Stack, Switch, Typography, useTheme} from "@mui/material";
-import {tokens} from "../theme.ts";
+import {tokens} from "../../theme.ts";
 import {useEffect, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {busDataUpdated, speedUpRefresh} from "../reducers/buses";
+import {busDataUpdated, speedUpRefresh} from "../../reducers/buses";
 import axiosClass from "axios";
-import {getAxiosClient} from "../misc/AxiosInstance";
+import {getAxiosClient} from "../../misc/AxiosInstance";
 
 
 interface BusResponse {

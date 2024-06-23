@@ -62,6 +62,7 @@ const ProtectedRoute = () => {
   let isRefreshing: boolean = false;
   
   if (isFirstEntry) {
+    console.log('First entry, redirecting to login');
     return <Navigate to="/login"/>;
   }
   
@@ -82,8 +83,9 @@ const ProtectedRoute = () => {
   } else if (isRefreshing) {
     console.log('Token is refreshing');
   } else{
+    console.log('Token is valid');
     isRefreshing = false;
-      return <Outlet/>;
+    return <Outlet/>;
     }
 };
 

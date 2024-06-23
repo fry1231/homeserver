@@ -16,7 +16,7 @@ def _add_cookies(response: Response,
     cookie_settings = {
         "domain": DOMAIN,
         "secure": True if SECURE else False,
-        # "samesite": "lax" if SECURE else "none",
+        "samesite": "none",
     }
     response.set_cookie(
         key="refresh_token",
