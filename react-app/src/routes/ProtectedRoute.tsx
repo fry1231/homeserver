@@ -3,32 +3,7 @@ import {useSelector, useDispatch} from "react-redux";
 import {refreshAuthToken, clearAuthToken, setAuthToken, AuthState} from "../reducers/auth";
 import {setErrorMessage} from "../reducers/errors";
 import {jwtDecode, JwtPayload} from "jwt-decode";
-import {useEffect, useState} from "react";
-import {store} from "../Store";
-
-
-interface TokenPayload extends JwtPayload {
-  scopes: string[];
-}
-
-/** Check if the token is expired or invalid
- *  Returns true if so */
-const tokenExpiredOrInvalid = (token: string | null): boolean => {
-  let decodedToken: TokenPayload;
-  if (!token) {
-    return true;
-  }
-  try {
-    decodedToken = jwtDecode<TokenPayload>(token);
-  } catch (error) {
-    if (error instanceof Error && error.name === 'InvalidTokenError') {
-      return true;
-    }
-  }
-  const currentTime = Date.now() / 1000; // Convert to seconds
-  console.log('Token is outdated by ', decodedToken.exp - currentTime, ' seconds');
-  return decodedToken.exp < currentTime;
-}
+import {getNewToken} from "../misc/utils";
 
 
 function getCookie(name) {
@@ -56,84 +31,41 @@ export const TokenCookieToStorage = () => {
 
 
 const ProtectedRoute = () => {
-  console.log('ProtectedRoute');
-  const {isFirstEntry, scopes} = useSelector((state) => state.auth);
+  const {scopes} = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  let isRefreshing: boolean = false;
   
-  if (isFirstEntry) {
-    console.log('First entry, redirecting to login');
-    return <Navigate to="/login"/>;
-  }
-  
-  if (scopes.length === 0 && !isRefreshing) {
-    console.log('No scopes found in token, scopes=', scopes);
-    const getNewToken = async () => {
-      try {
-        console.log('Refreshing token in ProtectedRoute');
-        isRefreshing = true;
-        await dispatch(refreshAuthToken()).unwrap();
-      } catch (error) {
-        dispatch(clearAuthToken());
-        dispatch(setErrorMessage('Could not refresh token. Please log in again.'));
-        return <Navigate to="/login"/>;
-      }
-    }
-    getNewToken();
-  } else if (isRefreshing) {
-    console.log('Token is refreshing');
-  } else{
-    console.log('Token is valid');
-    isRefreshing = false;
-    return <Outlet/>;
-    }
-};
-
-export default ProtectedRoute;
-
-// const tokenExpired = tokenExpiredOrInvalid(token);
-// useEffect(() => {
-//   if ((!token || tokenExpired) && !isRefreshing) {
-//     dispatch(refreshAuthToken());
-//   }
-// }, [token, isRefreshing]);
-
-
-// const ProtectedRoute = () => {
-//   const dispatch = useDispatch();
-//   let currentToken: string | null = store.getState().auth.token;
-//   let isRefreshing: boolean = store.getState().auth.isRefreshing;
-  
-  
-  
-  // useEffect(() => {
-  //   const checkTokenAndRefresh = async () => {
-  //     if (!token || tokenExpiredOrInvalid(token)) {
-  //       if (!isRefreshing) {
-  //         try {
-  //           await dispatch(refreshAuthToken()).unwrap();
-  //         } catch (error) {
-  //           dispatch(clearAuthToken());
-  //           dispatch(setErrorMessage('Could not refresh token. Please log in again.'));
-  //         }
-  //       }
-  //     }
-  //     setLoading(false);
-  //   };
-  //
-  //   checkTokenAndRefresh();
-  // }, [dispatch, token, isRefreshing]);
-  
-  // if (loading || isRefreshing) {
-  //   // You can show a loading spinner or a placeholder component here
-  //   return <div>Loading...</div>;
+  // On page refresh
+  // if (isFirstEntry && storedToken && storedToken !== 'undefined') {
+  //   console.log('First entry, but token found in local storage');
+  //   dispatch(setAuthToken(storedToken));
+  //   return <Outlet/>;
   // }
-  
-  // if (!token) {
+  //
+  // if (isFirstEntry && !storedToken) {
+  //   console.log('First entry, redirecting to login');
   //   return <Navigate to="/login"/>;
   // }
   
-//   return <Outlet/>;
-// };
+  // if (!storedToken) {
+  //   console.log('No token found in local storage');
+  //   return <Navigate to="/login"/>;
+  // }
+  
+  if (scopes.length === 0) {
+    try {
+      console.log('Refreshing in ProtectedRoute')
+      getNewToken()
+        .then((newToken) => {
+          return <Outlet/>;
+        });
+    } catch (error) {
+      dispatch(clearAuthToken());
+      dispatch(setErrorMessage('Could not refresh token. Please log in again.'));
+      return <Navigate to="/login"/>;
+    }
+  }
+  
+  return <Outlet/>;
+};
 
-// export default ProtectedRoute;
+export default ProtectedRoute;

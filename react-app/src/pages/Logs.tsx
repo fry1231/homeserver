@@ -1,15 +1,12 @@
-import {Box, Grid, LinearProgress, Paper, Radio, Typography} from "@mui/material";
-import {useEffect, useState, useRef, createRef } from "react";
+import {Box, Grid, LinearProgress, Paper, Typography} from "@mui/material";
+import {createRef, useEffect, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {logsRefreshed, logUpdateRecieved, clearLogs} from "../reducers/logs";
+import {clearLogs, logsRefreshed, logUpdateRecieved, ParsedLog} from "../reducers/logs";
 import {tokens} from "../theme";
 import {useTheme} from "@mui/material/styles";
 import {addWindow} from "../reducers/draggables";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
-import {useNavigate} from "react-router-dom";
-import {setAuthToken} from "../reducers/auth";
+import {getNewToken} from "../misc/utils";
 
 
 /**
@@ -27,24 +24,23 @@ const localizedTime = (timeString: string) => {
 
 
 export default function Logs({logLevels}) {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.logs);
   let protocol: string;
   import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? protocol = "wss" : protocol = "ws";
   
   const clientRef = useRef(null);
-  const [waitingToReconnect, setWaitingToReconnect] = useState(null);
-  const [incomingMessage, setIncomingMessage] = useState();
-  const [isOpen, setIsOpen] = useState(false);
+  const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
+  const [incomingMessage, setIncomingMessage] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const token = localStorage.getItem("token");
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   
-  const [maxWidth, setMaxWidth] = useState(0);
+  const [maxWidth, setMaxWidth] = useState<number>(0);
   const logLevelRefs = useRef([]);
   const scrollable = useRef(null);
-  const [lastLogsEnd, setLastLogsEnd] = useState(0);
+  const [lastLogsEnd, setLastLogsEnd] = useState<number>(0);
   
   // Ask for more logs when the user scrolls to the bottom
   const askMoreLogs = (startPos) => {
@@ -79,21 +75,21 @@ export default function Logs({logLevels}) {
     const currentScrollPos = target.scrollTop;
     const botOffsetFloored = Math.floor((target.scrollHeight - target.scrollTop) / 10);
     const bottom = botOffsetFloored === Math.floor(target.clientHeight / 10);
-
+    
     if (bottom) {
       askMoreLogs();
-      target.scrollTo(0, currentScrollPos-1);
+      target.scrollTo(0, currentScrollPos - 1);
     }
   }
   
   // Measure the max width of the log level element to set the width of the column
   useEffect(() => {
-      logLevelRefs.current.map((ref) => {
-        const width = ref.current.offsetWidth + 0.1 * ref.current.offsetWidth;
-        if (width > maxWidth) {
-          setMaxWidth(width);
-        }
-      });
+    logLevelRefs.current.map((ref) => {
+      const width = ref.current.offsetWidth + 0.1 * ref.current.offsetWidth;
+      if (width > maxWidth) {
+        setMaxWidth(width);
+      }
+    });
   }, [logLevelRefs.current]);
   
   // Set up the websocket connection
@@ -108,16 +104,14 @@ export default function Logs({logLevels}) {
       clientRef.current = client;
       
       client.onerror = (e) => {
-        // const refresh = async () => {
-        //   try {
-        //     const newToken = await getNewAccessToken();
-        //     dispatch(setAuthToken(newToken));
-        //     console.log('new token', newToken);
-        //   } catch (error) {
-        //     navigate('/login');
-        //   }
-        // }
-        // refresh();
+        getNewToken()
+        .then((newToken) => {
+          setToken(newToken);
+        })
+        .catch((error) => {
+          console.error(error);
+          setToken(null);
+        })
       };
       
       client.onopen = () => {
@@ -147,11 +141,11 @@ export default function Logs({logLevels}) {
         // Setting this will trigger a r-erun of the effect,
         // cleaning up the current websocket, but not setting
         // up a new one right away
-        // setWaitingToReconnect(true);
+        setWaitingToReconnect(true);
         
         // This will trigger another re-run, and because it is false,
         // the socket will be set up again
-        // setTimeout(() => setWaitingToReconnect(null), 500);
+        setTimeout(() => setWaitingToReconnect(false), 500);
       };
       
       client.onmessage = message => {
@@ -167,7 +161,7 @@ export default function Logs({logLevels}) {
       }
     }
     
-  }, []);
+  }, [token, waitingToReconnect]);
   
   // Handle incoming messages
   useEffect(() => {
@@ -193,13 +187,7 @@ export default function Logs({logLevels}) {
   }, [incomingMessage]);
   
   // make logs a list of objects
-  interface LogRecord {
-    timeString: string;   // 15.03.2024_01:13:18
-    logLevel: string;
-    message: string;
-    location: string;
-  }
-  let logs: LogRecord[] = stateLocal.log_records.map((logRecord: string) => {
+  let logs: ParsedLog[] = stateLocal.log_records.map((logRecord: string) => {
     const [timeString, logLevel] = logRecord.split(' ', 2);
     let messageAndLocation = logRecord.split(' ').slice(2).join(' ');
     let message = messageAndLocation.split(' ').slice(0, -1).join(' ');
@@ -221,19 +209,19 @@ export default function Logs({logLevels}) {
   });
   
   // Create a ref for each log level element
-  logLevelRefs.current = logs.map((_, i) => logLevelRefs[i] || createRef());
+  logLevelRefs.current = logs.map((_, i: number) => logLevelRefs[i] || createRef());
   
   useEffect(() => {
     handleScroll(null);
   }, [scrollable.current]);
   
   /** Format the log message, transforming User <id> into a clickable link if necessary */
-  const FormattedMessage = ({message}) => {
+  const FormattedMessage = ({message}): JSX.Element => {
     const [isFolded, setIsFolded] = useState(true);
-    const [rowWidth, setRowWidth] = useState(50000);
+    // const [rowWidth, setRowWidth] = useState(50000);
     // Determing the maximum length of the message, fitting the row width
-    const [isOverflowing, setIsOverflowing] = useState(false);
-    const messageRef = useRef(null);
+    // const [isOverflowing, setIsOverflowing] = useState(false);
+    // const messageRef = useRef(null);
     // useEffect(() => {
     //   if (messageRef.current) {
     //     const currMessage = messageRef.current;
@@ -261,9 +249,6 @@ export default function Logs({logLevels}) {
     // }, [message]);
     const maxLength = 150;
     const messageParts = message.split(/(User \d+|User is None)/).filter(Boolean);
-    const toggleFold = () => {
-      setIsFolded(!isFolded);
-    };
     return (
       <>
         {messageParts.map((part, i) => {
@@ -290,8 +275,8 @@ export default function Logs({logLevels}) {
             const foldedStyle = {
               whiteSpace: 'nowrap',
               overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: `${rowWidth}px`
+              // textOverflow: 'ellipsis',
+              // maxWidth: `${rowWidth}px`
             };
             const unfoldedStyle = {
               overflowWrap: 'anywhere',
@@ -301,72 +286,66 @@ export default function Logs({logLevels}) {
             
             // Split the text into lines on \n
             return displayText.split('\n').map((line, j) => (
-                <Typography
-                  ref={messageRef}
-                  // style={{
-                  //   overflowWrap: 'anywhere',
-                  //   overflow: 'hidden',
-                  //   textOverflow: 'ellipsis',
-                  //   whiteSpace: 'nowrap',
-                  //   maxWidth: `${rowWidth}px`
-                  // }}
-                  style={isFolded ? foldedStyle : unfoldedStyle}
-                  ml={(j === 0) && (line.startsWith('.')) ? 0 : 1}
-                  key={`${i}-${j}`}
-                  variant="h7"
-                  color={colors.grey[300]}
-                  component="p">{line}</Typography>
+              <Typography
+                // ref={messageRef}
+                // style={{
+                //   overflowWrap: 'anywhere',
+                //   overflow: 'hidden',
+                //   textOverflow: 'ellipsis',
+                //   whiteSpace: 'nowrap',
+                //   maxWidth: `${rowWidth}px`
+                // }}
+                style={isFolded ? foldedStyle : unfoldedStyle}
+                ml={(j === 0) && (line.startsWith('.')) ? 0 : 1}
+                key={`${i}-${j}`}
+                variant="h7"
+                color={colors.grey[300]}
+                component="p">{line}</Typography>
             ));
           }
         })}
-        {/*{isFolded && message.length > maxLength &&   // unfold button if the message is longer than maxLength*/}
-        {/*    <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}>*/}
-        {/*        <UnfoldMoreIcon color="secondary" />*/}
-        {/*    </Typography>}*/}
-        {/*{!isFolded && message.length > maxLength &&   // fold button if the message is longer than maxLength*/}
-        {/*    <Typography display="inline" variant="h7" color={colors.grey[300]} onClick={toggleFold}>*/}
-        {/*        <UnfoldLessIcon color="error" />*/}
-        {/*    </Typography>}*/}
-        {isFolded && <MoreHorizIcon onClick={toggleFold} />}
-        
+        {isFolded && message.length > maxLength && <MoreHorizIcon onClick={() => setIsFolded(false)}/>}
       </>
     );
   }
-
+  
   return (
     <Box style={{overflow: 'hidden'}}>
-      <Paper ref={scrollable} onScroll={handleScroll} style={{position: 'relative', overflowY: 'scroll', height: '80vh', width: '80vw'}}>
+      <Paper ref={scrollable} onScroll={handleScroll}
+             style={{position: 'relative', overflowY: 'scroll', height: '80vh', width: '80vw'}}>
         {
           waitingToReconnect || !isOpen
             ? <LinearProgress/>
             : null
         }
         <Grid container direction="column">
-        {logs.map((logRecord: string, i) => {
-          const {timeString, logLevel, message, location} = logRecord;
-          const color = logLevel === "[INFO]"
-            ? colors.primary[100]
-            : logLevel === "[WARNING]"
-              ? colors.orangeAccent[300]
-              : logLevel === "[ERROR]"
-                ? colors.redAccent[300]
-                : colors.grey[300];
-          return (
-            <Grid container justifyContent="space-between" key={i}>
-              <Grid item xs zeroMinWidth>
-                <Grid container direction="row">
-                  <div style={{visibility: 'hidden', position: 'absolute'}} ref={logLevelRefs.current[i]}>
-                    <Typography variant="h7" mr={1} >{logLevel}</Typography>
-                  </div>
-                  <Typography variant="h7" mr={1} color={colors.blueAccent[200]} key={i}>{localizedTime(timeString)} </Typography>
-                  <Typography variant="h7" mr={1} color={color} style={{width: maxWidth}} align="center">{logLevel}</Typography>
-                  <FormattedMessage message={message}/>
+          {logs.map((logRecord: ParsedLog, i) => {
+            const {timeString, logLevel, message, location} = logRecord;
+            const color = logLevel === "[INFO]"
+              ? colors.primary[100]
+              : logLevel === "[WARNING]"
+                ? colors.orangeAccent[300]
+                : logLevel === "[ERROR]"
+                  ? colors.redAccent[300]
+                  : colors.grey[300];
+            return (
+              <Grid container justifyContent="space-between" key={i}>
+                <Grid item xs zeroMinWidth>
+                  <Grid container direction="row">
+                    <div style={{visibility: 'hidden', position: 'absolute'}} ref={logLevelRefs.current[i]}>
+                      <Typography variant="h7" mr={1}>{logLevel}</Typography>
+                    </div>
+                    <Typography variant="h7" mr={1} color={colors.blueAccent[200]}
+                                key={i}>{localizedTime(timeString)} </Typography>
+                    <Typography variant="h7" mr={1} color={color} style={{width: maxWidth}}
+                                align="center">{logLevel}</Typography>
+                    <FormattedMessage message={message}/>
+                  </Grid>
                 </Grid>
+                <Typography variant="h7" color={colors.grey[500]}>{location}</Typography>
               </Grid>
-              <Typography variant="h7" color={colors.grey[500]}>{location}</Typography>
-            </Grid>
-          );
-        })}
+            );
+          })}
         </Grid>
       </Paper>
     </Box>

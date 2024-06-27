@@ -13,6 +13,7 @@ export const refreshAuthToken = createAsyncThunk<string, void, { state: { auth: 
   return data.access_token;
 });
 
+
 function deleteCookie(name, path, domain) {
   if (path === undefined) {
     path = '/';
@@ -35,7 +36,6 @@ export interface AuthState {
   isFirstEntry: boolean;
   token: string | null;
   isRefreshing: boolean;
-  requestQueue: InternalAxiosRequestConfig[];
   scopes: string[];
 }
 
@@ -43,7 +43,6 @@ const initialState: AuthState = {
   isFirstEntry: true,
   token: localStorage.getItem("token"),
   isRefreshing: false,
-  requestQueue: [],
   scopes: [],
 }
 
@@ -55,51 +54,47 @@ const slice = createSlice({
     setAuthToken(state: AuthState, action: PayloadAction<string>) {
       const token = action.payload;
       state.token = token;
+      localStorage.setItem("token", token);
       state.scopes = (jwtDecode(token) as TokenPayload).scopes;
       state.isFirstEntry = false;
-      localStorage.setItem("token", token);
     },
     clearAuthToken(state: AuthState) {
+      state.isFirstEntry = true;
       state.token = null;
       state.scopes.length = 0;
-      state.isFirstEntry = true;
       deleteCookie("use_refresh_token", "/auth", import.meta.env.VITE_REACT_APP_DOMAIN);
       localStorage.removeItem("token");
-    },
-    addToRequestQueue(state: AuthState, action: PayloadAction<InternalAxiosRequestConfig>) {
-      // Don't add the same request multiple times
-      if (!state.requestQueue.some((request) => request.url === action.payload.url)) {
-        state.requestQueue.push(action.payload);
-      }
-    },
-    clearRequestQueue(state) {
-      state.requestQueue.length = 0;
     },
   },
   extraReducers: (builder) => {
     builder.addCase(refreshAuthToken.pending, (state: AuthState) => {
       console.log("refreshAuthToken.pending");
       state.isRefreshing = true;
+      state.isFirstEntry = false;
     });
-    builder.addCase(refreshAuthToken.fulfilled, (state: AuthState, action) => {
+    builder.addCase(refreshAuthToken.fulfilled, (state: AuthState, action: PayloadAction<string>) => {
       console.log("refreshAuthToken.fulfilled");
       const token = action.payload;
+      console.log('New token:', token.slice(-5));
+      if (token === 'undefined') {
+        console.log("token is undefined (string 'undefined')");
+        state.isFirstEntry = true;
+        state.isRefreshing = false;
+        state.scopes.length = 0;
+        state.token = null;
+        localStorage.removeItem("token");
+        document.location.href = "/login";
+        return;
+      }
       state.token = token;
+      localStorage.setItem("token", token);
       state.isRefreshing = false;
       state.scopes = (jwtDecode(token) as TokenPayload).scopes;
-      // Execute all queued requests with the new token
-      state.requestQueue.forEach((request: InternalAxiosRequestConfig, i: number) => {
-        console.log("Executing queued request #", i);
-        request.headers.Authorization = `Bearer ${action.payload}`;
-        axios(request);
-      });
-      state.requestQueue.length = 0;
     });
     builder.addCase(refreshAuthToken.rejected, (state: AuthState) => {
       console.log("refreshAuthToken.rejected");
       state.isFirstEntry = true;
       state.isRefreshing = false;
-      state.requestQueue.length = 0;
       state.scopes.length = 0;
       state.token = null;
       localStorage.removeItem("token");
@@ -109,5 +104,5 @@ const slice = createSlice({
 });
 
 
-export const { setAuthToken, clearAuthToken, clearRequestQueue, addToRequestQueue } = slice.actions;
+export const { setAuthToken, clearAuthToken } = slice.actions;
 export default slice.reducer;

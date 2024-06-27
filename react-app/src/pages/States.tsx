@@ -1,27 +1,25 @@
 import {Box, Paper, Radio, Typography} from "@mui/material";
 import {useEffect, useState, useRef} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {statesRefreshed, stateUpdateRecieved} from "../reducers/states";
-import stateInstance from "../reducers/states";
+import {StateInstance, statesRefreshed, stateUpdateRecieved} from "../reducers/states";
 import {setAuthToken, refreshAuthToken} from "../reducers/auth";
 import {addWindow} from "../reducers/draggables";
 import {DraggableEntity} from "../reducers/draggables";
 import {useNavigate} from "react-router-dom";
+import {getNewToken} from "../misc/utils";
 
 
 export default function States() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const stateLocal = useSelector((state) => state.states);
   const statePositions = useSelector((state) => state.positions);
-  let protocol: string;
-  import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? protocol = "wss" : protocol = "ws";
+  const protocol: string = import.meta.env.VITE_REACT_APP_IN_PRODUCTION ? "wss" : "ws";
   
   const clientRef = useRef<WebSocket | null>(null);
-  const [waitingToReconnect, setWaitingToReconnect] = useState(null);
-  const [incomingMessage, setIncomingMessage] = useState();
-  const [isOpen, setIsOpen] = useState(false);
-  const token = localStorage.getItem("token");
+  const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
+  const [incomingMessage, setIncomingMessage] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   
   useEffect(() => {
     
@@ -34,15 +32,18 @@ export default function States() {
       clientRef.current = client;
       
       client.onerror = (e) => {
-        // const refresh = async () => {
-        //   try {
-        //     const newToken = await getNewAccessToken();
-        //     dispatch(setAuthToken(newToken));
-        //   } catch (error) {
-        //     navigate('/login');
-        //   }
-        // }
-        // refresh();
+        setWaitingToReconnect(true);
+        getNewToken()
+        .then((newToken) => {
+          setToken(newToken);
+        })
+        .catch((error) => {
+          console.error(error);
+          setToken(null);
+        })
+        .finally(() => {
+          setWaitingToReconnect(false);
+        });
       }
       
       client.onopen = () => {
@@ -88,7 +89,7 @@ export default function States() {
       }
     }
     
-  }, []);
+  }, [token]);
   
   useEffect(() => {
     if (incomingMessage) {
@@ -113,7 +114,7 @@ export default function States() {
   }, [incomingMessage]);
   
   // Sort states by form name and step number
-  const forms: stateInstance[][] = [];
+  const forms: StateInstance[][] = [];
   if (stateLocal.incr_value !== -1) {
     const uniqueFormNames: Set<string> = new Set();
     let maxNum = 0;
@@ -125,10 +126,10 @@ export default function States() {
     });
     const formNames = Array.from(uniqueFormNames);
     formNames.map((formName) => {
-      const steps: stateInstance[] = new Array(maxNum);
+      const steps: StateInstance[] = new Array(maxNum);
       stateLocal.states.map((state) => {
         if (state.state_name.startsWith(formName)) {
-          const step: stateInstance = {state_name: state.state_name, user_ids: state.user_ids};
+          const step: StateInstance = {state_name: state.state_name, user_ids: state.user_ids};
           // Sort by step number
           steps[parseInt(state.state_name.split(':')[1])] = step;
         }
@@ -161,7 +162,7 @@ export default function States() {
                 borderRadius: 1,
                 boxShadow: 1
               }}>
-                {steps.map((state, j) => {
+                {steps.map((state: StateInstance, j) => {
                   return (
                     <Box key={j} mx={1} display="flex" flexDirection="column" alignItems="center" justifyContent="space-between">
                       <Typography variant="h6">{state.state_name.split(':')[2]}</Typography>
@@ -179,7 +180,6 @@ export default function States() {
                       >{state.user_ids.length}</Typography>
                     </Box>
                   );
-                  
                 })}
               </Box>
           </Paper>

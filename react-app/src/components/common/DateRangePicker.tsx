@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import {DateRange} from 'react-date-range';
-import {useTheme} from "@mui/material";
+import {Box, useTheme} from "@mui/material";
 import styled from 'styled-components';
 
 const StyledWrapper =
@@ -32,9 +32,9 @@ const StyledWrapper =
 const DateRangePicker = ({startDate, setStartDate, endDate, setEndDate}) => {
   const theme = useTheme();
   
-  const [start, setStart] = useState(startDate);
-  const [end, setEnd] = useState(endDate);
-  const [secondClick, setSecondClick] = useState(false);
+  const [start, setStart] = useState<Date>(startDate);
+  const [end, setEnd] = useState<Date>(endDate);
+  const [secondClick, setSecondClick] = useState<boolean>(false);
   
   useEffect(() => {
     setStart(startDate);

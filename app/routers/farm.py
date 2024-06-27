@@ -104,7 +104,7 @@ async def set_watering_needed(seconds: int,
     prev_value = await redis_conn.get('watering_seconds')
     await redis_conn.set('watering_seconds', str(seconds))
     if prev_value is not None and prev_value != '0':
-        return Response(status_code=208, content='Set new watering time, but previous was not finished yet')
+        return Response(status_code=208, content='Set new watering time, but previous has not been consumed yet')
     return Response(status_code=202, content='New watering time set')
 
 

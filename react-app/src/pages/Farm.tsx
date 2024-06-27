@@ -1,72 +1,64 @@
-import {getAxiosClient} from "../misc/AxiosInstance";
-import {useEffect, useState} from "react";
-import {Button, Grid} from "@mui/material";
+import {useRef, useState} from "react";
+import {Box, Button, Grid, Paper} from "@mui/material";
 import FarmChart from "../components/PageFarm/FarmChart";
 import DateRangePicker from "../components/common/DateRangePicker";
 import IrrigationTimer from "../components/PageFarm/IrrigationTimer";
+import useOutsideClick from "../misc/hooks/OutsideClick";
 
 
 export default function Farm() {
-  const [wateringNeeded, setWateringNeeded] = useState(false);
-  // const [selectedDateRange, setSelectedDateRange] = useState([new Date(), new Date()]);
+  const [calendarVisible, setCalendarVisible] = useState<boolean>(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  useOutsideClick(ref, () => setCalendarVisible(false));
+  
   const today = new Date();
   today.setHours(23, 59, 59, 999)
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-  const [startDate, setStartDate] = useState(yesterday);
-  const [endDate, setEndDate] = useState(today);
-  const axios = getAxiosClient();
-  const requestWatering = () => {
-    axios.post(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/set-needed`, null)
-      .then(r => {
-        if (r.status === 202 || r.status === 208) {
-          setWateringNeeded(true);
-        }
-      });
-  }
-  
-  // useEffect(() => {
-  //   // Get current watering status every minute
-  //   const getWateringStatus = setInterval(function _() {
-  //     axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/is-needed?noreset=true`, {
-  //       signal: timeoutAbortSignal(5000)
-  //     })
-  //     .then(r => {
-  //       if (r.data === '1') {
-  //         setWateringNeeded(true);
-  //       } else if (r.data === '0') {
-  //         setWateringNeeded(false);
-  //       } else {
-  //         alert('Error getting watering status');
-  //       }
-  //     })
-  //     return _;
-  //   }(), 1000 * 60);
-  //   return () => clearInterval(getWateringStatus);
-  // }, []);
-  
+  const [startDate, setStartDate] = useState<Date>(yesterday);
+  const [endDate, setEndDate] = useState<Date>(today);
   
   return (
-    <Grid container direction="column" alignItems="center" spacing={3}>
-      <Grid item>
+    <>
+      <Paper
+        ref={ref}
+        elevation={5}
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          display: calendarVisible ? 'flex' : 'none',
+          zIndex: 1000,
+        }}>
         <DateRangePicker startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate}/>
+      </Paper>
+      
+      <Grid container direction="column" alignItems="center" justifyContent="center">
+        <Grid item>
+          <Grid container direction="row" alignItems="center" flexWrap="nowrap">
+            <Grid item>
+              <FarmChart startDate={startDate} endDate={endDate}/>
+            </Grid>
+            <Grid item>
+              <Button
+                variant="contained"
+                onClick={() => setCalendarVisible(!calendarVisible)}
+                sx={{
+                  transform: 'rotate(-90deg)',
+                  position: 'relative',
+                  right: '80px',
+                  whiteSpace: 'nowrap',
+                }}
+                disabled={calendarVisible}
+              >Select Day Range</Button>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={4}>
+          <IrrigationTimer/>
+        </Grid>
       </Grid>
-      <Grid item>
-        <FarmChart startDate={startDate} endDate={endDate}/>
-      </Grid>
-      <Grid item>
-        <Button
-          onClick={requestWatering}
-          variant="contained"
-          color={wateringNeeded ? 'error' : 'success'}
-          disabled={wateringNeeded}
-        >
-          Request Watering
-        </Button>
-      </Grid>
-      <Grid item>
-        <IrrigationTimer/>
-      </Grid>
-    </Grid>
+    </>
   );
 };

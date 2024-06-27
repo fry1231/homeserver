@@ -15,19 +15,13 @@ function App() {
           <CssBaseline/>
           <Provider store={store}>
             <ErrorWrapper>
-              {/*<AxiosProvider>*/}
+              <ApolloWrapper>
                 <Container>
-                  {/*<ApolloWrapper>*/}
-                      {/*<Helmet>*/}
-                      {/*  <meta name="apple-mobile-web-app-capable" content="yes"/>*/}
-                      {/*  <meta httpEquiv="Content-Security-Policy"*/}
-                      {/*        content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;"/>*/}
-                      {/*  <title>HomeServer</title>*/}
-                      {/*</Helmet>*/}
+
                       <Routes/>
-                  {/*</ApolloWrapper>*/}
+                  
                 </Container>
-              {/*</AxiosProvider>*/}
+              </ApolloWrapper>
             </ErrorWrapper>
           </Provider>
         </ThemeProvider>

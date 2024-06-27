@@ -13,7 +13,7 @@ import {Icon} from 'leaflet';
 
 
 export interface MarkerProps {
-  coords: [number|null, number|null];
+  coords: [number|undefined, number|undefined];
   userName: string;
   telegramId: number|string;
 }

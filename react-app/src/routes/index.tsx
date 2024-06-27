@@ -9,7 +9,7 @@ import LogIn from "../pages/LogIn";
 import SignUp from "../pages/SignUp";
 import Topbar from "../components/global/Topbar";
 import States from "../pages/States";
-import Logs from "../components/Logs";
+import Logs from "../pages/Logs";
 
 import DraggableContainer from "../components/global/DraggableContainer";
 import {store} from "../Store";
@@ -107,11 +107,14 @@ const Routes = () => {
     routes = [...routes, routeNotFound];
 
     return (
-        <div style={{ position: 'absolute'}}>
-            {showTopbar && <Topbar/>}
-            <DraggableContainer />
-                {useRoutes(routes)}
-        </div>
+        // <div style={{ position: 'absolute'}}>
+      <>
+          {showTopbar && <Topbar/>}
+          <DraggableContainer/>
+          {useRoutes(routes)}
+      </>
+
+        // </div>
     )
 };
 

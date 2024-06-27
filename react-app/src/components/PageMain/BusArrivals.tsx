@@ -42,7 +42,8 @@ export default function BusArrivals() {
   const busData = state.busData;
   const CancelToken = axiosClass.CancelToken;
   const source = CancelToken.source();
-  const [limitReached, setLimitReached] = useState(false);
+  const [reconnect, setReconnect] = useState(false);
+  const toggleReconnect = () => setReconnect(!reconnect);
   const client = getAxiosClient();
   
   useEffect(() => {
@@ -59,10 +60,19 @@ export default function BusArrivals() {
           previousBytes = progressEvent.loaded;
           // Access the new chunk of data
           const newChunk = progressEvent.event.currentTarget.response.slice(-newBytes);
-          console.log(newChunk);
-          const data: BusResponse = JSON.parse(
-            newChunk
-            );
+          let data: BusResponse;
+          try {
+            data = JSON.parse(newChunk);
+          }
+          catch (e) {
+            if (e instanceof SyntaxError) {
+              source.cancel("Request cancelled on JSON parse error");
+              toggleReconnect();
+            } else {
+              throw e;
+            }
+          }
+          console.log(data);
           const busData = data.busData;
           // Calculate time to bus for each bus, modify inplace
           busData.map((destination) => {
@@ -73,7 +83,7 @@ export default function BusArrivals() {
           dispatch(busDataUpdated(busData));
           if (progressEvent.loaded > 1000 * 1000) {
             source.cancel("Request cancelled on limit reached");
-            setLimitReached(true);
+            toggleReconnect();
           }
         }
       })
@@ -81,7 +91,7 @@ export default function BusArrivals() {
         console.log('Finished fetching bus data');
       })
       .catch((error) => {
-        console.error(error);
+        console.log(error);
         source.cancel("Request cancelled on error");
       });
 
@@ -99,9 +109,7 @@ export default function BusArrivals() {
       source.cancel("Request cancelled on unmount");
       clearInterval(timerId);
     };
-  }, [limitReached]);
-  
-  console.log(busData)
+  }, [reconnect]);
   
   return (
       <Box display="flex" flexDirection="column" m={4}>

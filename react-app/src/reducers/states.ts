@@ -1,6 +1,6 @@
 import {createSlice} from "@reduxjs/toolkit";
 
-const initialState: states = {
+const initialState: States = {
   states: [{
     state_name: "No data",
     user_ids: []
@@ -8,20 +8,20 @@ const initialState: states = {
   incr_value: -1
 }
 
-interface stateUpdate {
+export interface StateUpdate {
   user_id: number;
   user_state: string;
   action: "set" | "unset" | "refresh";
   incr_value: number;
 }
 
-interface stateInstance {
+export interface StateInstance {
   state_name: string;
   user_ids: number[];
 }
 
-interface states {
-  states: stateInstance[];
+export interface States {
+  states: StateInstance[];
   incr_value: number;
 }
 
@@ -37,7 +37,7 @@ const statesSlice = createSlice({
     },
     stateUpdateRecieved(state, action) {
       // Update the specified state with the user_id
-      const stateUpdate: stateUpdate = action.payload;
+      const stateUpdate: StateUpdate = action.payload;
       const currStatesDisposition = state.states;
       const currState = currStatesDisposition.find((el) => el.state_name === stateUpdate.user_state);
       if (currState) {

@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {useTheme} from "@mui/material";
 import Plot from 'react-plotly.js';
 import {tokens} from "../../theme";
-import {getAxiosClient} from "../../misc/AxiosInstance";
+import axios from "../../misc/AxiosInstance";
 
 
 interface SensorsDataPoint {
@@ -21,9 +21,12 @@ interface WateringDataPoint {
 const combinedChart = (sensorsData: SensorsDataPoint[],
                        wateringData: WateringDataPoint[],
                        endDate) => {
-  const timeSeries: Date[] = sensorsData.map((dataPoint) => new Date(dataPoint.time));
+  console.log(wateringData);
+  const timeSeries: Date[] = sensorsData.map((dataPoint: SensorsDataPoint) => new Date(dataPoint.time));
+  
   // Add watering data points to the time series
-  wateringData.map((dataPoint) => {
+  // Also add two extra points before and after each watering data point to make the chart look better
+  wateringData.map((dataPoint: WateringDataPoint) => {
     const p2 = new Date(dataPoint.time);
     const ms = p2.getTime();
     const ms1 = ms - 1;
@@ -32,51 +35,60 @@ const combinedChart = (sensorsData: SensorsDataPoint[],
     const p3 = new Date(ms3);
     timeSeries.push(p1, p2, p3);
   });
-  timeSeries.sort((a, b) => a.getTime() - b.getTime());
-  const temperatureSeries = [];
-  const soilMoistureSeries = [];
-  const waterLevelSeries = [];
-  const soilMoistureNormalized = [];
-  const wateringSeries = [];
-  let skipFlag = false;
-  timeSeries.map((time, i) => {
-    if (sensorsData.some((dataPoint) => new Date(dataPoint.time).getTime() === time.getTime())) {
-      const dataPoint = sensorsData.find((dataPoint) => new Date(dataPoint.time).getTime() === time.getTime());
+  timeSeries.sort((a: Date, b: Date) => a.getTime() - b.getTime());
+  
+  // Fill the time series with data points
+  const temperatureSeries: number[] = [];
+  const soilMoistureSeries: number[] = [];
+  const waterLevelSeries: number[] = [];
+  const soilMoistureNormalized: number[] = [];
+  const wateringSeries: number[] = [];
+  
+  let prevTemp = 0;
+  let prevSoil = 0;
+  let prevWater = 0;
+  let prevSoilNormalized = 0;
+  
+  timeSeries.map((time: Date) => {
+    // Add sensors data points to the time series if they exist, otherwise push null
+    if (sensorsData.some((dataPoint: SensorsDataPoint) => new Date(dataPoint.time).getTime() === time.getTime())) {
+      const dataPoint = sensorsData.find((dataPoint: SensorsDataPoint) => new Date(dataPoint.time).getTime() === time.getTime());
       temperatureSeries.push(dataPoint.temperature);
       soilMoistureSeries.push(dataPoint.soil_moisture);
       waterLevelSeries.push(dataPoint.water_level);
+      let soilMoistureNormalizedValue = prevSoilNormalized;
       if (dataPoint.water_level <= 50)
-        soilMoistureNormalized.push(dataPoint.soil_moisture);
+        soilMoistureNormalizedValue = dataPoint.soil_moisture;
       else
-        soilMoistureNormalized.push(dataPoint.soil_moisture / dataPoint.water_level * 100);
+        soilMoistureNormalizedValue = dataPoint.soil_moisture / dataPoint.water_level * 100;
+      soilMoistureNormalized.push(soilMoistureNormalizedValue);
+      
+      // For filling the gaps when watering data points are inserted, so no gaps are visible
+      prevTemp = dataPoint.temperature;
+      prevSoil = dataPoint.soil_moisture;
+      prevWater = dataPoint.water_level;
+      prevSoilNormalized = soilMoistureNormalizedValue;
     } else {
-      temperatureSeries.push(null);
-      soilMoistureSeries.push(null);
-      waterLevelSeries.push(null);
-      soilMoistureNormalized.push(null);
+      temperatureSeries.push(prevTemp);
+      soilMoistureSeries.push(prevSoil);
+      waterLevelSeries.push(prevWater);
+      soilMoistureNormalized.push(prevSoilNormalized);
     }
     
-    if (skipFlag) {
-      skipFlag = false;
-      return;
-    }
-    if (wateringData.some((dataPoint) => new Date(dataPoint.time).getTime() === time.getTime())) {
-      const dataPoint = wateringData.find((dataPoint) => new Date(dataPoint.time).getTime() === time.getTime());
-      wateringSeries.push(0);
-      wateringSeries.push(dataPoint.duration);
-      wateringSeries.push(0);
-      skipFlag = true;
+    // Add watering data points with value=100 to the time series if they exist, otherwise push 0
+    if (wateringData.some((dataPoint: WateringDataPoint) => new Date(dataPoint.time).getTime() === time.getTime())) {
+      wateringSeries.push(100);
     } else {
-      wateringSeries.push(null);
+      wateringSeries.push(0);
     }
   });
   console.log(wateringSeries)
   // If the last data point is older than 20 minutes (and endDate is today), add empty data points to the end of the chart
-  // to show if the device is offline
+  // to show that the device is offline
   const now = new Date();
   const timeDiff = 1000 * 60 * 20;
-  if ( (now - timeSeries[timeSeries.length - 1] > timeDiff)
-    && (now < endDate) ) {
+  if ((now - timeSeries[timeSeries.length - 1] > timeDiff)
+    && (now < endDate)) {
     const lastDate = new Date(timeSeries[timeSeries.length - 1].getTime());
     while (lastDate < now - timeDiff) {
       lastDate.setMinutes(lastDate.getMinutes() + 15);
@@ -89,7 +101,6 @@ const combinedChart = (sensorsData: SensorsDataPoint[],
     }
   }
   return {
-    // timeline: timeSeries.map((time) => time.getTime()),
     timeline: timeSeries,
     temperatureSeries,
     soilMoistureSeries,
@@ -97,13 +108,12 @@ const combinedChart = (sensorsData: SensorsDataPoint[],
     soilMoistureNormalized: soilMoistureNormalized,
     wateringSeries,
   }
-  
 }
+
 
 export const FarmChart = ({startDate, endDate}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const client = getAxiosClient();
   
   const [chartData, setChartData] = useState({
     timeline: [],
@@ -130,7 +140,7 @@ export const FarmChart = ({startDate, endDate}) => {
     // Get chart data every minute
     const getData = setInterval(function _() {
       // Sensors data
-      client.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data?startTS=${startDayTS_}&endTS=${endDayTS_}`)
+      axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/sensors/data?startTS=${startDayTS_}&endTS=${endDayTS_}`)
       .then(r => {
         sensorsData = r.data;
         const thisDayEnd = new Date();
@@ -143,16 +153,16 @@ export const FarmChart = ({startDate, endDate}) => {
         // }
         
         // Watering data
-        client.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/data?startTS=${startDayTS_}&endTS=${endDayTS_}`)
+        axios.get(`https://${import.meta.env.VITE_REACT_APP_HOST}/farm/watering/data?startTS=${startDayTS_}&endTS=${endDayTS_}`)
         .then(r => {
           wateringData = r.data;
-          wateringData.length = 0;    // ==============================================
+          // wateringData.length = 0;    // ==============================================
           const combined = combinedChart(sensorsData, wateringData, endDate);
           setChartData(combined);
         });
       })
       return _;
-    }(), 1000 * 10);
+    }(), 1000 * 60);
     // setPrevEndDate(endDate);
     return () => clearInterval(getData);
   }, [startDate, endDate]);
@@ -161,7 +171,7 @@ export const FarmChart = ({startDate, endDate}) => {
     tickfont: {
       color: colors.grey[300]
     },
-    gridcolor: colors.grey[800],
+    gridcolor: colors.grey[700],
     zerolinecolor: colors.grey[700],
     titlefont: {
       color: theme.palette.text.primary
@@ -204,7 +214,7 @@ export const FarmChart = ({startDate, endDate}) => {
       fixedrange: true,
       range: [0, 300],
       ...commonAxisLayout,
-      gridcolor: colors.grey[200],
+      gridcolor: colors.greenAccent[700],
     },
     yaxis3: {
       title: 'Water Level',
@@ -223,7 +233,8 @@ export const FarmChart = ({startDate, endDate}) => {
       position: 1,
       visible: false,
       fixedrange: true,
-      range: [0, 50],
+      range: [1, 100],
+      hoverformat: '',
       ...commonAxisLayout,
     },
     // yaxis5: {
@@ -235,17 +246,26 @@ export const FarmChart = ({startDate, endDate}) => {
     // },
     
     legend: {
-      x: 1.2,
-      y: 1
+      x: 0,
+      xanchor: 'left',
+      y: 1,
+      font: {
+        color: theme.palette.text.primary
+      }
     },
+  
+    hoverlabel: {bgcolor: colors.grey[800]},
+    
     hovermode: 'x unified',
     scrollZoom: true,
-    plot_bgcolor: theme.palette.background.default,
-    paper_bgcolor: theme.palette.background.default,
+    plot_bgcolor: 'rgba(0, 0, 0, 0.0)',
+    paper_bgcolor: 'rgba(0, 0, 0, 0.0)',
+    autosize: true,
   };
   
   return (
     <Plot
+      // key={plotKey}
       data={[
         {
           x: chartData.timeline,
@@ -281,7 +301,7 @@ export const FarmChart = ({startDate, endDate}) => {
           mode: 'lines',
           name: 'Watering',
           yaxis: 'y4',
-          line: {color: 'red'},
+          line: {color: `rgba(255,91,91,0.42)`},
         },
         // {
         //   x: chartData.timeline,
@@ -294,6 +314,8 @@ export const FarmChart = ({startDate, endDate}) => {
         // }
       ]}
       layout={layout}
+      config={{responsive: true}}
+      useResizeHandler
     />
   );
 }

@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import {getAxiosClient} from "../misc/AxiosInstance";
-import {useState, useEffect} from 'react';
+import {useState, useEffect, FormEvent} from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -26,7 +26,7 @@ export default function SignUp() {
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
   const axios = getAxiosClient();
   
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     // submit data
