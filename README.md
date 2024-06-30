@@ -1,9 +1,8 @@
 # Home Automation Project
 
 This project extends the capabilities of the [MigraineStats Telegram bot](https://github.com/fry1231/migraine_stat), 
-providing real-time usage statistics and logs. It also includes a feature for calculating estimated arrival times for 
-buses to the nearest bus stop using a public API. Additionally, the project provides real-time information and 
-automation for a home hydroponic strawberry farm.
+providing real-time usage statistics and logs. It also includes a calculation of  estimated arrival times for 
+buses to the nearest bus stop using a public API, provides real-time information and irrigation automation for a home hydroponic strawberry farm.
 
 
 - [Features](#features)
@@ -11,32 +10,30 @@ automation for a home hydroponic strawberry farm.
 - [Project Structure](#project-structure)
 
 ## Features
-
+- **Authorization**: JWT access and refresh tokens with refresh token rotation. Google OAuth.
 - **Real-time Statistics and Logs**: Extends the MigraineStats Telegram bot to provide real-time usage statistics and 
-logs.
-- **Bus Arrival Times**: Calculates the estimated arrival times of buses to the nearest bus stop using a public API.
-
+logs using WebSockets and Redis pub/sub.
+- **Bus Arrival Times**: Calculates the estimated arrival times of buses to the nearest bus stop using a public API. Real-time updates using Server-Sent Events.
 - **Temperature and Humidity Graphs**: Displays ambient temperature and humidity data collected from Arduino-based 
 sensors in graphical format.
-- **Hydroponic Farm Automation**: Provides real-time information on a home hydroponic strawberry farm and automates 
-the irrigation process.
+- **Hydroponic Farm Automation**: Provides information on a home hydroponic strawberry farm (soil temperature and humidity, water level in water tank) and automates the irrigation process.
+- **Monitoring**: System, VPS, and docker container load monitoring dashboards.
 
 ## Technologies Used
 
 - Backend:
-  - **Python**: FastAPI, Pydantic, SQLAlchemy, Ormar, Strawberry
+  - **Python**: FastAPI, SQLAlchemy, Ormar(ORM), Strawberry (GraphQL)
   - **Databases**: PostgreSQL, Redis, InfluxDB
 - Frontend:
   - React
   - Vite
-  - **UI Framework**: Material-UI
+  - **UI**: Material-UI
   - **State Management**: Redux Toolkit
   - **Charts**: Plotly.js
-  - **HTTP Client**: Axios
-  - **GraphQL Client**: Apollo Client
-  - **Authentication**: JWT
+  - **HTTP**: Axios
+  - **GraphQL**: Apollo Client
+- **Authentication**: JWT Access + Refresh tokens
 - **CI/CD**: GitLab
 - **Containerization**: Docker, Docker Compose
 - **Reverse Proxy**: Traefik
-
-## Project Structure
+- **Monitoring**: Prometheus+Grafana
