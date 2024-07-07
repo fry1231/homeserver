@@ -75,21 +75,23 @@ const slice = createSlice({
     builder.addCase(refreshAuthToken.fulfilled, (state: AuthState, action: PayloadAction<string>) => {
       console.log("refreshAuthToken.fulfilled");
       const token = action.payload;
-      console.log('New token:', token.slice(-5));
-      if (token === 'undefined') {
-        console.log("token is undefined (string 'undefined')");
-        state.isFirstEntry = true;
-        state.isRefreshing = false;
-        state.scopes.length = 0;
-        state.token = null;
-        localStorage.removeItem("token");
-        document.location.href = "/login";
-        return;
+      // if (!token || (token && token === 'undefined')) {
+      //   console.log("token is undefined");
+      //   state.isFirstEntry = true;
+      //   state.isRefreshing = false;
+      //   state.scopes.length = 0;
+      //   state.token = null;
+      //   deleteCookie("use_refresh_token", "/auth", import.meta.env.VITE_REACT_APP_DOMAIN);
+      //   localStorage.removeItem("token");
+      //   document.location.href = "/login";
+      //   return;
+      // }
+      if (token) {
+        state.token = token;
+        localStorage.setItem("token", token);
+        state.scopes = (jwtDecode(token) as TokenPayload).scopes;
       }
-      state.token = token;
-      localStorage.setItem("token", token);
       state.isRefreshing = false;
-      state.scopes = (jwtDecode(token) as TokenPayload).scopes;
     });
     builder.addCase(refreshAuthToken.rejected, (state: AuthState) => {
       console.log("refreshAuthToken.rejected");
