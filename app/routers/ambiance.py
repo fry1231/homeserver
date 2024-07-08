@@ -10,7 +10,7 @@ from security import authorize_user
 
 router = APIRouter(
     prefix="/ambiance",
-    dependencies=[Security(authorize_user, scopes=["ambiance:read"])],
+    # dependencies=[Security(authorize_user, scopes=["ambiance:read"])],
 )
 
 
