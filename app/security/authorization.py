@@ -13,6 +13,7 @@ from strawberry.types import Info
 from security.config import ALGORITHM, oauth2_scheme, SECRET
 from security.models import AuthenticationError401, AuthorizationError403, AccessTokenPayload
 from security.utils import UserModel, get_user_or_none
+from config import logger
 
 
 def authorize_user(security_scopes: SecurityScopes,
@@ -35,6 +36,7 @@ def authorize_user(security_scopes: SecurityScopes,
         token_data = AccessTokenPayload(**payload)
         # Check if token has required scopes
         if not token_data.scopes:
+            logger.debug("Access token has no scopes")
             raise AuthorizationError403("Access token has no scopes")
         # If no scopes are required, authorize user
         if not security_scopes.scopes or security_scopes.scopes == []:
@@ -44,10 +46,13 @@ def authorize_user(security_scopes: SecurityScopes,
             return True
         for scope in security_scopes.scopes:
             if scope not in token_data.scopes:
+                logger.debug(f"Not enough permissions, {security_scopes.scope_str} are required")
                 raise AuthorizationError403(f"Not enough permissions, {security_scopes.scope_str} are required")
     except ExpiredSignatureError:
+        logger.debug("Access token has expired")
         raise AuthenticationError401("Access token has expired", authenticate_value)
     except (InvalidTokenError, ValidationError):
+        logger.debug("Could not validate credentials")
         raise AuthenticationError401("Could not validate credentials", authenticate_value)
     return True
 

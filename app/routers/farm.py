@@ -62,6 +62,8 @@ def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600
 async def submit_watering(data: WateringData,
                           influxdb_client=Depends(farm_client),
                           auth=Security(authorize_user, scopes=["sensors:write"])):
+    if data.duration < 0:
+        raise HTTPException(status_code=400, detail='Duration must be positive')
     write_influx_data(client=influxdb_client,
                       measurement='watering',
                       fields=data.model_dump())
