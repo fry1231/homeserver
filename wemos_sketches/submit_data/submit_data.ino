@@ -15,7 +15,7 @@ const char* password = "123456789";
 // JWT auth
 char secret[] = "secret";
 const char* uuid = "uuid";
-const char* url = "https://api.example.com/api/v1/room1/state/";
+const char* url = "https://domain.com/ambiance/submit";
 const int interval = 1000 * 60 * 5;
 
 DHT dht(DHTPIN, DHT22);
@@ -65,9 +65,10 @@ X509List cert(IRG_Root_X1);
 
 // === Auth string for JWT
 String JWTPayload(time_t future) {
-  String begin =  "{\"sub\":\"{\\\"uuid\\\":\\\"db5fb3ab409845a2b16f94f835e15559\\\",\\\"is_admin\\\":true}\",\"exp\":";
+  String part1 =  "{\"sub\":\"";
+  String part2 = "\",\"scopes\":[\"sensors:write\"],\"exp\":";
   String end = "}";
-  String result = begin + future + end;
+  String result = part1 + uuid + part2 + future + end;
   return result;
 }
 
