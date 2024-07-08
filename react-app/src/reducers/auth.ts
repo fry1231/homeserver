@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import axios, {InternalAxiosRequestConfig} from "axios";
-import {jwtDecode, JwtPayload} from "jwt-decode";
+import {InvalidTokenError, jwtDecode, JwtPayload} from "jwt-decode";
 
 
 export const refreshAuthToken = createAsyncThunk<string, void, { state: { auth: AuthState } }>('auth/refreshToken', async (_, {getState}) => {
@@ -10,6 +10,13 @@ export const refreshAuthToken = createAsyncThunk<string, void, { state: { auth: 
     timeout: 2000,
   });
   const data = await response.json();
+  if (!response.ok) {
+    let detail = 'Unknown error';
+    if (response.status === 401) {
+      detail = data.detail;
+    }
+    throw new InvalidTokenError(detail);
+  }
   return data.access_token;
 });
 

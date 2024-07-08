@@ -1,5 +1,5 @@
 import {store} from "../Store";
-import {AuthState, refreshAuthToken} from "../reducers/auth";
+import {AuthState, refreshAuthToken, clearAuthToken} from "../reducers/auth";
 import {jwtDecode, JwtPayload} from "jwt-decode";
 
 
@@ -52,7 +52,16 @@ export const getNewToken = async (): Promise<string> => {
           console.log('1_Token refreshed');
           console.log('1_New token:', token.slice(-5));
           resolve(token);
+        })
+        .catch((error) => {
+          if (error instanceof Error && error.message === 'Refresh token is not valid') {
+            console.error('1_Refresh token is not valid');
+            store.dispatch(clearAuthToken());
+            document.location.href = "/login";
+            reject(error);
+          }
         });
+
     } else {
       // If a refresh is in progress, wait for it to finish
       console.log('2_Token is being refreshed, waiting for refresh to finish');
