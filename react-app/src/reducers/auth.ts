@@ -14,6 +14,10 @@ export const refreshAuthToken = createAsyncThunk<string, void, { state: { auth: 
     let detail = 'Unknown error';
     if (response.status === 401) {
       detail = data.detail;
+      if (detail === 'Refresh token is not valid') {
+        console.log("Refresh token is not valid");
+        return null;
+      }
     }
     throw new InvalidTokenError(detail);
   }
