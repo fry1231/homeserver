@@ -1,17 +1,21 @@
+import datetime
+from typing import Optional, TypeVar, Coroutine, Any
+
 from fastapi import APIRouter, Depends, Security
 from pydantic import BaseModel
-from typing import List, Optional
-import datetime
 
+from caching import InfluxCache
 from db.influx import get_influx_data, write_influx_data
 from misc.dependencies import home_client
 from security import authorize_user
 
+BaseModelType = TypeVar('BaseModelType', bound=type(BaseModel))
 
 router = APIRouter(
     prefix="/ambiance",
-    # dependencies=[Security(authorize_user, scopes=["ambiance:read"])],
 )
+cache = InfluxCache(timestamp_field='start_timestamp',
+                    timestamp_precision='ns')
 
 
 class AmbianceData(BaseModel):
@@ -28,27 +32,42 @@ class AmbianceResponseItem(BaseModel):
 
 class AmbianceResponse(BaseModel):
     room_name: str
-    data: List[AmbianceResponseItem]
+    data: list[AmbianceResponseItem]
 
 
-@router.get('/', response_model=List[AmbianceResponse])
-def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
-                      endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
-                      influxdb_client=Depends(home_client),
-                      auth=Security(authorize_user, scopes=["sensors:read"])):
-    items = get_influx_data(client=influxdb_client,
-                            measurement='ambiance',
-                            ResponseClass=AmbianceResponseItem,
-                            start_timestamp=startTS,
-                            end_timestamp=endTS)
+@cache.fetch(ttl=60 * 5)
+def get_ambiance_datapoints(client,
+                            measurement,
+                            response_class,
+                            start_timestamp,
+                            end_timestamp) -> Coroutine[Any, Any, list[BaseModelType]]:
+    return get_influx_data(**locals())
+
+
+def write_ambiance_datapoint(client,
+                             measurement,
+                             fields) -> Coroutine[Any, Any, bool]:
+    return write_influx_data(**locals())
+
+
+@router.get('/', response_model=list[AmbianceResponse])
+async def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
+                            endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
+                            influxdb_client=Depends(home_client),
+                            auth=Security(authorize_user, scopes=["sensors:read"])):
+    items = await get_ambiance_datapoints(client=influxdb_client,
+                                          measurement='ambiance',
+                                          response_class=AmbianceResponseItem,
+                                          start_timestamp=startTS,
+                                          end_timestamp=endTS)
     response = [AmbianceResponse(room_name='room1', data=items)]
     return response
 
 
 @router.post('/submit')
-def submit_ambiance_point(data: AmbianceData,
-                          influxdb_client=Depends(home_client),
-                          auth=Security(authorize_user, scopes=["sensors:write"])):
-    write_influx_data(client=influxdb_client,
-                      measurement='ambiance',
-                      fields=data.model_dump())
+async def submit_ambiance_point(data: AmbianceData,
+                                influxdb_client=Depends(home_client),
+                                auth=Security(authorize_user, scopes=["sensors:write"])):
+    await write_ambiance_datapoint(client=influxdb_client,
+                                   measurement='ambiance',
+                                   fields=data.model_dump())

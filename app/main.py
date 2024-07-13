@@ -1,26 +1,28 @@
 import asyncio
 import datetime
+import traceback
+from contextlib import asynccontextmanager
+
+import orjson
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Depends, status
-from fastapi.responses import ORJSONResponse
 from fastapi.exceptions import RequestValidationError
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-import traceback
-import orjson
-from contextlib import asynccontextmanager
+from fastapi.responses import ORJSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
 
-from config import logger, DOMAIN, templates
+from config import logger, DOMAIN, templates, POSTGRES_USER, POSTGRES_PASS, DATABASE_NAME
+from db.influx import init_influx
+from db.sql import database, migraine_database, connect_create_if_not_exists
+from middlewares import AntiFloodMiddleware, CustomGZipMiddleware
+from misc.dependencies import get_redis_conn
 from routers import (
     buses, states, users, logs, ambiance, farm
 )
-from security import auth_router
-from middlewares import AntiFloodMiddleware, CustomGZipMiddleware
-from routers.graphql import graphql_app
-from db.sql import database, migraine_database
 from routers.buses import BusResponse
-from misc.dependencies import get_redis_conn
+from routers.graphql import graphql_app
+from security import auth_router
 
 
 @asynccontextmanager
@@ -30,7 +32,17 @@ async def lifespan(app_: FastAPI):
         await database_.connect()
     if not migraine_database.is_connected:
         await migraine_database.connect()
+    # Initialize the buses data retrieval task
     asyncio.create_task(buses.retrieve_arrivals())
+    # Initialize the InfluxDB databases, set retention policies
+    init_influx()
+    # Connect to homeserver database, create if not exists
+    try:
+        asyncio.get_event_loop().create_task(
+            connect_create_if_not_exists(user=POSTGRES_USER, password=POSTGRES_PASS, db_name=DATABASE_NAME)
+        )
+    except ConnectionRefusedError as e:
+        raise ConnectionRefusedError(f'Database connection failed. Details: {e}')
 
     yield
 
@@ -46,6 +58,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # @app.middleware("http")
 # async def graphql_playground(request: Request, call_next):
 #     return await call_next(request)
+
 origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
@@ -67,7 +80,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(AntiFloodMiddleware, limit=100, per=datetime.timedelta(minutes=1))
+app.add_middleware(AntiFloodMiddleware, limit=100, graphql_limit=500, per=datetime.timedelta(minutes=1))
 app.add_middleware(CustomGZipMiddleware, exclude_routes=['/buses/arrivals'], minimum_size=1000)
 
 app.include_router(auth_router)
@@ -85,7 +98,7 @@ app.include_router(farm.router)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """
-    All 422 validation errors converts to user friendly details, that can be shown to the user directly
+    All 422 validation errors convert to user-friendly details, that can be shown to the user directly
     """
     error_messages = [err['msg'].replace('Assertion failed, ', '') for err in exc.errors()]
     raise HTTPException(
@@ -126,9 +139,9 @@ async def index(request: Request):
         logger.error(traceback.format_exc())
 
 
-@app.get("/test")
-async def test(request: Request):
-    logger.info(request)
+@app.get("/healthcheck")
+async def healthcheck():
+    return {"status": "ok"}
 
 
 if __name__ == "__main__":

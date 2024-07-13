@@ -1,13 +1,18 @@
 from fastapi import APIRouter, Security, HTTPException, Depends, Response
 from pydantic import BaseModel
-from typing import List
+from typing import List, TypeVar, Coroutine, Any
 import datetime
 
 from security import authorize_user
 from misc.dependencies import farm_client, get_redis_conn
 from db.influx import get_influx_data, write_influx_data
 from misc.data_handling import downsample
+from caching import InfluxCache
 
+cache = InfluxCache(timestamp_field='start_timestamp',
+                    timestamp_precision='ns')
+
+BaseModelType = TypeVar('BaseModelType', bound=type(BaseModel))
 
 router = APIRouter(
     prefix="/farm",
@@ -21,16 +26,29 @@ class FarmData(BaseModel):
     water_level: float
 
 
-class FarmResponseItem(FarmData):
+class FarmResponseItem(BaseModel):
     time: str
+    temperature: float
+    soil_moisture: float
+    water_level: float
 
 
 class WateringData(BaseModel):
     duration: int
 
 
-class WateringResponseItem(WateringData):
+class WateringResponseItem(BaseModel):
     time: str
+    duration: int
+
+
+@cache.fetch(ttl=60 * 15)
+def get_farm_datapoints(client,
+                        measurement,
+                        response_class,
+                        start_timestamp,
+                        end_timestamp) -> Coroutine[Any, Any, list[BaseModelType]]:
+    return get_influx_data(**locals())
 
 
 # Submit and get data from farm sensors (temperature, soil moisture, water level)
@@ -51,7 +69,7 @@ def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600
                   auth=Security(authorize_user, scopes=["sensors:read"])):
     data = get_influx_data(client=influxdb_client,
                            measurement='farm',
-                           ResponseClass=FarmResponseItem,
+                           response_class=FarmResponseItem,
                            start_timestamp=startTS,
                            end_timestamp=endTS)
     return downsample(data)
@@ -77,7 +95,7 @@ async def get_watering_data(startTS: int = int((datetime.datetime.now().timestam
                             auth=Security(authorize_user, scopes=["sensors:read"])):
     return get_influx_data(client=influxdb_client,
                            measurement='watering',
-                           ResponseClass=WateringResponseItem,
+                           response_class=WateringResponseItem,
                            start_timestamp=startTS,
                            end_timestamp=endTS)
 
@@ -88,7 +106,7 @@ def get_last_watering_time(influxdb_client=Depends(farm_client),
     data: list[WateringResponseItem] = get_influx_data(
         client=influxdb_client,
         measurement='watering',
-        ResponseClass=WateringResponseItem,
+        response_class=WateringResponseItem,
         start_timestamp=int((datetime.datetime.now().timestamp() - 3600 * 24 * 2) * 1_000_000_000),  # 2 days
         end_timestamp=int(datetime.datetime.now().timestamp() * 1_000_000_000)\
     )

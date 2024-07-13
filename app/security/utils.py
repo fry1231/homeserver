@@ -32,9 +32,9 @@ async def create_user(username: str,
     return user
 
 
-async def update_user_incr(user: UserModel) -> UserModel:
+async def save_refresh_token(user: UserModel) -> UserModel:
     """
-    CRUD operation to update user incr
+    Save refresh token, link it to user
     """
     user.refresh_token_incr += 1
     user = await user.update()
@@ -113,5 +113,5 @@ async def _get_tokens(user: UserModel) -> tuple[str, str]:
     scopes = user.scopes
     access_token = _create_access_token(user.uuid.hex, scopes)
     refresh_token = _create_refresh_token(user.uuid.hex, user.refresh_token_incr)
-    await update_user_incr(user)
+    await save_refresh_token(user)
     return access_token, refresh_token

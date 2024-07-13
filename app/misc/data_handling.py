@@ -4,6 +4,7 @@
 #     water_level: float
 #     time: str
 
+
 def downsample(data):
     # desired_points = (24 * 60 // 15) * 7
     # N = len(data)

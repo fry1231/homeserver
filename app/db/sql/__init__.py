@@ -1,21 +1,14 @@
+import asyncpg
 import databases
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import text
-import asyncio
-import asyncpg
 
 from config import (
     DB_URL,
     DB2_URL,
-    POSTGRES_USER,
-    POSTGRES_PASS,
-    DATABASE_NAME,
-    DATABASE2_NAME,
     POSTGRES_HOST,
     POSTGRES_PORT,
     logger
 )
-
 
 database = databases.Database(DB_URL)
 migraine_database = databases.Database(DB2_URL)
@@ -38,12 +31,17 @@ conn_address = {
 
 
 async def connect_create_if_not_exists(user, password, db_name):
+    """
+    Connect to the database for homeserver instance
+    If it does not exist, create it
+    After creation raises ConnectionAbortedError for running migrations
+    """
     try:
         conn = await asyncpg.connect(user=user, password=password, database=db_name, **conn_address)
         await conn.close()
         logger.info(f'Database {db_name} exists')
     except asyncpg.InvalidCatalogNameError:
-        # Database does not exist, create it.
+        # Database does not exist, create it
         sys_conn = await asyncpg.connect(
             database='template1',
             user='postgres',
@@ -55,17 +53,10 @@ async def connect_create_if_not_exists(user, password, db_name):
         )
         await sys_conn.close()
 
-        # Connect to the newly created database.
+        # Connect to the newly created database
         conn = await asyncpg.connect(user=user, password=password, database=db_name, **conn_address)
         await conn.close()
         raise ConnectionAbortedError('Database created, now run migrations if needed or restart the app')
-
-try:
-    asyncio.get_event_loop().create_task(
-        connect_create_if_not_exists(user=POSTGRES_USER, password=POSTGRES_PASS, db_name=DATABASE_NAME)
-    )
-except ConnectionRefusedError as e:
-    raise ConnectionRefusedError(f'Database connection failed. Details: {e}')
 
 
 # async def database_exists(url):

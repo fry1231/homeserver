@@ -2,15 +2,19 @@ import traceback
 from fastapi import HTTPException
 from pydantic import BaseModel
 from influxdb import InfluxDBClient
+from typing import TypeVar
 
 from config import logger
 
 
-def get_influx_data(client: InfluxDBClient,
-                    measurement: str,
-                    ResponseClass: type(BaseModel),
-                    start_timestamp: int,
-                    end_timestamp: int) -> list[type(BaseModel)]:
+BaseModelType = TypeVar('BaseModelType', bound=type(BaseModel))
+
+
+async def get_influx_data(client: InfluxDBClient,
+                          measurement: str,
+                          response_class: BaseModelType,
+                          start_timestamp: int,
+                          end_timestamp: int) -> list[BaseModelType]:
     try:
         data = client.query(
             f'SELECT * FROM "{measurement}" '
@@ -25,14 +29,16 @@ def get_influx_data(client: InfluxDBClient,
             columns = series['columns']
             values = series['values']
             for point_values in values:
-                response.append(ResponseClass(**{k: v for k, v in zip(columns, point_values)}))
+                response.append(response_class(**{k: v for k, v in zip(columns, point_values)}))
         return response
     except:
         logger.error("Error deserializing influx data:\n", traceback.format_exc())
         raise HTTPException(status_code=503, detail="Error deserializing influx data")
 
 
-def write_influx_data(client, measurement: str, fields: dict):
+async def write_influx_data(client: InfluxDBClient,
+                            measurement: str,
+                            fields: dict) -> True:
     try:
         logger.debug(f"Writing to influx: {fields}")
         payload = {
@@ -45,3 +51,4 @@ def write_influx_data(client, measurement: str, fields: dict):
     except:
         logger.error("Error while writing data to influx:\n", traceback.format_exc())
         raise HTTPException(status_code=503, detail="Error writing to InfluxDB")
+    return True

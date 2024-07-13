@@ -1,15 +1,19 @@
 from starlette.responses import Response
+from typing import TypeVar
 
 from security.config import DOMAIN, SECURE, PATH_PREFIX, REFRESH_TOKEN_EXPIRE_DAYS
 
 
-def _add_cookies(response: Response,
+ResponseInstance = TypeVar("ResponseInstance", bound=Response)
+
+
+def _add_cookies(response: ResponseInstance,
                  refresh_token: str,
-                 access_token: str = None) -> Response:
+                 access_token: str = None) -> ResponseInstance:
     """
     Add access and refresh tokens to response cookies
     :param response: Starlette Response object
-    :param access_token: set as cookie for 60 seconds
+    :param access_token: set as cookie for 60 seconds if provided
     :param refresh_token: set as httpOnly cookie for REFRESH_TOKEN_EXPIRE_DAYS days
     :return: modified response object
     """

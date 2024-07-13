@@ -32,7 +32,7 @@ router = APIRouter(
 
 
 @router.post("/signup")
-async def register_user(form_data: SignupForm):
+async def register_user(form_data: SignupForm) -> RedirectResponse:
     username = form_data.username
     password = form_data.password
     email = form_data.email
@@ -114,7 +114,7 @@ async def google_login(code: str):
 async def refresh_access_token(refresh_token: str = Cookie(None),
                                use_refresh_token: str = Cookie(None)) -> TokensResponse:
     if refresh_token is None or use_refresh_token is None or use_refresh_token != "true":
-        raise AuthenticationError401("Refresh token not provided")
+        raise AuthenticationError401("Refresh token(s) not provided")
     try:
         logger.debug(f"Received refresh token: {refresh_token}")
         payload = jwt.decode(refresh_token, SECRET, algorithms=[ALGORITHM])

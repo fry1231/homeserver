@@ -1,4 +1,4 @@
-from contextlib import AsyncExitStack
+from contextlib import AsyncExitStack, asynccontextmanager
 from functools import wraps
 from typing import Any, Callable, Coroutine, TypeVar
 import aioredis
@@ -6,7 +6,6 @@ from fastapi import Request
 from fastapi.dependencies.models import Dependant
 from fastapi.dependencies.utils import get_dependant, solve_dependencies
 import inspect
-from time import time
 
 from config import logger
 from db.influx import get_influx_client
@@ -96,8 +95,18 @@ def farm_client():
         client.close()
 
 
-# redis connection from pool
-async def get_redis_conn():
+# redis connection from pool (for fastAPI)
+async def get_redis_conn() -> aioredis.Redis:
+    redis_conn = aioredis.Redis(connection_pool=redis_pool, decode_responses=True)
+    try:
+        yield redis_conn
+    finally:
+        await redis_conn.close()
+
+
+# redis connection from pool (with asynccontextmanager)
+@asynccontextmanager
+async def get_redis_conn_ctx():
     redis_conn = aioredis.Redis(connection_pool=redis_pool, decode_responses=True)
     try:
         yield redis_conn

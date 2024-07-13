@@ -3,6 +3,7 @@ stages:
   - pull
   - build
   - migration
+  - test
   - run
 
 check_vars:
@@ -63,6 +64,15 @@ migration_manual:
   script:
     - cd /usr/homeserver
     - docker compose run homescreen alembic upgrade head
+
+test:
+  stage: test
+  when: on_success
+  needs:
+    - build
+  script:
+    - cd /usr/homeserver/app
+    - docker compose run homescreen pytest
 
 run:
   stage: run
