@@ -62,17 +62,17 @@ def get_watering_datapoints(client,
 
 # Submit and get data from farm sensors (temperature, soil moisture, water level)
 @router.post('/sensors/submit')
-def submit_farm_data(data: FarmData,
+async def submit_farm_data(data: FarmData,
                      influxdb_client=Depends(farm_client),
                      auth=Security(authorize_user, scopes=["sensors:write"])):
-    write_influx_data(client=influxdb_client,
-                      measurement='farm',
-                      fields=data.model_dump())
+    await write_influx_data(client=influxdb_client,
+                            measurement='farm',
+                            fields=data.model_dump())
     return Response(status_code=201, content='Data written to influx')
 
 
 @router.get('/sensors/data', response_model=List[FarmResponseItem])
-def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
+async def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
                   endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
                   influxdb_client=Depends(farm_client),
                   auth=Security(authorize_user, scopes=["sensors:read"])):
@@ -110,7 +110,7 @@ async def get_watering_data(startTS: int = int((datetime.datetime.now().timestam
 
 
 @router.get('/watering/last')
-def get_last_watering_time(influxdb_client=Depends(farm_client),
+async def get_last_watering_time(influxdb_client=Depends(farm_client),
                            auth=Security(authorize_user, scopes=["sensors:read"])):
     data: list[WateringResponseItem] = await get_watering_datapoints(
         client=influxdb_client,
