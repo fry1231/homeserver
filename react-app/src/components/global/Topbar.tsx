@@ -55,7 +55,11 @@ function ResponsiveAppBar() {
     };
 
     const handleMenuClick = (link) => {
-        navigate(link);
+        if (link.startsWith('http')) {
+            window.open(link, '_blank');
+        } else {
+            navigate(link);
+        }
         handleCloseNavMenu();
     }
 
