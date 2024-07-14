@@ -51,10 +51,10 @@ class InfluxCache:
 
                     if self.timestamp_field not in function_kwargs:
                         raise AttributeError(f"'{self.timestamp_field}' argument is required")
-                    if 'response_class' not in function_kwargs:
-                        raise AttributeError("'response_class' argument is required")
+                    # if 'response_class' not in function_kwargs:
+                    #     raise AttributeError("'response_class' argument is required")
 
-                    data_model: BaseModelType = function_kwargs['response_class']
+                    # data_model: BaseModelType = function_kwargs['response_class']
                     start_ts: int | float = function_kwargs[self.timestamp_field]
                     previous_ts: int = self._nearest_ref_point(self._normalize_timestamp(start_ts), ttl)
                     key = f"{func.__name__}_{previous_ts}"
