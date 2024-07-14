@@ -52,19 +52,19 @@ async def rotate_refresh_token(user: UserModel,
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User-Agent header is required"
         )
-    user_with_relations = await UserModel.objects.select_related('refresh_tokens').get_or_none(id=user.id)
+    user_with_relations = await UserModel.objects.select_related('refresh_tokens').get_or_none(id=user.uuid)
     if user_with_relations is None:
-        logger.error(f"User with id {user.id} not found")
+        logger.error(f"User with id {user.uuid} not found")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
     if user_with_relations.refresh_tokens:
         if ALLOW_ONE_SESSION_ONLY:   # If only one session is allowed, delete all refresh tokens
-            await RefreshToken.objects.delete(user_id=user.id)
+            await RefreshToken.objects.delete(user_id=user.uuid)
         else:                        # If multiple sessions are allowed, delete refresh token for this user_agent
-            await RefreshToken.objects.delete(user_id=user.id, user_agent=user_agent)
-    await RefreshToken.objects.create(token=refresh_token, user_id=user.id, user_agent=user_agent)
+            await RefreshToken.objects.delete(user_id=user.uuid, user_agent=user_agent)
+    await RefreshToken.objects.create(token=refresh_token, user_id=user.uuid, user_agent=user_agent)
 
 
 async def check_refresh_token_validity(token: str):
@@ -80,8 +80,8 @@ async def check_refresh_token_validity(token: str):
         if user is None:
             logger.warning(f"User with uuid {uuid} not found")
             raise AuthenticationError401("User not found")
-        if not await RefreshToken.objects.exists(token=token, user_id=user.id):
-            logger.warning(f"Refresh token {token} not found for user {user.id}")
+        if not await RefreshToken.objects.exists(token=token, user_id=user.uuid):
+            logger.warning(f"Refresh token {token} not found for user {user.uuid}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Refresh token not found"
