@@ -33,6 +33,11 @@ router = APIRouter(
 
 @router.post("/signup")
 async def register_user(form_data: SignupForm) -> RedirectResponse:
+    """
+    Register a new user with 'default' scope
+    After registration, user is redirected to the frontend
+    Access and refresh tokens are stored in cookies
+    """
     username = form_data.username
     password = form_data.password
     email = form_data.email
@@ -43,8 +48,13 @@ async def register_user(form_data: SignupForm) -> RedirectResponse:
     return response
 
 
-@router.post("/login/form")
+@router.post("/login/form", response_model=TokensResponse)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> TokensResponse:
+    """
+    Login with username and password
+    Raises AuthenticationError401 if username or password is incorrect
+    Returns Response with access token with refresh token in cookie
+    """
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise AuthenticationError401("Incorrect username or password")
@@ -55,6 +65,9 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
 @router.get("/login/google")
 async def login_google():
+    """
+    Redirect to Google OAuth2 login page
+    """
     return RedirectResponse(f"https://accounts.google.com/o/oauth2/auth"
                             f"?response_type=code"
                             f"&client_id={GOOGLE_CLIENT_ID}"
@@ -65,6 +78,11 @@ async def login_google():
 
 @router.get("/google-redirect")
 async def google_login(code: str):
+    """
+    Handle Google OAuth2 redirect
+    Check if user exists, if not create a new user
+    Redirect to the frontend with access and refresh tokens in cookies
+    """
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -110,9 +128,14 @@ async def google_login(code: str):
         )
 
 
-@router.get("/refresh")
+@router.get("/refresh", response_model=TokensResponse)
 async def refresh_access_token(refresh_token: str = Cookie(None),
                                use_refresh_token: str = Cookie(None)) -> TokensResponse:
+    """
+    Refresh access token with refresh token
+    New refresh token also issued
+    Old refresh token is invalidated
+    """
     if refresh_token is None or use_refresh_token is None or use_refresh_token != "true":
         raise AuthenticationError401("Refresh token(s) not provided")
     try:

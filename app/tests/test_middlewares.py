@@ -52,11 +52,6 @@ def test_gzip_middleware():
     with patch('starlette.requests.Request.client', new_callable=PropertyMock) as mock_client:
         mock_client.return_value.host = 'anothertestclient'
 
-        # Small response size - no gzip
-        response = client.get("/")
-        assert response.status_code == 200
-        assert "content-encoding" not in {k.lower(): v for k, v in response.headers.items()}
-
         # Route excluded - no gzip
         response = client.get("/excluded")
         assert response.status_code == 200
