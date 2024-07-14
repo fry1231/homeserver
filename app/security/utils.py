@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 
 from config import logger
 from db.sql.models import User, RefreshToken
-from security.models import AccessTokenPayload, RefreshTokenPayload
+from security.models import AccessTokenPayload, RefreshTokenPayload, AuthenticationError401
 from security.config import (
     SECRET,
     ALGORITHM,
@@ -65,6 +65,39 @@ async def rotate_refresh_token(user: UserModel,
         else:                        # If multiple sessions are allowed, delete refresh token for this user_agent
             await RefreshToken.objects.delete(user_id=user.id, user_agent=user_agent)
     await RefreshToken.objects.create(token=refresh_token, user_id=user.id, user_agent=user_agent)
+
+
+async def check_refresh_token_validity(token: str):
+    """
+    Check if refresh token is in refresh_tokens table
+    :raises HTTPException: if not
+    """
+    try:
+        payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
+        payload = RefreshTokenPayload(**payload)
+        uuid = payload.sub
+        user = await get_user_or_none(uuid=uuid)
+        if user is None:
+            logger.warning(f"User with uuid {uuid} not found")
+            raise AuthenticationError401("User not found")
+        if not await RefreshToken.objects.exists(token=token, user_id=user.id):
+            logger.warning(f"Refresh token {token} not found for user {user.id}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token not found"
+            )
+    except jwt.exceptions.ExpiredSignatureError:
+        logger.warning(f"Refresh token {token} expired")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token expired"
+        )
+    except (jwt.exceptions.InvalidTokenError, jwt.exceptions.DecodeError):
+        logger.warning(f"Invalid refresh token {token}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token"
+        )
 
 
 async def get_user_or_none(uuid: UUID = None,
@@ -125,12 +158,10 @@ def _create_access_token(sub: str,
 
 
 def _create_refresh_token(sub: str,
-                          incr: int,
                           expire_days: int = REFRESH_TOKEN_EXPIRE_DAYS):
     payload = RefreshTokenPayload(
         sub=sub,
         exp=datetime.datetime.utcnow() + datetime.timedelta(days=expire_days),
-        incr=incr
     )
     return jwt.encode(payload.model_dump(), key=SECRET, algorithm=ALGORITHM)
 

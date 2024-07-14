@@ -23,7 +23,10 @@ const createApolloClient = (token) => {
         console.log('New token:', accessToken.slice(-5));
       }
     } else {
-      accessToken = await getNewToken();
+      // console.log('No token found in ApolloClient, getting new token');
+      // accessToken = await getNewToken();
+      console.log('No token found in ApolloClient, continue using null token');
+      accessToken = null;
     }
     return {
       headers: {
@@ -74,10 +77,12 @@ const createApolloClient = (token) => {
 export const ApolloWrapper = ({children}) => {
   let token: string | null = localStorage.getItem('token');
   if (!token || token === 'undefined') {
-    getNewToken()
-      .then((newToken) => {
-        token = newToken;
-      });
+    console.log('token in ApolloWrapper is', token);
+    // getNewToken()
+    //   .then((newToken) => {
+    //     token = newToken;
+    //   });
+    token = null;
   }
   const client: ApolloClient | null = createApolloClient(token);
 

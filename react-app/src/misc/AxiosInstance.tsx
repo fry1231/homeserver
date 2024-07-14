@@ -2,7 +2,7 @@ import axiosBase, {InternalAxiosRequestConfig, AxiosInstance, AxiosResponse, Axi
 import {clearAuthToken, refreshAuthToken} from "../reducers/auth";
 import {setErrorMessage} from "../reducers/errors";
 import {store} from "../Store";
-import {getNewToken, refreshFinishedToken} from "./utils";
+import {getNewToken} from "./utils";
 
 
 interface AxiosRequestConfigWithRetry extends InternalAxiosRequestConfig {

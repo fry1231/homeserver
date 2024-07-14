@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, Cookie
 from fastapi.responses import RedirectResponse, ORJSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
-from security.utils import create_user, get_user_or_none, _get_tokens
+from security.utils import create_user, get_user_or_none, check_refresh_token_validity, _get_tokens
 from security.cookies import _add_cookies
 from security.authentication import authenticate_user
 from security.models import TokensResponse, SignupForm, AuthenticationError401, RefreshTokenPayload
@@ -139,20 +139,20 @@ async def refresh_access_token(refresh_token: str = Cookie(None),
     if refresh_token is None or use_refresh_token is None or use_refresh_token != "true":
         raise AuthenticationError401("Refresh token(s) not provided")
     try:
-        logger.debug(f"Received refresh token: {refresh_token}")
         payload = jwt.decode(refresh_token, SECRET, algorithms=[ALGORITHM])
         payload = RefreshTokenPayload(**payload)
         uuid = payload.sub
-        prev_incr = payload.incr
+
+        # Get user by uuid
         user = await get_user_or_none(uuid=uuid)
-        # Check if user exists
         if user is None:
             logger.warning(f"User with uuid {uuid} not found")
             raise AuthenticationError401
-        # Check if refresh token is valid (increments are equal)
-        if prev_incr != user.refresh_token_incr - 1:
-            logger.warning(f"Refresh token increments do not match")
-            raise AuthenticationError401("Refresh token is not valid")
+
+        # Check if refresh token is valid
+        await check_refresh_token_validity(refresh_token)
+
+        # Issue new access and refresh tokens, invalidate old refresh token
         access_token, refresh_token = await _get_tokens(user)
         response = TokensResponse(refresh_token, access_token)
         return response

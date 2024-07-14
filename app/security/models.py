@@ -2,7 +2,7 @@ import datetime
 import re
 
 import orjson
-from pydantic import BaseModel, Field, EmailStr, field_validator,field_serializer
+from pydantic import BaseModel, Field, EmailStr, field_validator, field_serializer, UUID4
 from fastapi import HTTPException, status, Response
 from fastapi.responses import ORJSONResponse
 
@@ -76,10 +76,8 @@ class TokensResponse(Response):
         _add_cookies(self, refresh_token)
 
 
-
-
 class AccessTokenPayload(BaseModel):
-    sub: str | None = None
+    sub: str
     scopes: list[str] | str = []
     exp: datetime.datetime
 
@@ -99,6 +97,5 @@ class AccessTokenPayload(BaseModel):
 
 
 class RefreshTokenPayload(BaseModel):
-    sub: str | None   # user's uuid
+    sub: UUID4
     exp: datetime.datetime
-    incr: int

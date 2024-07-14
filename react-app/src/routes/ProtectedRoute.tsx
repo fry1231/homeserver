@@ -24,9 +24,9 @@ export const TokenCookieToStorage = () => {
   }
   dispatch(setAuthToken(access_token));
   console.log("Token stored in local storage: ", localStorage.getItem("token"));
-  setTimeout(() => {
+  // setTimeout(() => {
     return <Navigate to="/"/>;
-  }, 100);
+  // }, 100);
 }
 
 
