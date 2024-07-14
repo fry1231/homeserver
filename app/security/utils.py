@@ -100,7 +100,7 @@ async def check_refresh_token_validity(token: str):
         )
 
 
-async def get_user_or_none(uuid: UUID = None,
+async def get_user_or_none(uuid: UUID | str = None,
                            username: str = None,
                            email: str = None) -> User | None:
     """
