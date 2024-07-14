@@ -23,10 +23,14 @@ const createApolloClient = (token) => {
         console.log('New token:', accessToken.slice(-5));
       }
     } else {
-      // console.log('No token found in ApolloClient, getting new token');
-      // accessToken = await getNewToken();
-      console.log('No token found in ApolloClient, continue using null token');
-      accessToken = null;
+      console.log('No token found in ApolloClient, getting new token');
+      try {
+        accessToken = await getNewToken();
+      } catch (e) {
+          console.error('Error getting new token in ApolloClient', e);
+      }
+      // console.log('No token found in ApolloClient, continue using null token');
+      // accessToken = null;
     }
     return {
       headers: {

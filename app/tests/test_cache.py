@@ -43,8 +43,8 @@ def mock_influx_client():
 
 @pytest.fixture
 def mock_influx():
-    with patch('db.influx.get_influx_data', MagicMock()) as mock_get, \
-            patch('db.influx.write_influx_data', MagicMock()) as mock_write:
+    with patch('db.influx.get_influx_data', AsyncMock()) as mock_get, \
+            patch('db.influx.write_influx_data', AsyncMock()) as mock_write:
         yield mock_get, mock_write
 
 
