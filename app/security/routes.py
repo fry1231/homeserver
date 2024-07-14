@@ -48,7 +48,7 @@ async def register_user(form_data: SignupForm) -> RedirectResponse:
     return response
 
 
-@router.post("/login/form", response_model=TokensResponse)
+@router.post("/login/form")
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> TokensResponse:
     """
     Login with username and password
@@ -128,7 +128,7 @@ async def google_login(code: str):
         )
 
 
-@router.get("/refresh", response_model=TokensResponse)
+@router.get("/refresh")
 async def refresh_access_token(refresh_token: str = Cookie(None),
                                use_refresh_token: str = Cookie(None)) -> TokensResponse:
     """
