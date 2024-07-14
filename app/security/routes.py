@@ -5,7 +5,7 @@ import orjson
 import jwt
 from jose import JWTError
 
-from fastapi import APIRouter, HTTPException, status, Depends, Cookie
+from fastapi import APIRouter, HTTPException, status, Depends, Cookie, Header
 from fastapi.responses import RedirectResponse, ORJSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -32,7 +32,7 @@ router = APIRouter(
 
 
 @router.post("/signup")
-async def register_user(form_data: SignupForm) -> RedirectResponse:
+async def register_user(form_data: SignupForm, user_agent: str = Header()) -> RedirectResponse:
     """
     Register a new user with 'default' scope
     After registration, user is redirected to the frontend
@@ -42,14 +42,15 @@ async def register_user(form_data: SignupForm) -> RedirectResponse:
     password = form_data.password
     email = form_data.email
     user = await create_user(username, password, email, scopes=['default'])
-    access_token, refresh_token = await _get_tokens(user)
+    access_token, refresh_token = await _get_tokens(user, user_agent)
     response = RedirectResponse(url=FRONTEND_REDIRECT_URI)
     response = _add_cookies(response, refresh_token, access_token)
     return response
 
 
 @router.post("/login/form")
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> TokensResponse:
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+                                 user_agent: str = Header()) -> TokensResponse:
     """
     Login with username and password
     Raises AuthenticationError401 if username or password is incorrect
@@ -58,7 +59,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise AuthenticationError401("Incorrect username or password")
-    access_token, refresh_token = await _get_tokens(user)
+    access_token, refresh_token = await _get_tokens(user, user_agent)
     response = TokensResponse(refresh_token, access_token)
     return response
 
@@ -77,7 +78,7 @@ async def login_google():
 
 
 @router.get("/google-redirect")
-async def google_login(code: str):
+async def google_login(code: str, user_agent: str = Header()):
     """
     Handle Google OAuth2 redirect
     Check if user exists, if not create a new user
@@ -114,7 +115,7 @@ async def google_login(code: str):
                     user = await get_user_or_none(email=email)
                     if user is None:
                         user = await create_user(username, password, email, scopes=['default'])
-                    access_token, refresh_token = await _get_tokens(user)
+                    access_token, refresh_token = await _get_tokens(user, user_agent)
                     response = RedirectResponse(url=FRONTEND_REDIRECT_URI)
                     response = _add_cookies(response, refresh_token, access_token)
                     logger.info(f'Response: {response}')
@@ -130,7 +131,8 @@ async def google_login(code: str):
 
 @router.get("/refresh")
 async def refresh_access_token(refresh_token: str = Cookie(None),
-                               use_refresh_token: str = Cookie(None)) -> TokensResponse:
+                               use_refresh_token: str = Cookie(None),
+                               user_agent: str = Header()) -> TokensResponse:
     """
     Refresh access token with refresh token
     New refresh token also issued
@@ -153,7 +155,7 @@ async def refresh_access_token(refresh_token: str = Cookie(None),
         await check_refresh_token_validity(refresh_token)
 
         # Issue new access and refresh tokens, invalidate old refresh token
-        access_token, refresh_token = await _get_tokens(user)
+        access_token, refresh_token = await _get_tokens(user, user_agent)
         response = TokensResponse(refresh_token, access_token)
         return response
     except jwt.exceptions.ExpiredSignatureError:

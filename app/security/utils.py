@@ -1,6 +1,6 @@
 import datetime
 from typing import Annotated, Union
-from uuid import UUID
+from pydantic import UUID4
 import jwt
 
 from fastapi import HTTPException, status, Depends, Header
@@ -40,7 +40,7 @@ async def create_user(username: str,
 
 async def rotate_refresh_token(user: UserModel,
                                refresh_token: str,
-                               user_agent: Annotated[Union[str, None], Header()] = None) -> None:
+                               user_agent: str) -> None:
     """
     Rotate refresh token for user
     If ALLOW_ONE_SESSION_ONLY is True, delete all refresh tokens for this user
@@ -100,7 +100,7 @@ async def check_refresh_token_validity(token: str):
         )
 
 
-async def get_user_or_none(uuid: UUID | str = None,
+async def get_user_or_none(uuid: UUID4 | str = None,
                            username: str = None,
                            email: str = None) -> User | None:
     """
@@ -166,9 +166,9 @@ def _create_refresh_token(sub: str,
     return jwt.encode(payload.model_dump(), key=SECRET, algorithm=ALGORITHM)
 
 
-async def _get_tokens(user: UserModel) -> tuple[str, str]:
+async def _get_tokens(user: UserModel, user_agent: str) -> tuple[str, str]:
     scopes = user.scopes
     access_token = _create_access_token(user.uuid.hex, scopes)
     refresh_token = _create_refresh_token(user.uuid.hex)
-    await rotate_refresh_token(user, refresh_token)
+    await rotate_refresh_token(user, refresh_token, user_agent)
     return access_token, refresh_token
