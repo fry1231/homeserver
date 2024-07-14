@@ -32,7 +32,12 @@ export default function LogIn() {
         }
       })
       .catch((error) => {
-        dispatch(setErrorMessage('Invalid username or password'));
+        if (error.response && error.response.status === 401) {
+          dispatch(setErrorMessage('Invalid username or password'));
+        }
+        else {
+            dispatch(setErrorMessage('Server error'));
+        }
       });
   }
   

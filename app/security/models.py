@@ -99,3 +99,7 @@ class AccessTokenPayload(BaseModel):
 class RefreshTokenPayload(BaseModel):
     sub: UUID4
     exp: datetime.datetime
+
+    @field_serializer('sub', when_used='json')
+    def serialize_sub(v: UUID4):
+        return str(v)
