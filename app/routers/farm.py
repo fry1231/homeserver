@@ -43,21 +43,19 @@ class WateringResponseItem(BaseModel):
 
 
 @cache.fetch(ttl=60 * 15)
-def get_farm_datapoints(client,
-                        measurement,
-                        response_class,
-                        start_timestamp,
-                        end_timestamp) -> Coroutine[Any, Any, list[BaseModelType]]:
-    return get_influx_data(**locals())
+async def get_farm_datapoints(client,
+                              measurement,
+                              start_timestamp,
+                              end_timestamp) -> list[dict[str, Any]]:
+    return await get_influx_data(**locals())
 
 
 @cache.fetch(ttl=60 * 15)
-def get_watering_datapoints(client,
-                            measurement,
-                            response_class,
-                            start_timestamp,
-                            end_timestamp) -> Coroutine[Any, Any, list[BaseModelType]]:
-    return get_influx_data(**locals())
+async def get_watering_datapoints(client,
+                                  measurement,
+                                  start_timestamp,
+                                  end_timestamp) -> list[dict[str, Any]]:
+    return await get_influx_data(**locals())
 
 
 # Submit and get data from farm sensors (temperature, soil moisture, water level)
@@ -78,9 +76,9 @@ async def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() 
                   auth=Security(authorize_user, scopes=["sensors:read"])):
     data = await get_farm_datapoints(client=influxdb_client,
                                      measurement='farm',
-                                     response_class=FarmResponseItem,
                                      start_timestamp=startTS,
                                      end_timestamp=endTS)
+    data = [FarmResponseItem(**item) for item in data]
     return downsample(data)
 
 
@@ -102,25 +100,25 @@ async def get_watering_data(startTS: int = int((datetime.datetime.now().timestam
                             endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
                             influxdb_client=Depends(farm_client),
                             auth=Security(authorize_user, scopes=["sensors:read"])):
-    return await get_watering_datapoints(client=influxdb_client,
+    res = await get_watering_datapoints(client=influxdb_client,
                                          measurement='watering',
-                                         response_class=WateringResponseItem,
                                          start_timestamp=startTS,
                                          end_timestamp=endTS)
+    return [WateringResponseItem(**item) for item in res]
 
 
 @router.get('/watering/last')
 async def get_last_watering_time(influxdb_client=Depends(farm_client),
                            auth=Security(authorize_user, scopes=["sensors:read"])):
-    data: list[WateringResponseItem] = await get_watering_datapoints(
+    data = await get_watering_datapoints(
         client=influxdb_client,
         measurement='watering',
-        response_class=WateringResponseItem,
         start_timestamp=int((datetime.datetime.now().timestamp() - 3600 * 24 * 2) * 1_000_000_000),  # 2 days
         end_timestamp=int(datetime.datetime.now().timestamp() * 1_000_000_000)
     )
     if len(data) == 0:
         return 0
+    data = [WateringResponseItem(**item) for item in data]
     time_str = data[-1].time    # "2024-04-01T18:34:45.743561Z"
     time = datetime.datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S.%fZ')
     return str(int(time.timestamp()))

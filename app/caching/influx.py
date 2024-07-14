@@ -63,10 +63,10 @@ class InfluxCache:
                     data = await redis_conn.get(key)
                     if data is not None:
                         logger.debug("Data retrieved from cache")
-                        return self._deserialize(data, data_model)
+                        return self._deserialize(data)
 
                     # else: retrieve data from InfluxDB by calling the decorated function
-                    result: list[BaseModelType]
+                    result: list[dict[str, Any]]
                     if inspect.iscoroutinefunction(func):
                         result = await func(*args, **kwargs)
                     else:
@@ -155,22 +155,17 @@ class InfluxCache:
         return int(timestamp - timestamp % ttl)
 
     @staticmethod
-    def _serialize(data) -> bytes:
+    def _serialize(data: list[dict[str, Any]]) -> bytes:
         """
         Serialize data to store in Redis
-        :return: bytes, representing jsonified list of model instances
+        :return: bytes, representing jsonified list of dicts of model instances
         """
         return orjson.dumps(data)
 
     @staticmethod
-    def _deserialize(data: bytes,
-                     model: BaseModelType) -> list[BaseModelType]:
+    def _deserialize(data: bytes) -> list[dict[str, Any]]:
         """
         Deserialize data from Redis
         :param data: bytes, representing jsonified list of model instances
-        :param model: Pydantic model class, which instances are stored in Redis
-        :return: list of %model% instances
         """
-        parsed_data = orjson.loads(data)
-        print(f'parsed_data: {parsed_data}')
-        return [model(**item) for item in parsed_data]
+        return orjson.loads(data)

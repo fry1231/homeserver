@@ -2,7 +2,7 @@ import traceback
 from fastapi import HTTPException
 from pydantic import BaseModel
 from influxdb import InfluxDBClient
-from typing import TypeVar
+from typing import TypeVar, Any
 
 from config import logger
 
@@ -12,9 +12,8 @@ BaseModelType = TypeVar('BaseModelType', bound=type(BaseModel))
 
 async def get_influx_data(client: InfluxDBClient,
                           measurement: str,
-                          response_class: BaseModelType,
                           start_timestamp: int,
-                          end_timestamp: int) -> list[BaseModelType]:
+                          end_timestamp: int) -> list[dict[str, Any]]:
     try:
         data = client.query(
             f'SELECT * FROM "{measurement}" '
@@ -29,7 +28,7 @@ async def get_influx_data(client: InfluxDBClient,
             columns = series['columns']
             values = series['values']
             for point_values in values:
-                response.append(response_class(**{k: v for k, v in zip(columns, point_values)}))
+                response.append({k: v for k, v in zip(columns, point_values)})
         return response
     except:
         logger.error("Error deserializing influx data:\n", traceback.format_exc())

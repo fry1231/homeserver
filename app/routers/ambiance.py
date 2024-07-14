@@ -36,12 +36,11 @@ class AmbianceResponse(BaseModel):
 
 
 @cache.fetch(ttl=60 * 5)
-def get_ambiance_datapoints(client,
+async def get_ambiance_datapoints(client,
                             measurement,
-                            response_class,
                             start_timestamp,
-                            end_timestamp) -> Coroutine[Any, Any, list[BaseModelType]]:
-    return get_influx_data(**locals())
+                            end_timestamp) -> list[dict[str, Any]]:
+    return await get_influx_data(**locals())
 
 
 def write_ambiance_datapoint(client,
@@ -57,9 +56,9 @@ async def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestam
                             auth=Security(authorize_user, scopes=["sensors:read"])):
     items = await get_ambiance_datapoints(client=influxdb_client,
                                           measurement='ambiance',
-                                          response_class=AmbianceResponseItem,
                                           start_timestamp=startTS,
                                           end_timestamp=endTS)
+    items = [AmbianceResponseItem(**item) for item in items]
     response = [AmbianceResponse(room_name='room1', data=items)]
     return response
 

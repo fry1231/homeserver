@@ -80,12 +80,9 @@ async def check_refresh_token_validity(token: str):
         if user is None:
             logger.warning(f"User with uuid {uuid} not found")
             raise AuthenticationError401("User not found")
-        if not await RefreshToken.objects.exists(token=token, user_id=user.uuid):
+        if not await RefreshToken.objects.get_or_none(token=token, user_id=user.uuid):
             logger.warning(f"Refresh token {token} not found for user {user.uuid}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Refresh token not found"
-            )
+            raise AuthenticationError401("Refresh token not found")
     except jwt.exceptions.ExpiredSignatureError:
         logger.warning(f"Refresh token {token} expired")
         raise HTTPException(
