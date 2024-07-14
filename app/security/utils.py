@@ -52,7 +52,7 @@ async def rotate_refresh_token(user: UserModel,
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User-Agent header is required"
         )
-    user_with_relations = await UserModel.objects.select_related('refresh_tokens').get_or_none(id=user.uuid)
+    user_with_relations = await UserModel.objects.select_related('refresh_tokens').get_or_none(uuid=user.uuid)
     if user_with_relations is None:
         logger.error(f"User with id {user.uuid} not found")
         raise HTTPException(
