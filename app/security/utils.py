@@ -1,15 +1,24 @@
 import datetime
+from typing import Annotated, Union
 from uuid import UUID
 import jwt
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends, Header
 from passlib.context import CryptContext
 
-from db.sql.models import User
+from config import logger
+from db.sql.models import User, RefreshToken
 from security.models import AccessTokenPayload, RefreshTokenPayload
-from security.config import SECRET, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
+from security.config import (
+    SECRET,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    REFRESH_TOKEN_EXPIRE_DAYS,
+    ALLOW_ONE_SESSION_ONLY
+)
 
 UserModel = User
+RefreshTokenModel = RefreshToken
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,10 +30,7 @@ def get_password_hash(password):
 async def create_user(username: str,
                       hashed_password: str,
                       email: str,
-                      scopes: list = None) -> UserModel:
-    """
-    CRUD operation to create user
-    """
+                      scopes: list[str] = None) -> UserModel:
     user = await User.objects.create(username=username,
                                      hashed_password=hashed_password,
                                      email=email,
@@ -32,20 +38,40 @@ async def create_user(username: str,
     return user
 
 
-async def save_refresh_token(user: UserModel) -> UserModel:
+async def rotate_refresh_token(user: UserModel,
+                               refresh_token: str,
+                               user_agent: Annotated[Union[str, None], Header()] = None) -> None:
     """
-    Save refresh token, link it to user
+    Rotate refresh token for user
+    If ALLOW_ONE_SESSION_ONLY is True, delete all refresh tokens for this user
+    If ALLOW_ONE_SESSION_ONLY is False, delete refresh token only for this user_agent
+    :raises HTTPException: if user_agent is None or user not found
     """
-    user.refresh_token_incr += 1
-    user = await user.update()
-    return user
+    if user_agent is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User-Agent header is required"
+        )
+    user_with_relations = await UserModel.objects.select_related('refresh_tokens').get_or_none(id=user.id)
+    if user_with_relations is None:
+        logger.error(f"User with id {user.id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    if user_with_relations.refresh_tokens:
+        if ALLOW_ONE_SESSION_ONLY:   # If only one session is allowed, delete all refresh tokens
+            await RefreshToken.objects.delete(user_id=user.id)
+        else:                        # If multiple sessions are allowed, delete refresh token for this user_agent
+            await RefreshToken.objects.delete(user_id=user.id, user_agent=user_agent)
+    await RefreshToken.objects.create(token=refresh_token, user_id=user.id, user_agent=user_agent)
 
 
 async def get_user_or_none(uuid: UUID = None,
                            username: str = None,
                            email: str = None) -> User | None:
     """
-    CRUD operation to get user by username, email or uuid
+    Get user by username, email or uuid
     If username is provided, get user by username,
         if no username - get user by email,
         if no email - get user by uuid
@@ -112,6 +138,6 @@ def _create_refresh_token(sub: str,
 async def _get_tokens(user: UserModel) -> tuple[str, str]:
     scopes = user.scopes
     access_token = _create_access_token(user.uuid.hex, scopes)
-    refresh_token = _create_refresh_token(user.uuid.hex, user.refresh_token_incr)
-    await save_refresh_token(user)
+    refresh_token = _create_refresh_token(user.uuid.hex)
+    await rotate_refresh_token(user, refresh_token)
     return access_token, refresh_token

@@ -106,11 +106,11 @@ const slice = createSlice({
     });
     builder.addCase(refreshAuthToken.rejected, (state: AuthState) => {
       console.log("refreshAuthToken.rejected");
+      localStorage.removeItem("token");
       state.isFirstEntry = true;
+      state.token = null;
       state.isRefreshing = false;
       state.scopes.length = 0;
-      state.token = null;
-      localStorage.removeItem("token");
       document.location.href = "/login";
     });
   }

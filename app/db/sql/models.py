@@ -42,7 +42,7 @@ class RefreshToken(ormar.Model):
     ormar_config = base_config.copy(tablename='refresh_tokens')
 
     token = String(primary_key=True, max_length=256, nullable=False)
-    browser = String(max_length=256, nullable=False)
+    user_agent = String(max_length=256, nullable=False)
     user_id = ormar.ForeignKey(User, related_name='refresh_tokens')
 
 
