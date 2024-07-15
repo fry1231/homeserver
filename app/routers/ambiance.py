@@ -37,16 +37,16 @@ class AmbianceResponse(BaseModel):
 
 @cache.fetch(ttl=60 * 5)
 async def get_ambiance_datapoints(client,
-                            measurement,
-                            start_timestamp,
-                            end_timestamp) -> list[dict[str, Any]]:
+                                  measurement,
+                                  start_timestamp,
+                                  end_timestamp) -> list[dict[str, Any]]:
     return await get_influx_data(**locals())
 
 
-def write_ambiance_datapoint(client,
-                             measurement,
-                             fields) -> Coroutine[Any, Any, bool]:
-    return write_influx_data(**locals())
+async def write_ambiance_datapoint(client,
+                                   measurement,
+                                   fields) -> True:
+    return await write_influx_data(**locals())
 
 
 @router.get('/', response_model=list[AmbianceResponse])
