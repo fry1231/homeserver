@@ -52,8 +52,7 @@ def write_ambiance_datapoint(client,
 @router.get('/', response_model=list[AmbianceResponse])
 async def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
                             endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
-                            influxdb_client=Depends(home_client),
-                            auth=Security(authorize_user, scopes=["sensors:read"])):
+                            influxdb_client=Depends(home_client)):
     items = await get_ambiance_datapoints(client=influxdb_client,
                                           measurement='ambiance',
                                           start_timestamp=startTS,
