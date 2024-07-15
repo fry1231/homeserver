@@ -1,8 +1,7 @@
 from fastapi import HTTPException, status, APIRouter, Security
+
 from db.sql.models import User
-
 from security import get_authorized_user
-
 
 router = APIRouter(
     prefix="/users",

@@ -1,22 +1,21 @@
-from fastapi import APIRouter, Security, Depends
-from fastapi.responses import StreamingResponse, Response
-import aiohttp
-import orjson
-from pydantic import BaseModel
-import requests
-import os
-from config import logger
 import asyncio
-import async_timeout
 import datetime
-import pytz
+import os
 import traceback
 
-from misc.dependencies import get_redis_conn, injectable
+import aiohttp
+import async_timeout
+import orjson
+import pytz
+from fastapi import APIRouter, Security, Depends, status
+from fastapi.responses import StreamingResponse, Response
+from pydantic import BaseModel
+
 from config import IDF_TOKEN
+from config import logger
+from misc.dependencies import get_redis_conn, injectable
 from misc.utils import delayed_action
 from security import authorize_user
-
 
 router = APIRouter(
     prefix="/buses",
@@ -83,7 +82,8 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
                     d = {}
                     d['destination'] = departure['MonitoredVehicleJourney']['DestinationName'][0]['value']
                     d['etd'] = departure['MonitoredVehicleJourney']['MonitoredCall']['ExpectedDepartureTime']
-                    d['route'] = departure['MonitoredVehicleJourney']['OperatorRef']['value'].split('.')[-1].replace(':', '')
+                    d['route'] = departure['MonitoredVehicleJourney']['OperatorRef']['value'].split('.')[-1].replace(
+                        ':', '')
 
                     d = BusArrival(**d)
                     if '2267' in departure['MonitoringRef']['value']:
@@ -114,12 +114,12 @@ async def retrieve_arrivals(redis_conn=Depends(get_redis_conn)):
         await asyncio.sleep(int(sleep_seconds))
 
 
-@router.post("/boost-refresh-rate")
+@router.post("/boost-refresh-rate", status_code=status.HTTP_200_OK)
 async def boost_refresh_rate(redis_conn=Depends(get_redis_conn)):
     """Change the refresh rate to 30 seconds. Change it back to 90 seconds after 5 minutes."""
     await redis_conn.set('BUSES_REFRESH_TIME', 30)
     await delayed_action(300, redis_conn.set, 'BUSES_REFRESH_TIME', 90)
-    return Response(status_code=200)
+    return Response(status_code=status.HTTP_200_OK)
 
 
 async def reader(redis_conn):
@@ -150,7 +150,8 @@ async def reader(redis_conn):
 def reformat_bus_data(data):
     to_defense = data['to_defense']
     to_rer = data['to_rer']
-    buses_to_defense = [{"busNum": bus['route'], "eta": bus['etd'], "destination": bus['destination']} for bus in to_defense]
+    buses_to_defense = [{"busNum": bus['route'], "eta": bus['etd'], "destination": bus['destination']} for bus in
+                        to_defense]
     buses_to_rer = [{"busNum": bus['route'], "eta": bus['etd'], "destination": bus['destination']} for bus in to_rer]
     return orjson.dumps({
         "busData": [

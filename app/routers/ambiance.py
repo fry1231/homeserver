@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional, TypeVar, Coroutine, Any
 
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, Security, Response, status
 from pydantic import BaseModel
 
 from caching import InfluxCache
@@ -63,10 +63,11 @@ async def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestam
     return response
 
 
-@router.post('/submit')
+@router.post('/submit', status_code=status.HTTP_201_CREATED)
 async def submit_ambiance_point(data: AmbianceData,
                                 influxdb_client=Depends(home_client),
                                 auth=Security(authorize_user, scopes=["sensors:write"])):
     await write_ambiance_datapoint(client=influxdb_client,
                                    measurement='ambiance',
                                    fields=data.model_dump())
+    return Response(status_code=201, content='Data written to influx')

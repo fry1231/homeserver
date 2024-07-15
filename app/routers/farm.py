@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Security, HTTPException, Depends, Response
+from fastapi import APIRouter, Security, HTTPException, Depends, Response, status
 from pydantic import BaseModel
 from typing import List, TypeVar, Coroutine, Any
 import datetime
@@ -59,7 +59,7 @@ async def get_watering_datapoints(client,
 
 
 # Submit and get data from farm sensors (temperature, soil moisture, water level)
-@router.post('/sensors/submit')
+@router.post('/sensors/submit', status_code=status.HTTP_201_CREATED)
 async def submit_farm_data(data: FarmData,
                      influxdb_client=Depends(farm_client),
                      auth=Security(authorize_user, scopes=["sensors:write"])):
@@ -83,7 +83,7 @@ async def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() 
 
 
 # Submit and get data about watering pump on/off
-@router.post('/watering/submit')
+@router.post('/watering/submit', status_code=status.HTTP_201_CREATED)
 async def submit_watering(data: WateringData,
                           influxdb_client=Depends(farm_client),
                           auth=Security(authorize_user, scopes=["sensors:write"])):
@@ -107,7 +107,7 @@ async def get_watering_data(startTS: int = int((datetime.datetime.now().timestam
     return [WateringResponseItem(**item) for item in res]
 
 
-@router.get('/watering/last')
+@router.get('/watering/last', response_model=int)
 async def get_last_watering_time(influxdb_client=Depends(farm_client),
                            auth=Security(authorize_user, scopes=["sensors:read"])):
     data = await get_watering_datapoints(
@@ -124,7 +124,7 @@ async def get_last_watering_time(influxdb_client=Depends(farm_client),
     return str(int(time.timestamp()))
 
 
-@router.post('/watering/set-seconds')
+@router.post('/watering/set-seconds', status_code=status.HTTP_202_ACCEPTED)
 async def set_watering_needed(seconds: int,
                               redis_conn=Depends(get_redis_conn),
                               auth=Security(authorize_user, scopes=["sensors:write"])):
@@ -135,7 +135,7 @@ async def set_watering_needed(seconds: int,
     return Response(status_code=202, content='New watering time set')
 
 
-@router.get('/watering/seconds')
+@router.get('/watering/seconds', response_model=int)
 async def is_watering_needed(noreset: bool = False,
                              redis_conn=Depends(get_redis_conn),
                              auth=Security(authorize_user, scopes=["sensors:read"])) -> int:

@@ -1,20 +1,18 @@
-from fastapi import APIRouter, Security, WebSocket, WebSocketDisconnect, Depends
 import asyncio
+
 import async_timeout
 import orjson
+from aioredis import Redis
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 
-from db.redis.models import LogsSnapshot, LogUpdate
-from routers import WebsocketConnectionManager
 from config import logger
+from db.redis.models import LogsSnapshot, LogUpdate
 from misc.dependencies import get_redis_conn, injectable
-from security import authorize_user, WebsocketAuthorized
-
+from routers import WebsocketConnectionManager
+from security import WebsocketAuthorized
 
 router = APIRouter(
-    prefix="/logs",
-    # tags=["items"],
-    # dependencies=[Security(authorize_user, scopes=["statistics:read"])],
-    # responses={404: {"description": "Not found"}},
+    prefix="/logs"
 )
 
 
@@ -22,11 +20,10 @@ class ConnectionManager(WebsocketConnectionManager):
     def __init__(self):
         super().__init__()
         self.listen_updates_task = None
-        self.mocked_incr_val = -1
-        self.redis_conn = None
+        self.redis_conn: Redis | None = None
 
     @injectable
-    async def init_redis_conn(self, redis_conn=Depends(get_redis_conn)):
+    async def init_redis_conn(self, redis_conn: Redis = Depends(get_redis_conn)):
         if self.redis_conn is None:
             self.redis_conn = redis_conn
 
@@ -100,6 +97,8 @@ async def get_logs(start: int, end: int, redis_conn=Depends(get_redis_conn)):
 
 manager = ConnectionManager()
 WSAuth = WebsocketAuthorized(scopes=["statistics:read"], master_scope="all")
+
+
 # current_logs = mock_logs_data(0, 10, 0)
 
 
