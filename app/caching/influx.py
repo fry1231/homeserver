@@ -39,7 +39,7 @@ class InfluxCache:
         """
 
         def decorator(
-                func: Callable[..., list[BaseModelType]] or Callable[..., Coroutine[Any, Any, list[BaseModelType]]]):
+                func: Callable[..., list[BaseModelType]] | Callable[..., Coroutine[Any, Any, list[BaseModelType]]]):
             @wraps(func)
             async def wrapper(*args, **kwargs):
                 async with get_redis_conn_ctx() as redis_conn:

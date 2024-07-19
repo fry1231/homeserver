@@ -54,6 +54,7 @@ class ConnectionManager(WebsocketConnectionManager):
     async def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
         if len(self.active_connections) == 0:
+            await self.redis_conn.close()
             try:
                 self.listen_updates_task.cancel()
                 try:
