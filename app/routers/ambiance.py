@@ -35,7 +35,7 @@ class AmbianceResponse(BaseModel):
     data: list[AmbianceResponseItem]
 
 
-@cache.fetch(ttl=60 * 5)
+# @cache.fetch(ttl=60 * 5)
 async def get_ambiance_datapoints(client,
                                   measurement,
                                   start_timestamp,
