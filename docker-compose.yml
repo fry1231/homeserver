@@ -172,7 +172,7 @@ services:
       - 9187
     environment:
       - DATA_SOURCE_URI=db:5432/db_prod?sslmode=disable
-      - DATA_SOURCE_USER=${POSTGRES_USER:?err}
+      - DATA_SOURCE_USER=monitor_user
       - DATA_SOURCE_PASS=${POSTGRES_PASS:?err}
 
 volumes:
