@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
   homescreen:
-    container_name: homescreen
     restart: no
 #    env_file:
 #      - .env
@@ -36,7 +35,6 @@ services:
 
 
   react:
-    container_name: react
     restart: always
     build: react-app
     command: npm run dev
@@ -52,7 +50,6 @@ services:
 
 
   influxdb:
-    container_name: influx
     image: influxdb:1.8.10-alpine
     restart: always
     networks:
@@ -71,7 +68,6 @@ services:
 
 
   traefik:
-    container_name: traefik
     image: traefik:v2.9
     restart: always
     networks:
@@ -116,7 +112,6 @@ services:
 
 
   prometheus:
-    container_name: prometheus
     image: prom/prometheus:v2.52.0
     command:
       - "--storage.tsdb.retention.time=3d"
@@ -131,7 +126,6 @@ services:
 
 
   grafana:
-    container_name: grafana
     image: grafana/grafana:10.1.10
     restart: unless-stopped
     networks:
@@ -150,9 +144,8 @@ services:
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
 
 
-  node_exporter:
+  node-exporter:
     image: prom/node-exporter:v1.8.1
-    container_name: node-exporter
     command:
       - '--path.rootfs=/host'
       - '--collector.disable-defaults'
@@ -162,7 +155,6 @@ services:
       - '--collector.netstat'
 #    network_mode: host
     pid: host
-
     restart: unless-stopped
     networks:
       - migrebot_migrebot-network
@@ -171,6 +163,17 @@ services:
     volumes:
       - '/:/host:ro,rslave'
 
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    restart: unless-stopped
+    networks:
+      - migrebot_migrebot-network
+    expose:
+      - 9187
+    environment:
+      - DATA_SOURCE_URI=db:5432/db_prod?sslmode=disable
+      - DATA_SOURCE_USER=${POSTGRES_USER:?err}
+      - DATA_SOURCE_PASS=${POSTGRES_PASS:?err}
 
 volumes:
   letsencrypt:
