@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   homescreen:
+    container_name: homescreen
     restart: no
 #    env_file:
 #      - .env
@@ -35,6 +36,7 @@ services:
 
 
   react:
+    container_name: react
     restart: always
     build: react-app
     command: npm run dev
@@ -50,6 +52,7 @@ services:
 
 
   influxdb:
+    container_name: influxdb
     image: influxdb:1.8.10-alpine
     restart: always
     networks:
@@ -68,6 +71,7 @@ services:
 
 
   traefik:
+    container_name: traefik
     image: traefik:v2.9
     restart: always
     networks:
@@ -112,6 +116,7 @@ services:
 
 
   prometheus:
+    container_name: prometheus
     image: prom/prometheus:v2.52.0
     command:
       - "--storage.tsdb.retention.time=3d"
@@ -126,6 +131,7 @@ services:
 
 
   grafana:
+    container_name: grafana
     image: grafana/grafana:10.1.10
     restart: unless-stopped
     networks:
@@ -145,6 +151,7 @@ services:
 
 
   node-exporter:
+    container_name: node-exporter
     image: prom/node-exporter:v1.8.1
     command:
       - '--path.rootfs=/host'
@@ -164,6 +171,7 @@ services:
       - '/:/host:ro,rslave'
 
   postgres-exporter:
+    container_name: postgres-exporter
     image: prometheuscommunity/postgres-exporter:v0.15.0
     restart: unless-stopped
     networks:
