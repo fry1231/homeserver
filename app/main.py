@@ -16,7 +16,7 @@ from config import logger, DOMAIN, templates, POSTGRES_USER, POSTGRES_PASS, DATA
 from db.influx import init_influx
 from db.sql import database, migraine_database, connect_create_if_not_exists
 from middlewares import AntiFloodMiddleware, CustomGZipMiddleware
-from misc.dependencies import get_redis_conn
+from dependencies.db_connections import get_redis_conn
 from routers import (
     buses, states, users, logs, ambiance, farm
 )

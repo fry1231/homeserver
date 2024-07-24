@@ -13,7 +13,8 @@ from pydantic import BaseModel
 
 from config import IDF_TOKEN
 from config import logger
-from misc.dependencies import get_redis_conn, injectable
+from dependencies.db_connections import get_redis_conn
+from dependencies.common import injectable
 from misc.utils import delayed_action
 from security import authorize_user
 

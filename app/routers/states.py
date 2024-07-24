@@ -6,7 +6,8 @@ import orjson
 from db.redis.models import State, States, StateUpdate
 from routers import WebsocketConnectionManager
 from config import logger
-from misc.dependencies import get_redis_conn, injectable
+from dependencies.db_connections import get_redis_conn
+from dependencies.common import injectable
 from security import WebsocketAuthorized
 
 

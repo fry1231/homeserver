@@ -4,7 +4,8 @@ from typing import List, TypeVar, Coroutine, Any
 import datetime
 
 from security import authorize_user
-from misc.dependencies import farm_client, get_redis_conn
+from dependencies.db_connections import farm_client, get_redis_conn
+from dependencies.time_utils import current_time_nanoseconds, day_ago_nanoseconds
 from db.influx import get_influx_data, write_influx_data
 from misc.data_handling import downsample
 from caching import InfluxCache
@@ -70,8 +71,8 @@ async def submit_farm_data(data: FarmData,
 
 
 @router.get('/sensors/data', response_model=List[FarmResponseItem])
-async def get_farm_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
-                  endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
+async def get_farm_data(startTS: int = Depends(day_ago_nanoseconds),
+                  endTS: int = Depends(current_time_nanoseconds),
                   influxdb_client=Depends(farm_client),
                   auth=Security(authorize_user, scopes=["sensors:read"])):
     data = await get_farm_datapoints(client=influxdb_client,
@@ -96,14 +97,14 @@ async def submit_watering(data: WateringData,
 
 
 @router.get('/watering/data', response_model=List[WateringResponseItem])
-async def get_watering_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
-                            endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
+async def get_watering_data(startTS: int = Depends(day_ago_nanoseconds),
+                            endTS: int = Depends(current_time_nanoseconds),
                             influxdb_client=Depends(farm_client),
                             auth=Security(authorize_user, scopes=["sensors:read"])):
     res = await get_watering_datapoints(client=influxdb_client,
-                                         measurement='watering',
-                                         start_timestamp=startTS,
-                                         end_timestamp=endTS)
+                                        measurement='watering',
+                                        start_timestamp=startTS,
+                                        end_timestamp=endTS)
     return [WateringResponseItem(**item) for item in res]
 
 
@@ -114,7 +115,7 @@ async def get_last_watering_time(influxdb_client=Depends(farm_client),
         client=influxdb_client,
         measurement='watering',
         start_timestamp=int((datetime.datetime.now().timestamp() - 3600 * 24 * 2) * 1_000_000_000),  # 2 days
-        end_timestamp=int(datetime.datetime.now().timestamp() * 1_000_000_000)
+        end_timestamp=current_time_nanoseconds()
     )
     if len(data) == 0:
         return 0

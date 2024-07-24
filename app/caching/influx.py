@@ -7,7 +7,7 @@ import orjson
 from pydantic import BaseModel
 
 from config import logger
-from misc.dependencies import get_redis_conn_ctx
+from dependencies.db_connections import get_redis_conn_ctx
 
 BaseModelType = TypeVar('BaseModelType', bound=type(BaseModel))
 

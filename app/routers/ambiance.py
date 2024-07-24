@@ -1,13 +1,12 @@
-import datetime
-from typing import Optional, TypeVar, Coroutine, Any
+from typing import Optional, TypeVar, Any
 
 from fastapi import APIRouter, Depends, Security, Response, status
 from pydantic import BaseModel
 
 from caching import InfluxCache
-from config import logger
 from db.influx import get_influx_data, write_influx_data
-from misc.dependencies import home_client
+from dependencies.db_connections import home_client
+from dependencies.time_utils import current_time_nanoseconds, day_ago_nanoseconds
 from security import authorize_user
 
 BaseModelType = TypeVar('BaseModelType', bound=type(BaseModel))
@@ -51,11 +50,9 @@ async def write_ambiance_datapoint(client,
 
 
 @router.get('/', response_model=list[AmbianceResponse])
-async def get_ambiance_data(startTS: int = int((datetime.datetime.now().timestamp() - 3600 * 24) * 1_000_000_000),
-                            endTS: int = int(datetime.datetime.now().timestamp() * 1_000_000_000),
+async def get_ambiance_data(startTS: int = Depends(day_ago_nanoseconds),
+                            endTS: int = Depends(current_time_nanoseconds),
                             influxdb_client=Depends(home_client)):
-    logger.debug(f'Start TS: {datetime.datetime.fromtimestamp(startTS/1e9).strftime("%Y-%m-%d %H:%M:%S")}, '
-                 f'End TS: {datetime.datetime.fromtimestamp(endTS/1e9).strftime("%Y-%m-%d %H:%M:%S")}')
     items = await get_ambiance_datapoints(client=influxdb_client,
                                           measurement='ambiance',
                                           start_timestamp=startTS,

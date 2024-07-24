@@ -7,7 +7,8 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 
 from config import logger
 from db.redis.models import LogsSnapshot, LogUpdate
-from misc.dependencies import get_redis_conn, injectable
+from dependencies.db_connections import get_redis_conn
+from dependencies.common import injectable
 from routers import WebsocketConnectionManager
 from security import WebsocketAuthorized
 
