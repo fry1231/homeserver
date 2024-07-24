@@ -121,13 +121,14 @@ services:
     command:
       - "--storage.tsdb.retention.time=3d"
       - "--config.file=/etc/prometheus/prometheus.yml"
-    restart: always
+    restart: unless-stopped
     networks:
       - migrebot_migrebot-network
     expose:
         - 9090
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-storage:/prometheus
 
 
   grafana:
@@ -154,12 +155,10 @@ services:
     container_name: node-exporter
     image: prom/node-exporter:v1.8.1
     command:
-      - '--path.rootfs=/host'
-      - '--collector.disable-defaults'
-      - '--collector.cpu'
-      - '--collector.meminfo'
-      - '--collector.filesystem'
-      - '--collector.netstat'
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
 #    network_mode: host
     pid: host
     restart: unless-stopped
@@ -168,7 +167,9 @@ services:
     expose:
       - 9100
     volumes:
-      - '/:/host:ro,rslave'
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
 
   postgres-exporter:
     container_name: postgres-exporter
@@ -187,6 +188,7 @@ volumes:
   letsencrypt:
   influxdb-storage:
   grafana-storage:
+  prometheus-storage:
 
 
 networks:
