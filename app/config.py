@@ -24,7 +24,7 @@ DOMAIN = 'localhost' if IS_TESTING else os.getenv('DOMAIN')
 
 IDF_TOKEN = os.getenv("IDF_TOKEN")
 
-INFLUXDB_HOST = 'influx'
+INFLUXDB_HOST = 'influxdb'
 INFLUXDB_PORT = 8086
 INFLUXDB_USERNAME = os.getenv('INFLUXDB_USERNAME')
 INFLUXDB_PASSWORD = os.getenv('INFLUXDB_PASSWORD')
