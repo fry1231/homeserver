@@ -7,8 +7,6 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 
-
-
 def override_auth():
     return True
 
@@ -31,7 +29,7 @@ class WithAsyncContextManager:
 
 @pytest.fixture
 def mock_redis():
-    with patch('misc.dependencies.get_redis_conn_ctx', WithAsyncContextManager) as mock_redis:
+    with patch('dependencies.db_connections.get_redis_conn_ctx', WithAsyncContextManager) as mock_redis:
         yield mock_redis
 
 
