@@ -13,17 +13,17 @@ buses to the nearest bus stop using a public API, provides real-time information
 - **Authorization**: JWT access and refresh tokens with refresh token rotation. Google OAuth.
 - **Real-time Statistics and Logs**: Extends the MigraineStats Telegram bot to provide real-time usage statistics and 
 logs using WebSockets and Redis pub/sub.
-![](/react-app/public/images/states.png)
-![](/react-app/public/images/logs.png)
-![](/react-app/public/images/statistics.png)
+![](/react-app/public/images/readme/states.png)
+![](/react-app/public/images/readme/logs.png)
+![](/react-app/public/images/readme/statistics.png)
 - **Bus Arrival Times**: Calculates the estimated arrival times of buses to the nearest bus stop using a public API. Real-time updates using Server-Sent Events.
 - **Temperature and Humidity Graphs**: Displays ambient temperature and humidity data collected from Arduino-based 
 sensors in graphical format.
-- ![](/react-app/public/images/main.png)
+![](/react-app/public/images/readme/main.png)
 - **Hydroponic Farm Automation**: Provides information on a home hydroponic strawberry farm (soil temperature and humidity, water level in water tank) and automates the irrigation process.
-![](/react-app/public/images/farm.png)
-- **Monitoring**: System, VPS, and docker container load monitoring dashboards.
-![](/react-app/public/images/dashboard.png)
+![](/react-app/public/images/readme/farm.png)
+- **Monitoring**: System, VPS, Postgres, Redis and docker container load monitoring dashboards.
+![](/react-app/public/images/readme/dashboard.png)
 
 ## Technologies Used
 
