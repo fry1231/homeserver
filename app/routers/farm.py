@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, TypeVar, Coroutine, Any
 import datetime
 
+from config import logger
 from security import authorize_user
 from dependencies.db_connections import farm_client, get_redis_conn
 from dependencies.time_utils import current_time_nanoseconds, day_ago_nanoseconds
@@ -43,7 +44,7 @@ class WateringResponseItem(BaseModel):
     duration: int
 
 
-@cache.fetch(ttl=60 * 15)
+# @cache.fetch(ttl=60 * 15)
 async def get_farm_datapoints(client,
                               measurement,
                               start_timestamp,
@@ -51,7 +52,7 @@ async def get_farm_datapoints(client,
     return await get_influx_data(**locals())
 
 
-@cache.fetch(ttl=60 * 15)
+# @cache.fetch(ttl=60 * 15)
 async def get_watering_datapoints(client,
                                   measurement,
                                   start_timestamp,
@@ -149,5 +150,6 @@ async def is_watering_needed(noreset: bool = False,
             return int(watering_seconds)
         else:
             return 0
-    except:
+    except Exception as e:
+        logger.error(f'Failed to get watering seconds: {repr(e)}')
         return 0
