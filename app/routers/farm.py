@@ -65,10 +65,19 @@ async def get_watering_datapoints(client,
 async def submit_farm_data(data: FarmData,
                      influxdb_client=Depends(farm_client),
                      auth=Security(authorize_user, scopes=["sensors:write"])):
-    await write_influx_data(client=influxdb_client,
-                            measurement='farm',
-                            fields=data.model_dump())
-    return Response(status_code=201, content='Data written to influx')
+    # Get last data point
+    fifteen_mins_ago = int((datetime.datetime.now().timestamp() - 20 * 60) * 1_000_000_000)
+    last_data = await get_farm_datapoints(client=influxdb_client,
+                                          measurement='farm',
+                                          start_timestamp=fifteen_mins_ago,
+                                          end_timestamp=current_time_nanoseconds())
+    if len(last_data) == 0:
+        await write_influx_data(client=influxdb_client,
+                                measurement='farm',
+                                fields=data.model_dump())
+        return Response(status_code=201, content='Data written to influx')
+    else:
+        return Response(status_code=208, content='Data already submitted in the last 15 minutes')
 
 
 @router.get('/sensors/data', response_model=List[FarmResponseItem])

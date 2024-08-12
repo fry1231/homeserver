@@ -149,3 +149,6 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 /.ruff_cache/
+
+/arduino/
+/arduino/arduino.ino

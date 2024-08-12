@@ -83,16 +83,16 @@ app.add_middleware(
 app.add_middleware(AntiFloodMiddleware, limit=100, graphql_limit=500, per=datetime.timedelta(minutes=1))
 app.add_middleware(CustomGZipMiddleware, exclude_routes=['/buses/arrivals'], minimum_size=1000)
 
-app.include_router(auth_router)
+app.include_router(auth_router, tags=["auth"])
 # app.include_router(tasks.router)
-app.include_router(users.router)
-app.include_router(buses.router)
-app.include_router(states.router)
-app.include_router(logs.router)
+app.include_router(users.router, tags=["users"])
+app.include_router(buses.router, tags=["buses"])
+app.include_router(states.router, tags=["states"])
+app.include_router(logs.router, tags=["logs"])
 app.include_router(graphql_app, prefix="/graphql", include_in_schema=False)
 # app.include_router(calendar.router)
-app.include_router(ambiance.router)
-app.include_router(farm.router)
+app.include_router(ambiance.router, tags=["ambiance"])
+app.include_router(farm.router, tags=["farm"])
 
 
 @app.exception_handler(RequestValidationError)
