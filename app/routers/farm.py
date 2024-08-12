@@ -106,6 +106,19 @@ async def submit_watering(data: WateringData,
     return Response(status_code=201, content='Data written to influx')
 
 
+# I don't want to fix typo in arduino, because I'm too lazy
+@router.post('/watering/sumbit', status_code=status.HTTP_201_CREATED)
+async def submit_watering_alias(data: WateringData,
+                          influxdb_client=Depends(farm_client),
+                          auth=Security(authorize_user, scopes=["sensors:write"])):
+    if data.duration < 0:
+        raise HTTPException(status_code=400, detail='Duration must be positive')
+    await write_influx_data(client=influxdb_client,
+                            measurement='watering',
+                            fields=data.model_dump())
+    return Response(status_code=201, content='Data written to influx')
+
+
 @router.get('/watering/data', response_model=List[WateringResponseItem])
 async def get_watering_data(startTS: int = Depends(day_ago_nanoseconds),
                             endTS: int = Depends(current_time_nanoseconds),
