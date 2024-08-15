@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Security, HTTPException, Depends, Response, status
+from fastapi import APIRouter, Security, HTTPException, Depends, Response, status, Query
 from pydantic import BaseModel
 from typing import List, TypeVar, Coroutine, Any
 import datetime
@@ -63,8 +63,8 @@ async def get_watering_datapoints(client,
 # Submit and get data from farm sensors (temperature, soil moisture, water level)
 @router.post('/sensors/submit', status_code=status.HTTP_201_CREATED)
 async def submit_farm_data(data: FarmData,
-                     influxdb_client=Depends(farm_client),
-                     auth=Security(authorize_user, scopes=["sensors:write"])):
+                           influxdb_client=Depends(farm_client),
+                           auth=Security(authorize_user, scopes=["sensors:write"])):
     # Get last data point
     fifteen_mins_ago = int((datetime.datetime.now().timestamp() - 20 * 60) * 1_000_000_000)
     last_data = await get_farm_datapoints(client=influxdb_client,
@@ -83,8 +83,8 @@ async def submit_farm_data(data: FarmData,
 # I don't want to fix typo in arduino, because I'm too lazy
 @router.post('/sensors/sumbit', status_code=status.HTTP_201_CREATED)
 async def submit_farm_data(data: FarmData,
-                     influxdb_client=Depends(farm_client),
-                     auth=Security(authorize_user, scopes=["sensors:write"])):
+                           influxdb_client=Depends(farm_client),
+                           auth=Security(authorize_user, scopes=["sensors:write"])):
     # Get last data point
     fifteen_mins_ago = int((datetime.datetime.now().timestamp() - 20 * 60) * 1_000_000_000)
     last_data = await get_farm_datapoints(client=influxdb_client,
@@ -101,10 +101,12 @@ async def submit_farm_data(data: FarmData,
 
 
 @router.get('/sensors/data', response_model=List[FarmResponseItem])
-async def get_farm_data(startTS: int = Depends(day_ago_nanoseconds),
-                  endTS: int = Depends(current_time_nanoseconds),
-                  influxdb_client=Depends(farm_client),
-                  auth=Security(authorize_user, scopes=["sensors:read"])):
+async def get_farm_data(startTS: int = Query(default=Depends(day_ago_nanoseconds),
+                                             description="Start timestamp in nanoseconds"),
+                        endTS: int = Query(default=Depends(current_time_nanoseconds),
+                                           description="End timestamp in nanoseconds"),
+                        influxdb_client=Depends(farm_client),
+                        auth=Security(authorize_user, scopes=["sensors:read"])):
     data = await get_farm_datapoints(client=influxdb_client,
                                      measurement='farm',
                                      start_timestamp=startTS,
@@ -127,8 +129,10 @@ async def submit_watering(data: WateringData,
 
 
 @router.get('/watering/data', response_model=List[WateringResponseItem])
-async def get_watering_data(startTS: int = Depends(day_ago_nanoseconds),
-                            endTS: int = Depends(current_time_nanoseconds),
+async def get_watering_data(startTS: int = Query(default=Depends(day_ago_nanoseconds),
+                                                 description="Start timestamp in nanoseconds"),
+                            endTS: int = Query(default=Depends(current_time_nanoseconds),
+                                               description="End timestamp in nanoseconds"),
                             influxdb_client=Depends(farm_client),
                             auth=Security(authorize_user, scopes=["sensors:read"])):
     res = await get_watering_datapoints(client=influxdb_client,
@@ -140,7 +144,7 @@ async def get_watering_data(startTS: int = Depends(day_ago_nanoseconds),
 
 @router.get('/watering/last', response_model=int)
 async def get_last_watering_time(influxdb_client=Depends(farm_client),
-                           auth=Security(authorize_user, scopes=["sensors:read"])):
+                                 auth=Security(authorize_user, scopes=["sensors:read"])):
     data = await get_watering_datapoints(
         client=influxdb_client,
         measurement='watering',
