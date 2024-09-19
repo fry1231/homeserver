@@ -25,8 +25,6 @@ window.onload = function () {
     setInterval(refreshWeather, 1000 * 60 * 15);
     weatherContent = document.getElementById("weather").innerHTML;
     weatherDetContent = document.getElementById("weatherDetailed").innerHTML;
-    localStorage.setItem("token", "someToken");
-    alert("token: " + localStorage.getItem("token"));
     // let client_id = Date.now()
     // let prefix = "";
     // if (`{{ getenv("DOMAIN") }}`=="localhost")
