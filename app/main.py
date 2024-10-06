@@ -50,7 +50,10 @@ async def lifespan(app_: FastAPI):
     await migraine_database.disconnect()
 
 
-app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
+app = FastAPI(lifespan=lifespan,
+              default_response_class=ORJSONResponse,
+              docs_url=None,
+              redoc_url=None)
 app.state.database = database
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -60,15 +63,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 #     return await call_next(request)
 
 origins = [
-    "http://localhost.tiangolo.com",
-    "https://localhost.tiangolo.com",
-    f"http://{DOMAIN}",
-    f"http://{DOMAIN}:8000",
-    f"http://{DOMAIN}:3000",
-    f"https://{DOMAIN}",
-    f"https://{DOMAIN}:8000",
-    f"https://{DOMAIN}:3000",
-    "http://localhost:3000",
     f"https://hs.{DOMAIN}",
     f"https://homescreen.{DOMAIN}",
 ]
