@@ -77,7 +77,6 @@ services:
     networks:
       migrebot_migrebot-network:
         ipv4_address: 172.19.0.250   # change accordingly to the subnet or set the subnet implicitly in the network definition
-      monitoring:
     ports:
       - "80:80"
       - "443:443"
