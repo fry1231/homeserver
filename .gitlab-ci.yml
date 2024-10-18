@@ -5,6 +5,7 @@ stages:
   - migration
   - test
   - run
+  - run_traefik
 
 check_vars:
   stage: check_vars
@@ -40,7 +41,7 @@ pull:
 
 build:
   stage: build
-  when: on_success
+  when: manual
   needs:
     - pull
   script:
@@ -67,7 +68,7 @@ migration_manual:
 
 test:
   stage: test
-  when: on_success
+  when: manual
   needs:
     - build
   script:
@@ -76,9 +77,16 @@ test:
 
 run:
   stage: run
-  when: on_success
+  when: manual
   needs:
       - build
   script:
     - cd /usr/homeserver
     - docker compose up -d
+
+run_traefik:
+  stage: run_traefik
+  when: manual
+  script:
+    - cd /usr/homeserver
+    - docker compose up -d traefik

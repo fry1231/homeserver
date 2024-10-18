@@ -77,6 +77,7 @@ services:
     networks:
       migrebot_migrebot-network:
         ipv4_address: 172.19.0.250   # change accordingly to the subnet or set the subnet implicitly in the network definition
+      multigpt-network:
     ports:
       - "80:80"
       - "443:443"
@@ -194,3 +195,6 @@ networks:
   migrebot_migrebot-network:
     external: true
     name: migrebot_migrebot-network
+  multigpt-network:
+    external: true
+    name: multigpt-network
