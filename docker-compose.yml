@@ -2,8 +2,6 @@ services:
   homescreen:
     container_name: homescreen
     restart: no
-#    env_file:
-#      - .env
     environment:
       - DOMAIN=${DOMAIN:?err}
       - IDF_TOKEN=${IDF_TOKEN:?err}
@@ -75,8 +73,8 @@ services:
 
   traefik:
     container_name: traefik
-    image: traefik:v2.9
-    restart: always
+    image: "traefik:v3.1"
+    restart: unless-stopped
     networks:
       monitoring-network:
         ipv4_address: 172.200.0.200
@@ -87,16 +85,21 @@ services:
       - "--log.level=INFO"
       - "--api.dashboard=true"
       - "--providers.docker=true"
+      - "--providers.docker.watch=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.httpClientTimeout=30"
+
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+
       - "--entrypoints.web.http.redirections.entrypoint.to=:443"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL:?err}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+
       - "--metrics.prometheus=true"
       - "--metrics.prometheus.entryPoint=metrics"
       - "--metrics.prometheus.addEntryPointsLabels=true"
