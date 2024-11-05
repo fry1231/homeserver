@@ -27,7 +27,7 @@ services:
 #        condition: service_started
 #      db:
 #        condition: service_started
-    command: uvicorn main:app --proxy-headers --host 0.0.0.0 --forwarded-allow-ips '172.19.0.250' --log-level debug
+    command: uvicorn main:app --proxy-headers --host 0.0.0.0 --forwarded-allow-ips '172.200.0.200' --log-level debug
     expose:
       - 8000
     labels:
@@ -35,6 +35,7 @@ services:
       - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN:?err}`)"
       - "traefik.http.routers.homescreen.entrypoints=websecure"
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
+      - "traefik.http.services.homescreen-service.loadbalancer.server.port=8000"
 
 
   react:
@@ -78,12 +79,12 @@ services:
     restart: always
     networks:
       monitoring-network:
+        ipv4_address: 172.200.0.200
     ports:
       - "80:80"
       - "443:443"
     command:
       - "--log.level=INFO"
-#      - "--api.insecure=true"
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -108,7 +109,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN:?err}`)"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik-ru.${DOMAIN:?err}`)"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
@@ -179,8 +180,9 @@ volumes:
 
 
 networks:
-  multigpt-network:
-    external: true
-    name: multigpt-network
   monitoring-network:
     name: monitoring-network
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.200.0.0/24"
