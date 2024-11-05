@@ -9,8 +9,12 @@ services:
     environment:
       - DOMAIN=${DOMAIN:?err}
       - IDF_TOKEN=${IDF_TOKEN:?err}
+      - POSTGRES_HOST=${POSTGRES_HOST:?err}
+      - POSTGRES_PORT=${POSTGRES_PORT:?err}
       - POSTGRES_USER=${POSTGRES_USER:?err}
       - POSTGRES_PASS=${POSTGRES_PASS:?err}
+      - REDIS_HOST=${REDIS_HOST:?err}
+      - REDIS_PORT=${REDIS_PORT:?err}
       - SECRET=${SECRET:?err}
       - INFLUXDB_USERNAME=${INFLUXDB_USERNAME:?err}
       - INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD:?err}
@@ -120,7 +124,7 @@ services:
     container_name: prometheus
     image: prom/prometheus:v2.52.0
     command:
-      - "--storage.tsdb.retention.time=3d"
+      - "--storage.tsdb.retention.time=7d"
       - "--config.file=/etc/prometheus/prometheus.yml"
     restart: unless-stopped
     networks:
@@ -163,26 +167,13 @@ services:
     pid: host
     restart: unless-stopped
     networks:
-      - migrebot_migrebot-network
+      - monitoring-network
     expose:
       - 9100
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
-
-  postgres-exporter:
-    container_name: postgres-exporter
-    image: prometheuscommunity/postgres-exporter:v0.15.0
-    restart: unless-stopped
-    networks:
-      - migrebot_migrebot-network
-    expose:
-      - 9187
-    environment:
-      - DATA_SOURCE_URI=db:5432/db_prod?sslmode=disable
-      - DATA_SOURCE_USER=monitor_user
-      - DATA_SOURCE_PASS=${POSTGRES_PASS:?err}
 
 volumes:
   letsencrypt:
@@ -198,3 +189,5 @@ networks:
   multigpt-network:
     external: true
     name: multigpt-network
+  monitoring-network:
+    name: monitoring-network

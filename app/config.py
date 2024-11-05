@@ -33,9 +33,13 @@ DATABASE_NAME = 'hs_db'
 DATABASE2_NAME = 'db_prod'
 POSTGRES_USER = 'postgres' if IS_TESTING else os.getenv("POSTGRES_USER")
 POSTGRES_PASS = 'POSTGRES_PASS' if IS_TESTING else os.getenv("POSTGRES_PASS")
-POSTGRES_HOST = 'localhost' if IS_TESTING else 'migraine_db'
-POSTGRES_PORT = '5433' if IS_TESTING else '5432'
+POSTGRES_HOST = 'localhost' if IS_TESTING else os.getenv("POSTGRES_HOST")
+POSTGRES_PORT = '5433' if IS_TESTING else os.getenv("POSTGRES_PORT")
 DB_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE_NAME}'
 DB2_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE2_NAME}'
+
+
+REDIS_HOST = 'redis' if IS_TESTING else os.getenv("REDIS_HOST")
+REDIS_PORT = '6379' if IS_TESTING else os.getenv("REDIS_PORT")
 
 SECRET = 'secret' if IS_TESTING else os.getenv("SECRET")
