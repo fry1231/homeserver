@@ -12,7 +12,28 @@ from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
 
-from config import logger, DOMAIN, templates, POSTGRES_USER, POSTGRES_PASS, DATABASE_NAME
+from config import (
+    logger, 
+    DOMAIN, 
+    templates, 
+    POSTGRES_USER, 
+    POSTGRES_PASS, 
+    DATABASE_NAME,
+    DATABASE2_NAME,
+    DB_URL,
+    DB2_URL,
+    REDIS_HOST,
+    REDIS_PORT,
+    SECRET,
+    IS_TESTING,
+    IDF_TOKEN,
+    INFLUXDB_HOST,
+    INFLUXDB_PORT,
+    INFLUXDB_USERNAME,
+    INFLUXDB_PASSWORD,
+    POSTGRES_HOST,
+    POSTGRES_PORT,
+)
 from db.influx import init_influx
 from db.sql import database, migraine_database, connect_create_if_not_exists
 from middlewares import AntiFloodMiddleware, CustomGZipMiddleware
@@ -27,6 +48,25 @@ from security import auth_router
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
+    logger.info(f"Starting app with settings:\n"
+                f"{IS_TESTING=}\n"
+                f"{DOMAIN=}\n"
+                f"{IDF_TOKEN=}\n"
+                f"{INFLUXDB_HOST=}\n"
+                f"{INFLUXDB_PORT=}\n"
+                f"{INFLUXDB_USERNAME=}\n"
+                f"{INFLUXDB_PASSWORD=}\n"
+                f"{DATABASE_NAME=}\n"
+                f"{DATABASE2_NAME=}\n"
+                f"{POSTGRES_USER=}\n"
+                f"{POSTGRES_PASS=}\n"
+                f"{POSTGRES_HOST=}\n"
+                f"{POSTGRES_PORT=}\n"
+                f"{DB_URL=}\n"
+                f"{DB2_URL=}\n"
+                f"{REDIS_HOST=}\n"
+                f"{REDIS_PORT=}\n"
+                f"{SECRET=}\n")
     database_ = app_.state.database
     if not database_.is_connected:
         await database_.connect()
