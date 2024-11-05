@@ -35,8 +35,10 @@ POSTGRES_USER = 'postgres' if IS_TESTING else os.getenv("POSTGRES_USER")
 POSTGRES_PASS = 'POSTGRES_PASS' if IS_TESTING else os.getenv("POSTGRES_PASS")
 POSTGRES_HOST = 'localhost' if IS_TESTING else os.getenv("POSTGRES_HOST")
 POSTGRES_PORT = '5433' if IS_TESTING else os.getenv("POSTGRES_PORT")
-DB_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE_NAME}'
-DB2_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE2_NAME}'
+DB_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@' \
+         f'{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE_NAME}?ssl=false'
+DB2_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASS}@' \
+          f'{POSTGRES_HOST}:{POSTGRES_PORT}/{DATABASE2_NAME}?ssl=false'
 
 
 REDIS_HOST = 'redis' if IS_TESTING else os.getenv("REDIS_HOST")
