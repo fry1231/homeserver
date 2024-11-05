@@ -35,7 +35,7 @@ services:
       - "traefik.http.routers.homescreen.rule=Host(`homescreen.${DOMAIN:?err}`)"
       - "traefik.http.routers.homescreen.entrypoints=websecure"
       - "traefik.http.routers.homescreen.tls.certresolver=letsencrypt"
-      - "traefik.http.services.homescreen-service.loadbalancer.server.port=8000"
+      - "traefik.http.services.homescreen.loadbalancer.server.port=8000"
 
 
   react:
@@ -183,6 +183,6 @@ networks:
   monitoring-network:
     name: monitoring-network
     ipam:
-      driver: default
+      driver: bridge
       config:
         - subnet: "172.200.0.0/24"
