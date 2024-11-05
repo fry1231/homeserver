@@ -9,14 +9,22 @@ scrape_configs:
     static_configs:
       - targets: [ 'prometheus:9090' ]
 
-  - job_name: node
+  - job_name: node-nl
+    static_configs:
+      - targets: [ 'node-exporter.local:9100' ]
+
+  - job_name: node-ru
     static_configs:
       - targets: [ 'node-exporter:9100' ]
 
   - job_name: traefik
     static_configs:
-      - targets: [ 'traefik:8899' ]
+      - targets: [ 'traefik-nl.local:8899' ]
 
   - job_name: postgres
     static_configs:
-      - targets: [ 'postgres-exporter:9187' ]
+      - targets: [ 'postgres-exporter.local:9187' ]
+
+  - job_name: mongo
+    static_configs:
+      - targets: [ 'mongo-exporter.local:9216' ]
